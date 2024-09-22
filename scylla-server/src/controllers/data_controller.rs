@@ -4,8 +4,8 @@ use axum::{
 };
 
 use crate::{
-    error::ScyllaError, services::data_service, transformers::data_transformer::PublicData, transformers::data_transformer::PublicDataWithDataType,
-    Database,
+    error::ScyllaError, services::data_service, transformers::data_transformer::PublicData,
+    transformers::data_transformer::PublicDataWithDataType, Database,
 };
 
 /// Get all of the data points of a certain data type name and run ID
@@ -26,13 +26,12 @@ pub async fn get_data(
 pub async fn get_data_by_datetime(
     State(db): State<Database>,
     Path(datetime): Path<String>,
-) -> Result<Json<Vec<PublicDataWithDataType>>, ScyllaError> {
+) -> Result<Json<Vec<PublicData>>, ScyllaError> {
     let data = data_service::get_data_by_datetime(&db, datetime).await?;
 
     // map data to frontend data types according to the From func of the client struct
-    let mut transformed_data: Vec<PublicDataWithDataType> = data.iter().map(PublicDataWithDataType::from).collect();
+    let mut transformed_data: Vec<PublicData> = data.iter().map(PublicData::from).collect();
     transformed_data.sort();
 
     Ok(Json::from(transformed_data))
 }
-
