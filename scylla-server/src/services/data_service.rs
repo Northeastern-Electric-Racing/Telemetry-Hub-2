@@ -33,23 +33,25 @@ pub async fn get_data(
         .await
 }
 
-/// Get datapoints that mach criteria
+/// Get all datapoints from the 30 seconds preceding the fault received
 /// * `db` - The prisma client to make the call to
-/// * `data_type_name` - The data type name to filter the data by
-/// * `run_id` - The run id to filter the data
-/// * `fetch_run` whether to fetch the run assocaited with this data
-/// * `fetch_data_type` whether to fetch the data type associated with this data
+/// * `datetime` - The datetime in unix time since epoch in ms
 ///   returns: A result containing the data or the QueryError propogated by the db
 pub async fn get_data_by_datetime(
     db: &Database,
     datetime: String,
-) -> Result<Vec<public_data::Data>, QueryError> {
+) -> Result<Vec<public_data_with_dataType::Data>, QueryError> {
     let datetime_utc = DateTime::from_timestamp_millis(datetime.parse::<i64>().unwrap())
+        .expect("Could not parse timestamp");
+    let datetime_30_sec = DateTime::from_timestamp_millis(datetime.parse::<i64>().unwrap() - 30000)
         .expect("Could not parse timestamp");
 
     db.data()
-        .find_many(vec![prisma::data::time::equals(datetime_utc.into())])
-        .select(public_data::select())
+        .find_many(vec![
+            prisma::data::time::lte(datetime_utc.into()),
+            prisma::data::time::gte(datetime_30_sec.into()),
+        ])
+        .select(public_data_with_dataType::select())
         .exec()
         .await
 }
