@@ -18,19 +18,21 @@
           [dropDown]="true"
           [open]="node.dataTypesAreVisible"
         />
-        <div *ngIf="node.dataTypesAreVisible" @toggleExpand>
-          <div
-            *ngFor="let dataType of node.dataTypesObservable | async | dataTypeFilter: 'name' : searchFilter : node.name"
-            style="display: flex; justify-content: center"
-          >
-            <sidebar-card
-              style="width: 95%; margin-left: 30px"
-              [title]="dataType.name"
-              [dataValue]="dataValuesMap.get(dataType.name)"
-              (click)="selectDataType(dataType)"
-            />
+        @if (node.dataTypesAreVisible) {
+          <div @toggleExpand>
+            <div
+              *ngFor="let dataType of node.dataTypesObservable | async | dataTypeFilter: 'name' : searchFilter : node.name"
+              style="display: flex; justify-content: center"
+            >
+              <sidebar-card
+                style="width: 95%; margin-left: 30px"
+                [title]="dataType.name"
+                [dataValue]="dataValuesMap.get(dataType.name)"
+                (click)="selectDataType(dataType)"
+              />
+            </div>
           </div>
-        </div>
+        }
       </div>
     </div>
   </div>
