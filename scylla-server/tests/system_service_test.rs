@@ -59,7 +59,7 @@ async fn test_get_upsert_system() -> Result<(), QueryError> {
     let sys = system_service::get_all_systems(&db).await?;
 
     sys.iter()
-        .find(|&f| f.name == TEST_KEYWORD.to_owned())
+        .find(|&f| f.name == *TEST_KEYWORD)
         .expect("System of the added name should exist in the list of systems");
 
     Ok(())
