@@ -62,7 +62,6 @@ pub struct MqttProcessorOptions {
 impl MqttProcessor {
     /// Creates a new mqtt receiver and socketio and db sender
     /// * `channel` - The mpsc channel to send the database data to
-    /// * `new_run_id` - The changed atomic run id.
     /// * `io` - The socketio layer to send the data to
     /// * `cancel_token` - The token which indicates cancellation of the task
     /// * `opts` - The mqtt processor options to use

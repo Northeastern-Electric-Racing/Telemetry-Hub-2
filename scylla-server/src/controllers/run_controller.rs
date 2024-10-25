@@ -42,6 +42,10 @@ pub async fn new_run(State(db): State<Database>) -> Result<Json<PublicRun>, Scyl
     let run_data = run_service::create_run(&db, chrono::offset::Utc::now()).await?;
 
     crate::RUN_ID.store(run_data.id, Ordering::Relaxed);
+    tracing::info!(
+        "Starting new run with ID: {}",
+        crate::RUN_ID.load(Ordering::Relaxed)
+    );
 
     Ok(Json::from(PublicRun::from(&run_data)))
 }
