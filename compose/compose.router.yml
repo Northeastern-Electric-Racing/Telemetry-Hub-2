@@ -9,10 +9,10 @@ services:
 
     client:
       extends:
-        file: ./angular-client/compose.client.yml
+        file: ../angular-client/compose.client.yml
         service: client
 
     siren:
         extends:
-            file: ./siren-base/compose.siren.yml
+            file: ../siren-base/compose.siren.yml
             service: siren
