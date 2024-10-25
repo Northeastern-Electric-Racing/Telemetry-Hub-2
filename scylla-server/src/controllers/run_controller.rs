@@ -5,9 +5,6 @@ use axum::{
     Json,
 };
 
-use tokio::sync::mpsc;
-use tracing::warn;
-
 use crate::{
     error::ScyllaError, services::run_service, transformers::run_transformer::PublicRun, Database,
 };

@@ -181,7 +181,6 @@ impl MqttProcessor {
                         node: "Internal".to_string(),
                         unit: "ms".to_string(),
                         run_id: crate::RUN_ID.load(Ordering::Relaxed),
-                        run_id: self.curr_run,
                         timestamp: chrono::offset::Utc::now(),
                         values: vec![avg_latency as f32]
                     };
