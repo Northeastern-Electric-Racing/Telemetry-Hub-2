@@ -33,7 +33,7 @@ The base docker compose (`compose.yml`) contains some important features to note
 #### Examples with and without profiles
 
 - To send some simulated data to a client you are running with `npm`: `./argos.sh client-dev up`
-- To start a mqtt server with scylla running through `cargo`: `docker compose -f ./siren-base/compose.siren.yml -f ./compose/compose.calypso.yml up`
+- To start a mqtt server with simulated data you want to send to an instance of scylla running through `cargo`: `docker compose -f ./siren-base/compose.siren.yml -f ./compose/compose.calypso.yml up`
 
 
 #### Customizing runtime profiles of the project via docker compose
