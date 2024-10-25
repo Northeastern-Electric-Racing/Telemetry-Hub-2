@@ -13,6 +13,7 @@ pub mod mqtt_processor;
 ///     Note: node name is only considered for database storage and convenience, it is not serialized in a socket packet
 #[derive(serde::Serialize, Clone, Debug)]
 pub struct ClientData {
+    #[serde(rename = "runId")]
     pub run_id: i32,
     pub name: String,
     pub unit: String,
