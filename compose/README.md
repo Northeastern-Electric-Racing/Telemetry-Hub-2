@@ -16,7 +16,7 @@ Its syntax is
 Profiles:
 | Name         | Usecase                                                 | Scylla                                    | Siren                   | Client                                    | Database |
 | ------------ | ------------------------------------------------------- | ----------------------------------------- | ----------------------- | ----------------------------------------- | -------- |
-| `brick`      | Device connected to base station to collect data        | Pointed at base station, no rate limit    | On base station         | External (`router`)                       | Active   |
+| `brick`      | Device connected to base station to collect data        | No rate limit                             | On base station         | External (`router`)                       | Active   |
 | `router`     | The base station collecting on a rate limit and hosting | Rate limited                              | Active, bridging to car | Active                                    | Active   |
 | `tpu`        | The on-car data collection node                         | Rate limited                              | External (TPU OS)       | None                                      | Active   |
 | `client-dev` | To develop the client with a working backend            | Rate limited                              | Active                  | None (run your own pointing to localhost) | Active   |
@@ -29,6 +29,11 @@ The base docker compose (`compose.yml`) contains some important features to note
 
 
 *These profiles are non-exhuastive, there are plently of use cases these profiles do not cover.  In that case, you can write your own profile to cover it.*
+
+#### Examples with and without profiles
+
+- To send some simulated data to a client you are running with `npm`: `./argos.sh client-dev up`
+- To start a mqtt server with scylla running through `cargo`: `docker compose -f ./siren-base/compose.siren.yml -f ./compose/compose.calypso.yml up`
 
 
 #### Customizing runtime profiles of the project via docker compose
