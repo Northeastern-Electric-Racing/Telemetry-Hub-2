@@ -24,6 +24,7 @@ jobs:
         with:
           submodules: true
       - name: Run db
+        working-directory: compose
         run: docker compose run -P -d odyssey-timescale
       - name: Generate prisma
         run: cargo prisma generate
