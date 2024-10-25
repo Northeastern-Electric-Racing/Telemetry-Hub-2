@@ -4,7 +4,9 @@ use axum::{
     extract::{Path, State},
     Json,
 };
-use prisma_client_rust::chrono;
+
+use tokio::sync::mpsc;
+use tracing::warn;
 
 use crate::{
     error::ScyllaError, services::run_service, transformers::run_transformer::PublicRun, Database,
@@ -40,8 +42,7 @@ pub async fn get_run_by_id(
 /// create a new run with an auto-incremented ID
 /// note the new run must be updated so the channel passed in notifies the data processor to use the new run
 pub async fn new_run(State(db): State<Database>) -> Result<Json<PublicRun>, ScyllaError> {
-    let run_data =
-        run_service::create_run(&db, chrono::offset::Utc::now().timestamp_millis()).await?;
+    let run_data = run_service::create_run(&db, chrono::offset::Utc::now()).await?;
 
     crate::RUN_ID.store(run_data.id, Ordering::Relaxed);
 

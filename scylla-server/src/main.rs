@@ -9,7 +9,6 @@ use axum::{
     Extension, Router,
 };
 use clap::Parser;
-use prisma_client_rust::chrono;
 use rumqttc::v5::AsyncClient;
 use scylla_server::RUN_ID;
 use scylla_server::{
@@ -197,7 +196,7 @@ async fn main() {
         None
     } else {
         // creates the initial run
-        let curr_run = run_service::create_run(&db, chrono::offset::Utc::now().timestamp_millis())
+        let curr_run = run_service::create_run(&db, chrono::offset::Utc::now())
             .await
             .expect("Could not create initial run!");
         debug!("Configuring current run: {:?}", curr_run);
