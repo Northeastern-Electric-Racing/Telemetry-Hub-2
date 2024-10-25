@@ -61,7 +61,7 @@ async fn test_data_add() -> Result<(), QueryError> {
     assert_eq!(
         PublicData::from(&data),
         PublicData {
-            time: 1000,
+            time_ms: 1000,
             values: vec![0f64]
         }
     );
