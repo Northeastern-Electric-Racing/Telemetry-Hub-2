@@ -22,8 +22,8 @@ export enum BMS_FAULTS_VALUES {
   CHARGER_LIMIT_ENFORCEMENT_FAULT = 131072
 }
 
-export class BMSFault implements Fault {
-  name: BMS_FAULTS_VALUES;
+export class BMSFault implements Fault<BMSFaultType> {
+  name: String;
   timeTriggered: number;
   format(): { type: String; name: String; timeTriggered: number } {
     throw new Error('Method not implemented.');
