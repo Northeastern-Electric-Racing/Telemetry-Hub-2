@@ -23,7 +23,7 @@ export enum BMS_FAULTS_VALUES {
 }
 
 export class BMSFault implements Fault<BMSFaultType> {
-  name: String;
+  name: BMS_FAULTS_VALUES;
   timeTriggered: number;
   format(): { type: String; name: String; timeTriggered: number } {
     throw new Error('Method not implemented.');
