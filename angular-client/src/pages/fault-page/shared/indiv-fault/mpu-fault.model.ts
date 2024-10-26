@@ -1,7 +1,5 @@
 import { Node } from 'src/utils/types.utils';
-import { DTIFaultType } from '../fault-type/dti-fault-type.model';
-import { Fault } from './fault.model';
-import { MPUFaultType } from '../fault-type/mpu-fault-type.model';
+import { Fault } from '../fault.model';
 
 export enum MPU_FAULTS_VALUES {
   ONBOARD_TEMP_FAULT = 1,
@@ -23,7 +21,7 @@ export enum MPU_FAULTS_VALUES {
   RTDS_FAULT = 65536
 }
 
-export class MPUFault implements Fault<MPUFaultType> {
+export class MPUFault implements Fault {
   name: MPU_FAULTS_VALUES;
   timeTriggered: number;
   format(): { type: String; name: String; timeTriggered: number } {

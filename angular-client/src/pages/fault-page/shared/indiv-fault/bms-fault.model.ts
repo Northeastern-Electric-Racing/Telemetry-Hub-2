@@ -1,6 +1,5 @@
 import { Node } from 'src/utils/types.utils';
-import { BMSFaultType } from '../fault-type/bms-fault-type.model';
-import { Fault } from './fault.model';
+import { Fault } from '../fault.model';
 
 export enum BMS_FAULTS_VALUES {
   CELLS_NOT_BALANCING = 1,
@@ -23,7 +22,7 @@ export enum BMS_FAULTS_VALUES {
   CHARGER_LIMIT_ENFORCEMENT_FAULT = 131072
 }
 
-export class BMSFault implements Fault<BMSFaultType> {
+export class BMSFault implements Fault {
   name: BMS_FAULTS_VALUES;
   timeTriggered: number;
   format(): { type: String; name: String; timeTriggered: number } {

@@ -1,6 +1,5 @@
 import { Node } from 'src/utils/types.utils';
-import { ChargerFaultType } from '../fault-type/charger-fault-type.model';
-import { Fault } from './fault.model';
+import { Fault } from '../fault.model';
 
 export enum CHARGER_FAULT_VALUES {
   COMM_TIMEOUT_FAULT = 'Comm Timeout',
@@ -10,7 +9,7 @@ export enum CHARGER_FAULT_VALUES {
   WRONG_BAT_CONNECT_FAULT = 'Wrong Battery Connect'
 }
 
-export class ChargerFault implements Fault<ChargerFaultType> {
+export class ChargerFault implements Fault {
   name: CHARGER_FAULT_VALUES;
   timeTriggered: number;
   format(): { type: String; name: CHARGER_FAULT_VALUES; timeTriggered: number } {

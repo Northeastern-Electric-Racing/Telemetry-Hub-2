@@ -1,6 +1,5 @@
 import { Node } from 'src/utils/types.utils';
-import { DTIFaultType } from '../fault-type/dti-fault-type.model';
-import { Fault } from './fault.model';
+import { Fault } from '../fault.model';
 
 export enum DTI_FAULTS_VALUES {
   OVER_VOLTAGE = 1,
@@ -15,7 +14,7 @@ export enum DTI_FAULTS_VALUES {
   ANALOG_INPUT_ERROR = 10
 }
 
-export class DTIFault implements Fault<DTIFaultType> {
+export class DTIFault implements Fault {
   name: DTI_FAULTS_VALUES;
   timeTriggered: number;
   format(): { type: String; name: String; timeTriggered: number } {
