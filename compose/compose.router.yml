@@ -6,13 +6,14 @@ services:
             - SCYLLA_SIREN_HOST_URL=siren:1883
             - SCYLLA_RATE_LIMIT_MODE=static
             - SCYLLA_STATIC_RATE_LIMIT_VALUE=100
+        init: false
 
     client:
       extends:
-        file: ./angular-client/compose.client.yml
+        file: ../angular-client/compose.client.yml
         service: client
 
     siren:
         extends:
-            file: ./siren-base/compose.siren.yml
+            file: ../siren-base/compose.siren.yml
             service: siren

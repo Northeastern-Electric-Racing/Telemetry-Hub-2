@@ -22,6 +22,7 @@ jobs:
           sudo apt-get -y update
           sudo apt-get -y install docker-compose
       - name: Build Docker Compose
+        working-directory: compose
         run: |
           if ! docker-compose build; then
             echo "Docker Compose build failed."

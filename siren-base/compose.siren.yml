@@ -5,7 +5,7 @@ services:
     image: eclipse-mosquitto:latest
     ports:
       - 1883:1883
-      - 9001:9001 # why?
+      - 9002:9001 # win conflict on 9001
     expose:
       - 1883
     volumes:

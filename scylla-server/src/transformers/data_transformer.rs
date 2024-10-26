@@ -1,13 +1,36 @@
+use std::cmp::Ordering;
+
 use serde::Serialize;
 
 use crate::{processors::ClientData, services::data_service};
 
 /// The struct defining the data format sent to the client
-#[derive(Serialize, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Serialize, Debug)]
 pub struct PublicData {
-    pub time: i64,
-    pub values: Vec<String>,
+    #[serde(rename = "time")]
+    pub time_ms: i64,
+    pub values: Vec<f64>,
 }
+// custom impls to avoid comparing values fields
+impl Ord for PublicData {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.time_ms.cmp(&other.time_ms)
+    }
+}
+
+impl PartialOrd for PublicData {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for PublicData {
+    fn eq(&self, other: &Self) -> bool {
+        self.time_ms == other.time_ms
+    }
+}
+
+impl Eq for PublicData {}
 
 #[derive(Serialize, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PublicDataWithDataType {
@@ -20,8 +43,8 @@ pub struct PublicDataWithDataType {
 impl From<&data_service::public_data::Data> for PublicData {
     fn from(value: &data_service::public_data::Data) -> Self {
         PublicData {
-            values: value.values.iter().map(f64::to_string).collect(),
-            time: value.time.timestamp_millis(),
+            values: value.values.clone(),
+            time_ms: value.time.timestamp_millis(),
         }
     }
 }
@@ -41,8 +64,8 @@ impl From<&data_service::public_data_with_dataType::Data> for PublicDataWithData
 impl From<ClientData> for PublicData {
     fn from(value: ClientData) -> Self {
         PublicData {
-            time: value.timestamp,
-            values: value.values,
+            time_ms: value.timestamp.timestamp_millis(),
+            values: value.values.iter().map(|f| *f as f64).collect(),
         }
     }
 }
