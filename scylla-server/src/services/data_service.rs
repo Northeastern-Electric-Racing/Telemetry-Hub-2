@@ -1,6 +1,10 @@
 use prisma_client_rust::{chrono::DateTime, QueryError};
 
-use crate::{prisma, processors::ClientData, Database};
+use crate::{
+    prisma::{self, data_type::node_name},
+    processors::ClientData,
+    Database,
+};
 
 prisma::data::select! {public_data {
     time
@@ -111,7 +115,7 @@ pub async fn add_many(db: &Database, client_data: Vec<ClientData>) -> Result<i64
 ///   returns: A result containing the data or the QueryError propogated by the db
 pub async fn get_data_for_datatype_name_within_range(
     db: &Database,
-    data_type_name: String,
+    node_names: Vec<String>,
     from_time: i64,
     to_time: i64,
 ) -> Result<Vec<public_data::Data>, QueryError> {
@@ -122,12 +126,18 @@ pub async fn get_data_for_datatype_name_within_range(
         .expect("Could not parse timestamp")
         .into();
 
+    // Create a filter for prisma to be able to use (so we can get all node names data at once)
+    let node_name_filters = node_names
+        .iter()
+        .map(|name| prisma::data_type::node_name::equals(name.clone()))
+        .collect();
+
     return db
         .data()
         .find_many(vec![
             prisma::data::time::gte(from_time_datetime),
             prisma::data::time::lte(to_time_datetime),
-            prisma::data::data_type_name::equals(data_type_name),
+            prisma::data::data_type::is(node_name_filters),
         ])
         .select(public_data::select())
         .exec()
