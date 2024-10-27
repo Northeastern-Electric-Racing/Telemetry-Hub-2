@@ -4,18 +4,10 @@
       <vstack style="width: 10%">
         <hstack>
           @if (isDesktop) {
-            <typography
-              variant="info-value"
-              [content]="delta.toFixed(3) + 'V'"
-              additionalStyles="fontSize:30px"
-              />
+            <typography variant="info-value" [content]="delta.toFixed(3) + 'V'" additionalStyles="fontSize:30px" />
           }
           @if (!isDesktop) {
-            <typography
-              variant="info-value"
-              [content]="delta.toFixed(3) + 'V'"
-              additionalStyles="fontSize:20px"
-              />
+            <typography variant="info-value" [content]="delta.toFixed(3) + 'V'" additionalStyles="fontSize:20px" />
           }
         </hstack>
         <typography variant="info-subtitle" content="Delta" additionalStyles="fontSize:15px" />
@@ -24,18 +16,10 @@
       <divider style="height: 100px"></divider>
       <vstack style="width: 10%">
         @if (isDesktop) {
-          <typography
-            variant="info-value"
-            [content]="lowCellVoltage.toFixed(3) + 'V'"
-            additionalStyles="fontSize:30px"
-            />
+          <typography variant="info-value" [content]="lowCellVoltage.toFixed(3) + 'V'" additionalStyles="fontSize:30px" />
         }
         @if (!isDesktop) {
-          <typography
-            variant="info-value"
-            [content]="lowCellVoltage.toFixed(3) + 'V'"
-            additionalStyles="fontSize:20px"
-            />
+          <typography variant="info-value" [content]="lowCellVoltage.toFixed(3) + 'V'" additionalStyles="fontSize:20px" />
         }
         <typography variant="info-subtitle" content="Low Cell" additionalStyles="fontSize:15px" />
       </vstack>
@@ -44,18 +28,10 @@
       <vstack style="width: 10%">
         <hstack>
           @if (isDesktop) {
-            <typography
-              variant="info-value"
-              [content]="highCellVoltage.toFixed(3) + 'V'"
-              additionalStyles="fontSize:30px"
-              />
+            <typography variant="info-value" [content]="highCellVoltage.toFixed(3) + 'V'" additionalStyles="fontSize:30px" />
           }
           @if (!isDesktop) {
-            <typography
-              variant="info-value"
-              [content]="highCellVoltage.toFixed(3) + 'V'"
-              additionalStyles="fontSize:20px"
-              />
+            <typography variant="info-value" [content]="highCellVoltage.toFixed(3) + 'V'" additionalStyles="fontSize:20px" />
           }
         </hstack>
         <typography variant="info-subtitle" content="High Cell" additionalStyles="fontSize:15px" />
@@ -64,7 +40,7 @@
         style="width: 75%; padding-bottom: 35px"
         [highVoltsData]="highVoltsData"
         [lowVoltsData]="lowVoltsData"
-        >
+      >
       </high-low-cell-graph>
     </hstack>
   </info-background>

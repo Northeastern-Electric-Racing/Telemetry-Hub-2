@@ -3,7 +3,7 @@
     additionalStyles="margin: 0; margin-bottom: 5px; cursor: pointer;"
     variant="subheader"
     content="Select Data Type"
-    />
+  />
   @if (showSelection) {
     <div class="container" @toggleSidebar>
       <run-selector style="text-align: center" [selectRun]="onRunSelected" />
@@ -14,7 +14,7 @@
             onclick="event.stopPropagation()"
             (click)="toggleDataTypeVisibility(node)"
             [dropDown]="true"
-            />
+          />
           @if (node.dataTypesAreVisible) {
             <div class="subcontainer" @toggleCardExpand>
               @for (dataType of node.dataTypes; track dataType) {
