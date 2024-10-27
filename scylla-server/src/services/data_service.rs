@@ -105,3 +105,31 @@ pub async fn add_many(db: &Database, client_data: Vec<ClientData>) -> Result<i64
         .exec()
         .await
 }
+
+/// Gets all datatypes
+/// * `db` - The prisma client to make the call to
+///   returns: A result containing the data or the QueryError propogated by the db
+pub async fn get_data_for_datatype_name_within_range(
+    db: &Database,
+    data_type_name: String,
+    from_time: i64,
+    to_time: i64,
+) -> Result<Vec<public_data::Data>, QueryError> {
+    let from_time_datetime = DateTime::from_timestamp_millis(from_time)
+        .expect("Could not parse timestamp")
+        .into();
+    let to_time_datetime = DateTime::from_timestamp_millis(to_time)
+        .expect("Could not parse timestamp")
+        .into();
+
+    return db
+        .data()
+        .find_many(vec![
+            prisma::data::time::gte(from_time_datetime),
+            prisma::data::time::lte(to_time_datetime),
+            prisma::data::data_type_name::equals(data_type_name),
+        ])
+        .select(public_data::select())
+        .exec()
+        .await;
+}
