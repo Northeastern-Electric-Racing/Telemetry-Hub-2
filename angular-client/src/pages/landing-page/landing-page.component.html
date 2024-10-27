@@ -4,17 +4,17 @@
   <landing-page-mobile style="width: 100%" *ngIf="isMobile; else isDesktop" [time]="time" />
   <ng-template #isDesktop>
     <vstack style="width: 100%" spacing="40px">
-      <vstack style="width: 100%" spacing="20px">
+      <vstack style="width: 100%; padding-top: 30px;" spacing="20px">
         <hstack style="width: 100%">
-          <landing-page-header style="width: 100%; padding-top: 40px" />
+          <landing-page-header style="width: 100%" />
         </hstack>
       </vstack>
 
       <vstack style="width: 100%" spacing="20px">
         <hstack style="width: 100%">
-          <driver-component style="height: 200px; width: 33%" />
-          <torque-display style="height: 200px; width: 17%" />
-          <motor-info style="height: 200px; width: 50%" />
+          <driver-component style="height: 250px; width: 33%" />
+          <torque-display style="height: 250px; width: 17%" />
+          <motor-info style="height: 250px; width: 50%" />
         </hstack>
       </vstack>
 

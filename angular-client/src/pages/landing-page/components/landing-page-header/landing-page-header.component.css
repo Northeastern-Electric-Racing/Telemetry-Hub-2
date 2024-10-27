@@ -1,7 +1,6 @@
 .header-bar-container {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
-  flex-grow: 1;
   gap: 20px;
 }
