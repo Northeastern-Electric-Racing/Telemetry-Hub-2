@@ -18,7 +18,7 @@ services:
     container_name: scylla-server
     image: ghcr.io/northeastern-electric-racing/argos-scylla:develop
     build:
-        context: ./scylla-server
+        context: ../scylla-server
     restart: unless-stopped
     ports:
       - 8000:8000
@@ -40,8 +40,6 @@ services:
     stop_grace_period: 2m
     stop_signal: SIGINT
     init: true
-    entrypoint: ["./docker_run.sh"]
-
 
 
 volumes:
