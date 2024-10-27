@@ -22,7 +22,8 @@ export class ToastButtonComponent {
 
   constructor(private messageService: MessageService) {}
 
-  showSuccess() {
+  handleClick() {
+    this.onClick();
     setTimeout(() => {
       this.messageService.add({
         severity: 'success',
