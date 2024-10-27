@@ -1,20 +1,21 @@
 <div class="image-container" style="margin-right: 16px; margin-left: 16px">
   <sidebar-toggle style="position: absolute; margin-top: 16px; margin-left: 16px" />
 
-  <charging-page-mobile style="width: 100%" *ngIf="isMobile; else isDesktop" [time]="time" />
-  <ng-template #isDesktop>
+  @if (isMobile) {
+    <charging-page-mobile style="width: 100%" [time]="time" />
+  } @else {
     <vstack style="width: 100%" spacing="15px">
       <div style="align-self: end; width: 100%; display: flex; justify-content: space-around">
         <typography
           style="margin-bottom: -30px; margin-top: -10px"
           variant="large-header"
           [content]="time | date: 'HH:mm:ss'"
-        />
+          />
         <typography
           style="margin-bottom: -30px; margin-top: -10px"
           variant="large-header"
           content="{{ time | date: 'MM/dd/yyyy' }} | {{ location }} "
-        />
+          />
         <latency-display style="margin-bottom: -30px; margin-top: -10px" />
       </div>
       <vstack style="width: 100%">
@@ -32,5 +33,5 @@
         <pack-voltage-display style="min-width: 1070px; width: 100%; height: 175px" />
       </vstack>
     </vstack>
-  </ng-template>
+  }
 </div>

@@ -1,19 +1,20 @@
 <div class="caption-container">
   <div class="info-container">
     <div class="left-info">
-      <div *ngIf="dataTypeName; else elseBlock">
+      @if (dataTypeName) {
         <div>
-          <typography variant="large-header" [content]="dataTypeName" additionalStyles="margin: 12px 0px" />
-          <typography
-            variant="large-secondary-header"
-            [content]="value + ' ' + dataTypeUnit"
-            additionalStyles="margin: 6px 0px 0px 0px"
-          />
+          <div>
+            <typography variant="large-header" [content]="dataTypeName" additionalStyles="margin: 12px 0px" />
+            <typography
+              variant="large-secondary-header"
+              [content]="value + ' ' + dataTypeUnit"
+              additionalStyles="margin: 6px 0px 0px 0px"
+              />
+          </div>
         </div>
-      </div>
-      <ng-template #elseBlock>
+      } @else {
         <typography variant="large-header" content="No Data Selected" additionalStyles="margin: 12px 0px" />
-      </ng-template>
+      }
     </div>
     <div class="right-info">
       <div class="driver-info">
@@ -32,15 +33,16 @@
       label="Clear Data Type"
       additionalStyles="background-color: #323232; border: 1.4px solid #027bd7"
     ></argos-button>
-    <div *ngIf="run; else otherBlock">
-      <argos-button
-        [onClick]="onSetRealtime"
-        label="Realtime"
-        additionalStyles="background-color: #323232; border: 1.4px solid #027bd7"
-      ></argos-button>
-    </div>
-    <ng-template #otherBlock>
+    @if (run) {
+      <div>
+        <argos-button
+          [onClick]="onSetRealtime"
+          label="Realtime"
+          additionalStyles="background-color: #323232; border: 1.4px solid #027bd7"
+        ></argos-button>
+      </div>
+    } @else {
       <div style="width: 140px; height: 45px"></div>
-    </ng-template>
+    }
   </div>
 </div>

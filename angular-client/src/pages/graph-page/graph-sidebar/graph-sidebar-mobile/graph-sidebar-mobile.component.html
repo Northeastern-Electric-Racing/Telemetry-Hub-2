@@ -3,19 +3,27 @@
     additionalStyles="margin: 0; margin-bottom: 5px; cursor: pointer;"
     variant="subheader"
     content="Select Data Type"
-  />
-  <div *ngIf="showSelection" class="container" @toggleSidebar>
-    <run-selector style="text-align: center" [selectRun]="onRunSelected" />
-    <div *ngFor="let node of nodesWithVisibilityToggle" class="subcontainer">
-      <sidebar-card
-        [title]="node.name"
-        onclick="event.stopPropagation()"
-        (click)="toggleDataTypeVisibility(node)"
-        [dropDown]="true"
-      />
-      <div *ngIf="node.dataTypesAreVisible" class="subcontainer" @toggleCardExpand>
-        <sidebar-card *ngFor="let dataType of node.dataTypes" [title]="dataType.name" (click)="selectDataType(dataType)" />
-      </div>
+    />
+  @if (showSelection) {
+    <div class="container" @toggleSidebar>
+      <run-selector style="text-align: center" [selectRun]="onRunSelected" />
+      @for (node of nodesWithVisibilityToggle; track node) {
+        <div class="subcontainer">
+          <sidebar-card
+            [title]="node.name"
+            onclick="event.stopPropagation()"
+            (click)="toggleDataTypeVisibility(node)"
+            [dropDown]="true"
+            />
+          @if (node.dataTypesAreVisible) {
+            <div class="subcontainer" @toggleCardExpand>
+              @for (dataType of node.dataTypes; track dataType) {
+                <sidebar-card [title]="dataType.name" (click)="selectDataType(dataType)" />
+              }
+            </div>
+          }
+        </div>
+      }
     </div>
-  </div>
+  }
 </div>

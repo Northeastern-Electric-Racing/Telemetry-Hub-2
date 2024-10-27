@@ -2,14 +2,14 @@
   <div style="width: 100%; padding-right: 5px; padding-left: 0px" class="fault-text-body">
     <vstack style="width: 100%">
       <div style="height: 10px"></div>
-      <ng-container *ngFor="let fault of faults; index as i">
+      @for (fault of faults; track fault; let i = $index) {
         <div
           [style]="
             (i % 2 == 0) === faultsShifted
               ? 'background-color: #d4760b	; width: 100%; border-radius: 2px'
               : 'background-color: #4d453c; width: 100%; border-radius: 2px'
           "
-        >
+          >
           <div style="display: flex; flex-direction: row; justify-content: space-between; height: 45px; padding: 10px">
             <typography variant="info-subtitle" [content]="fault.type" style="align-self: center"></typography>
             <typography
@@ -22,7 +22,7 @@
           </div>
         </div>
         <div style="height: 2px"></div>
-      </ng-container>
+      }
       <div style="height: 50px"></div>
     </vstack>
   </div>

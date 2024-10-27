@@ -1,8 +1,10 @@
 <div class="select-container">
   <typography additionalStyles="margin: 0px;" variant="subheader" content="Resolution: " />
   <select class="select" [value]="selectedResolution" (change)="onSelect($event)">
-    <option *ngFor="let resolution of resolutions" [value]="resolution.value">
-      {{ resolution.label }}
-    </option>
+    @for (resolution of resolutions; track resolution) {
+      <option [value]="resolution.value">
+        {{ resolution.label }}
+      </option>
+    }
   </select>
 </div>

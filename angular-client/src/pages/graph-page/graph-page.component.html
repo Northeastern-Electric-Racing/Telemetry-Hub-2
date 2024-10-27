@@ -1,34 +1,36 @@
-<div *ngIf="nodesIsError; else checkLoading">
-  <error-page [errorMessage]="nodesError!.message" />
-</div>
-<ng-template #checkLoading>
-  <div *ngIf="!nodes || nodesIsLoading; else displayData">
-    <loading-page />
+@if (nodesIsError) {
+  <div>
+    <error-page [errorMessage]="nodesError!.message" />
   </div>
-</ng-template>
-<ng-template #displayData>
-  <div class="container">
-    <graph-header class="graph-header" [runId]="run?.id" />
-    <div class="content-div">
-      <graph-sidebar [nodes]="nodes!" [selectDataType]="setSelectedDataType" class="desktop-sidebar" />
-      <div class="right-container">
-        <graph [valuesSubject]="selectedDataTypeValuesSubject" class="graph" />
-        <graph-caption
-          [dataType]="selectedDataType"
-          [currentValue]="currentValue"
-          [onRunSelected]="onRunSelected"
-          [onClearDataType]="clearDataType"
-          [onSetRealtime]="onSetRealtime"
-          [run]="run"
-          class="graph-caption"
-        />
-      </div>
-      <graph-sidebar
-        [nodes]="nodes!"
-        [onRunSelected]="onRunSelected"
-        [selectDataType]="setSelectedDataType"
-        class="mobile-sidebar"
-      />
+} @else {
+  @if (!nodes || nodesIsLoading) {
+    <div>
+      <loading-page />
     </div>
-  </div>
-</ng-template>
+  } @else {
+    <div class="container">
+      <graph-header class="graph-header" [runId]="run?.id" />
+      <div class="content-div">
+        <graph-sidebar [nodes]="nodes!" [selectDataType]="setSelectedDataType" class="desktop-sidebar" />
+        <div class="right-container">
+          <graph [valuesSubject]="selectedDataTypeValuesSubject" class="graph" />
+          <graph-caption
+            [dataType]="selectedDataType"
+            [currentValue]="currentValue"
+            [onRunSelected]="onRunSelected"
+            [onClearDataType]="clearDataType"
+            [onSetRealtime]="onSetRealtime"
+            [run]="run"
+            class="graph-caption"
+            />
+        </div>
+        <graph-sidebar
+          [nodes]="nodes!"
+          [onRunSelected]="onRunSelected"
+          [selectDataType]="setSelectedDataType"
+          class="mobile-sidebar"
+          />
+      </div>
+    </div>
+  }
+}
