@@ -68,7 +68,7 @@ async fn test_datatype_create() -> Result<(), QueryError> {
         PublicDataType::from(&data),
         PublicDataType {
             name: data_type_name,
-            unit: unit
+            unit
         }
     );
 

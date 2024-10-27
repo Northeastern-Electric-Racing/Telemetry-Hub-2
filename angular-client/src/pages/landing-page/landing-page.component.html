@@ -4,11 +4,13 @@
   <landing-page-mobile style="width: 100%" *ngIf="isMobile; else isDesktop" [time]="time" />
   <ng-template #isDesktop>
     <vstack style="width: 100%" spacing="40px">
-      <vstack style="width: 100%; padding-top: 30px;" spacing="20px">
+      <vstack style="width: 100%; padding-top: 30px" spacing="20px">
         <hstack style="width: 100%">
           <landing-page-header style="width: 100%" />
         </hstack>
       </vstack>
+      
+      <toast-button [onClick]="this.onStartNewRun" label="Start New Run"></toast-button>
 
       <vstack style="width: 100%" spacing="20px">
         <hstack style="width: 100%">

@@ -94,6 +94,7 @@ import PackVoltageDisplay from 'src/pages/charging-page/components/pack-voltage/
 import ChargingStatusComponent from 'src/pages/charging-page/components/charging-state/charging-status.component';
 import { BatteryPercentageComponent } from 'src/pages/charging-page/components/battery-percentage/battery-percentage.component';
 import { BatteryInfoDisplay } from 'src/pages/charging-page/components/battery-info-display/battery-info-display';
+import { ToastButtonComponent } from 'src/components/toast-button/toast-button.component';
 import StartingSocTimer from 'src/pages/charging-page/components/starting-soc/starting-soc-timer.component';
 import CurrentTotalTimer from 'src/components/current-total-timer/current-total-timer.component';
 import BalancingStatus from 'src/pages/charging-page/components/balancing-status/balancing-status.component';
@@ -188,6 +189,7 @@ import { LandingPageViewerDisplay } from 'src/pages/landing-page/components/land
     HighLowCellGraph,
     PackVoltageGraph,
     PackVoltageDisplay,
+    ToastButtonComponent,
     ChargingStatusComponent,
     StartingSocTimer,
     CurrentTotalTimer,
