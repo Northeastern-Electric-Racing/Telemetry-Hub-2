@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { getDataByDataTypeNameAndRunId } from 'src/api/data.api';
@@ -36,6 +36,8 @@ export default class GraphPage implements OnInit {
   selectedDataTypeValuesIsError = false;
   selectedDataTypeValuesError?: Error;
   subscription?: Subscription;
+
+  dataTypeName?: string;
 
   constructor(
     private serverService: APIService,
@@ -97,7 +99,6 @@ export default class GraphPage implements OnInit {
           this.selectedDataTypeValuesIsError = true;
         });
         dataQueryResponse.data.subscribe((data: DataValue[]) => {
-          console.log(data);
           this.selectedDataTypeValuesSubject.next(data.map((value) => ({ x: +value.time, y: +value.values[0] })));
           this.currentValue.next(data.pop());
         });
@@ -109,6 +110,10 @@ export default class GraphPage implements OnInit {
         });
       }
     };
+
+    this.selectedDataType.subscribe((dataType: DataType) => {
+      this.dataTypeName = dataType.name;
+    });
   }
 
   onRunSelected = (run: Run) => {
@@ -121,15 +126,12 @@ export default class GraphPage implements OnInit {
   };
 
   onSetRealtime = () => {
-    const currentRunId = this.storage.getCurrentRunId().value;
-    if (currentRunId) {
-      this.run = this.allRuns.find((run) => run.id === currentRunId);
-      this.realTime = true;
-      this.selectedDataTypeValuesSubject.next([]);
-      this.selectedDataTypeValuesIsLoading = false;
-      this.selectedDataTypeValuesIsError = false;
-      this.selectedDataTypeValuesError = undefined;
-    }
+    this.run = undefined;
+    this.realTime = true;
+    this.selectedDataTypeValuesSubject.next([]);
+    this.selectedDataTypeValuesIsLoading = false;
+    this.selectedDataTypeValuesIsError = false;
+    this.selectedDataTypeValuesError = undefined;
   };
 
   /**
@@ -156,4 +158,55 @@ export default class GraphPage implements OnInit {
   setSelectedDataType!: (dataType: DataType) => void;
 
   clearDataType!: () => void;
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (this.dataTypeName == undefined) {
+      this.setSelectedDataType(this.nodes?.at(0)?.dataTypes[0] as DataType);
+    } else {
+      const node = this.getNode(this.dataTypeName as string);
+      const nodeIndex = this.getNodeIndex(this.getNode(this.dataTypeName as string));
+      const dataTypeIndex = this.getDataTypeIndex(
+        this.getNode(this.dataTypeName as string),
+        this.getDataType(this.getNode(this.dataTypeName as string), this.dataTypeName as string)
+      );
+      if (event.key == 'ArrowDown') {
+        if (dataTypeIndex + 1 == node.dataTypes.length && nodeIndex + 1 == this.nodes?.length) {
+          this.setSelectedDataType(this.nodes?.at(0)?.dataTypes[0] as DataType);
+        } else if (dataTypeIndex + 1 == node.dataTypes.length) {
+          this.setSelectedDataType(this.nodes?.at(nodeIndex + 1)?.dataTypes[0] as DataType);
+        } else {
+          this.setSelectedDataType(node.dataTypes[dataTypeIndex + 1]);
+        }
+      } else if (event.key == 'ArrowUp') {
+        if (dataTypeIndex == 0 && nodeIndex == 0) {
+          const lastNode = this.nodes?.at(this.nodes.length - 1) as Node;
+          this.setSelectedDataType(lastNode.dataTypes[(lastNode.dataTypes.length as number) - 1] as DataType);
+        } else if (dataTypeIndex == 0) {
+          const lastNode = this.nodes?.at(nodeIndex - 1) as Node;
+          this.setSelectedDataType(lastNode.dataTypes[(lastNode.dataTypes.length as number) - 1] as DataType);
+        } else {
+          this.setSelectedDataType(node.dataTypes[dataTypeIndex - 1]);
+        }
+      }
+    }
+  }
+
+  private getNode(name: string): Node {
+    return this.nodes?.filter(
+      (node: Node) => node.dataTypes.filter((dataType: DataType) => dataType.name == name)[0]
+    )[0] as Node;
+  }
+
+  private getNodeIndex(node: Node): number {
+    return this.nodes?.indexOf(node) as number;
+  }
+
+  private getDataType(node: Node, name: string) {
+    return node.dataTypes.filter((dataType: DataType) => dataType.name == name)[0];
+  }
+
+  private getDataTypeIndex(node: Node, dataType: DataType) {
+    return node.dataTypes.indexOf(dataType);
+  }
 }

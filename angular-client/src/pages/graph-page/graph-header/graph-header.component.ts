@@ -1,4 +1,6 @@
 import { Component, Input } from '@angular/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonModule } from '@angular/material/button';
 
 /**
  * Graph Header Component to display the graph page header.

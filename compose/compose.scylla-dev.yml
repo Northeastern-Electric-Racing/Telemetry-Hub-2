@@ -1,0 +1,19 @@
+ services:    
+    scylla-server: # do not run scylla
+        entrypoint: ["echo", "DISABLED"]
+        restart: "no"
+        
+
+    client:
+      extends:
+        file: ../angular-client/compose.client.yml
+        service: client
+      build:
+        context: ../angular-client
+        args:
+            BACKEND_URL: http://localhost:8000
+
+    siren:
+        extends:
+            file: ../siren-base/compose.siren.yml
+            service: siren
