@@ -96,7 +96,6 @@ export default class GraphSidebarDesktop implements OnInit {
 
     this.selectedDataType.subscribe((dataType: DataType) => {
       this.dataTypeName = dataType.name;
-      console.log(this.dataTypeName);
     });
   }
 
