@@ -24,7 +24,7 @@ export default class SidebarCard implements OnInit {
   ngOnInit(): void {
     this.iconId = `${this.title}-icon`;
     this.selectedDataType.subscribe((dataType: DataType) => {
-      this.selected = this.title == dataType.name;
+      this.selected = this.title === dataType.name;
     });
   }
 }

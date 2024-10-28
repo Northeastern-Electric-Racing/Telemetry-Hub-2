@@ -100,7 +100,7 @@ export default class GraphSidebarDesktop implements OnInit {
   }
 
   isNodeOpen(node: NodeWithVisibilityToggle) {
-    return node.dataTypes.filter((dataType: DataType) => dataType.name == this.dataTypeName).length > 0;
+    return node.dataTypes.filter((dataType: DataType) => dataType.name === this.dataTypeName).length > 0;
   }
 
   ngOnDestroy(): void {
