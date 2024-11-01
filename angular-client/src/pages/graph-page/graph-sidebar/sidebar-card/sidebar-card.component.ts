@@ -17,14 +17,10 @@ export default class SidebarCard implements OnInit {
   @Input() dropDown?: boolean;
   @Input() open?: boolean;
   @Input() dataValue?: string;
-  @Input() selectedDataType: Subject<DataType> = new Subject<DataType>();
+  @Input() selected?: boolean;
   iconId!: string;
-  selected?: boolean;
 
   ngOnInit(): void {
     this.iconId = `${this.title}-icon`;
-    this.selectedDataType.subscribe((dataType: DataType) => {
-      this.selected = this.title === dataType.name;
-    });
   }
 }

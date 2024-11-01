@@ -27,7 +27,7 @@
               style="width: 95%; margin-left: 30px"
               [title]="dataType.name"
               [dataValue]="dataValuesMap.get(dataType.name)"
-              [selectedDataType]="selectedDataType"
+              [selected]="dataType.name === dataTypeName"
               (click)="selectDataType(dataType)"
             />
           </div>
