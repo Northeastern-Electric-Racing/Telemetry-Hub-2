@@ -14,7 +14,7 @@ export type Node = {
  */
 export type NodeWithData = {
   name: string;
-  allData: Map<DataType, DataValue[]>;
+  dataOverTime: Map<DataType, DataValue[]>;
 };
 
 /**

@@ -9,7 +9,7 @@ export interface Fault {
   timeTriggered: Date;
   relvantNodesWithData: NodeWithData[]; // should be made on construction
   format(): { type: String; name: String; timeTriggered: number };
-  fetchAndStoreNodes(timeFrame: number): NodeWithData[];
+  updateRelvantNodes(timeTriggered: Date): NodeWithData[];
 }
 
 export type AllFaultEnums = BMS_FAULTS_VALUES | CHARGER_FAULT_VALUES | DTI_FAULTS_VALUES | MPU_FAULTS_VALUES;

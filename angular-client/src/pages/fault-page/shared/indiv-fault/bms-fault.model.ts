@@ -1,7 +1,7 @@
 import { NodeWithData } from 'src/utils/types.utils';
 import { Fault } from '../fault.model';
 import APIService from 'src/services/api.service';
-import { getNodesWithData, getSingleNodeWithData } from 'src/api/node.api';
+import { fetchNodeDataOverPeriod } from 'src/utils/nodes/fetch-node-data.utils';
 
 export enum BMS_FAULTS_VALUES {
   CELLS_NOT_BALANCING = 1,
@@ -42,74 +42,18 @@ export class BMSFault implements Fault {
   ) {
     this.name = faultValue;
     this.timeTriggered = timeTriggered;
-    this.relvantNodesWithData = this.fetchAndStoreNodes();
+    this.relvantNodesWithData = this.updateRelvantNodes(this.timeTriggered);
     if (!this.faultSpecificNode) {
       throw Error();
     }
   }
-
-  fetchAndStoreNodes(): NodeWithData[] {
-    let nodeDataIsLoading;
-    let nodeDataError!: Error;
-    let isNodeDataError!: boolean;
-    const allNodesAt30Seconds = this.serverService.query<NodeWithData[]>(() =>
-      getNodesWithData(this.timeTriggered.getTime(), this.timeTriggered.getTime() - 30 * 1000)
+  updateRelvantNodes(timeTriggered: Date): NodeWithData[] {
+    return fetchNodeDataOverPeriod(
+      ['BMS'],
+      timeTriggered.getTime(),
+      timeTriggered.getTime() - 30 * 1000,
+      this.serverService
     );
-    allNodesAt30Seconds.isLoading.subscribe((isLoading: boolean) => {
-      nodeDataIsLoading = isLoading;
-    });
-    allNodesAt30Seconds.error.subscribe((error: Error) => {
-      nodeDataError = error;
-      isNodeDataError = true;
-    });
-    allNodesAt30Seconds.data.subscribe((data: NodeWithData[]) => {
-      console.log(data);
-      this.relvantNodesWithData = data;
-    });
-
-    if (nodeDataIsLoading) {
-      // TODO: what do I add here
-    }
-
-    if (isNodeDataError) {
-      throw nodeDataError;
-    }
-
-    let faultSpecifcNodeIsLoading!: boolean;
-    let faultNodeError!: Error;
-    let isFaultNodeError!: boolean;
-    // query the specific node for this fault, at 60 seconds
-    const faulSpecifcNode = this.serverService.query<NodeWithData>(() =>
-      getSingleNodeWithData('BMS', this.timeTriggered.getTime() - 30 * 1000, this.timeTriggered.getTime())
-    );
-    faulSpecifcNode.isLoading.subscribe((isLoading: boolean) => {
-      faultSpecifcNodeIsLoading = isLoading;
-    });
-    faulSpecifcNode.error.subscribe((error: Error) => {
-      faultNodeError = error;
-      isFaultNodeError = true;
-    });
-    faulSpecifcNode.data.subscribe((data: NodeWithData) => {
-      console.log(data);
-      // replace the original 30 second query for this faults specific node
-      // with this 60 second query
-      this.relvantNodesWithData.map((nodeWithData) => {
-        if (nodeWithData.name === data.name) {
-          return data;
-        }
-        return nodeWithData;
-      });
-    });
-
-    if (faultSpecifcNodeIsLoading) {
-      // TODO: what do I add here
-    }
-
-    if (isFaultNodeError) {
-      throw faultNodeError;
-    }
-
-    return this.relvantNodesWithData;
   }
 
   format(): { type: String; name: String; timeTriggered: number } {

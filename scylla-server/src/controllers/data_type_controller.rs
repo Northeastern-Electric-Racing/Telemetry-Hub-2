@@ -1,7 +1,4 @@
-use axum::{
-    extract::{Path, State},
-    Json,
-};
+use axum::{extract::State, Json};
 
 use crate::{
     error::ScyllaError, services::data_type_service,

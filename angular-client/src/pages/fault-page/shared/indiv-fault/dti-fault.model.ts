@@ -1,5 +1,7 @@
-import { Node } from 'src/utils/types.utils';
+import { NodeWithData } from 'src/utils/types.utils';
 import { Fault } from '../fault.model';
+import { fetchNodeDataOverPeriod } from 'src/utils/nodes/fetch-node-data.utils';
+import APIService from 'src/services/api.service';
 
 export enum DTI_FAULTS_VALUES {
   OVER_VOLTAGE = 1,
@@ -16,20 +18,33 @@ export enum DTI_FAULTS_VALUES {
 
 export class DTIFault implements Fault {
   name: DTI_FAULTS_VALUES;
-  timeTriggered: number;
-  format(): { type: String; name: String; timeTriggered: number } {
-    throw new Error('Method not implemented.');
-  }
+  timeTriggered: Date;
+  relvantNodesWithData: NodeWithData[];
+
   /**
-   * Constructs a new DTI fault base on a valid
+   * Constructs a new DTI fault base on a valid faultValue
    * @param faultValue
    * @param timeTriggered
    */
-  constructor(faultValue: DTI_FAULTS_VALUES, timeTriggered: number) {
+  constructor(
+    private serverService: APIService,
+    faultValue: DTI_FAULTS_VALUES,
+    timeTriggered: Date
+  ) {
     this.name = faultValue;
     this.timeTriggered = timeTriggered;
+    this.relvantNodesWithData = this.updateRelvantNodes(this.timeTriggered);
   }
-  getRelevantNodes(timeFrame: number): Node[] {
-    throw new Error('Method not implemented.');
+
+  format(): { type: String; name: String; timeTriggered: number } {
+    return { type: 'DTI', name: this.name.toString(), timeTriggered: this.timeTriggered.getTime() };
+  }
+  updateRelvantNodes(timeTriggered: Date): NodeWithData[] {
+    return fetchNodeDataOverPeriod(
+      ['DTI'],
+      timeTriggered.getTime(),
+      timeTriggered.getTime() - 30 * 1000,
+      this.serverService
+    );
   }
 }

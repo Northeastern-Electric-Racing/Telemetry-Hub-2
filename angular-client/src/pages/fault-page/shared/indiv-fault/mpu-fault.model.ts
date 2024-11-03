@@ -1,5 +1,7 @@
-import { Node } from 'src/utils/types.utils';
-import { Fault } from '../fault.model';
+import { NodeWithData } from 'src/utils/types.utils';
+import { AllFaultEnums, Fault } from '../fault.model';
+import { fetchNodeDataOverPeriod } from 'src/utils/nodes/fetch-node-data.utils';
+import APIService from 'src/services/api.service';
 
 export enum MPU_FAULTS_VALUES {
   ONBOARD_TEMP_FAULT = 1,
@@ -22,21 +24,33 @@ export enum MPU_FAULTS_VALUES {
 }
 
 export class MPUFault implements Fault {
-  name: MPU_FAULTS_VALUES;
-  timeTriggered: number;
-  format(): { type: String; name: String; timeTriggered: number } {
-    throw new Error('Method not implemented.');
-  }
+  name: AllFaultEnums;
+  timeTriggered: Date;
+  relvantNodesWithData: NodeWithData[];
+
   /**
    * Constructs a new MPU fault base on a valid faultValue
    * @param faultValue
    * @param timeTriggered
    */
-  constructor(faultValue: MPU_FAULTS_VALUES, timeTriggered: number) {
+  constructor(
+    private serverService: APIService,
+    faultValue: MPU_FAULTS_VALUES,
+    timeTriggered: Date
+  ) {
     this.name = faultValue;
     this.timeTriggered = timeTriggered;
+    this.relvantNodesWithData = this.updateRelvantNodes(this.timeTriggered);
   }
-  getRelevantNodes(timeFrame: number): Node[] {
-    throw new Error('Method not implemented.');
+  format(): { type: String; name: String; timeTriggered: number } {
+    return { type: 'MPU', name: this.name.toString(), timeTriggered: this.timeTriggered.getTime() };
+  }
+  updateRelvantNodes(timeTriggered: Date): NodeWithData[] {
+    return fetchNodeDataOverPeriod(
+      ['MPU'],
+      timeTriggered.getTime(),
+      timeTriggered.getTime() - 30 * 1000,
+      this.serverService
+    );
   }
 }

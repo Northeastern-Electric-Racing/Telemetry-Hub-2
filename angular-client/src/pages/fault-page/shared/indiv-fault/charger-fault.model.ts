@@ -1,5 +1,7 @@
-import { Node } from 'src/utils/types.utils';
-import { Fault } from '../fault.model';
+import { NodeWithData } from 'src/utils/types.utils';
+import { AllFaultEnums, Fault } from '../fault.model';
+import APIService from 'src/services/api.service';
+import { fetchNodeDataOverPeriod } from 'src/utils/nodes/fetch-node-data.utils';
 
 export enum CHARGER_FAULT_VALUES {
   COMM_TIMEOUT_FAULT = 'Comm Timeout',
@@ -10,21 +12,34 @@ export enum CHARGER_FAULT_VALUES {
 }
 
 export class ChargerFault implements Fault {
-  name: CHARGER_FAULT_VALUES;
-  timeTriggered: number;
-  format(): { type: String; name: CHARGER_FAULT_VALUES; timeTriggered: number } {
-    throw new Error('Method not implemented.');
-  }
+  name: AllFaultEnums;
+  timeTriggered: Date;
+  relvantNodesWithData: NodeWithData[];
+
   /**
    * Constructs a new Charger fault base on a valid faultValue
    * @param faultValue
    * @param timeTriggered
    */
-  constructor(faultValue: CHARGER_FAULT_VALUES, timeTriggered: number) {
+  constructor(
+    private serverService: APIService,
+    faultValue: CHARGER_FAULT_VALUES,
+    timeTriggered: Date
+  ) {
     this.name = faultValue;
     this.timeTriggered = timeTriggered;
+    this.relvantNodesWithData = this.updateRelvantNodes(this.timeTriggered);
   }
-  getRelevantNodes(timeFrame: number): Node[] {
-    throw new Error('Method not implemented.');
+
+  format(): { type: String; name: String; timeTriggered: number } {
+    return { type: 'Charger', name: this.name.toString(), timeTriggered: this.timeTriggered.getTime() };
+  }
+  updateRelvantNodes(timeTriggered: Date): NodeWithData[] {
+    return fetchNodeDataOverPeriod(
+      ['Charger'],
+      timeTriggered.getTime(),
+      timeTriggered.getTime() - 30 * 1000,
+      this.serverService
+    );
   }
 }

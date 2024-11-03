@@ -241,6 +241,10 @@ async fn main() {
         .route("/locations", get(location_controller::get_all_locations))
         // NODES
         .route("/nodes", get(node_controller::get_all_nodes))
+        .route(
+            "/nodesWithData/getFullNodesWithinRange/:nodeNames/:fromTime/:toTime",
+            get(node_controller::get_full_nodes_within_range),
+        )
         // RUNS
         .route("/runs", get(run_controller::get_all_runs))
         .route("/runs/:id", get(run_controller::get_run_by_id))
