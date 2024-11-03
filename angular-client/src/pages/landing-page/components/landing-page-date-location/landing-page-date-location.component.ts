@@ -5,7 +5,6 @@ import APIService from 'src/services/api.service';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 
-
 @Component({
   selector: 'landing-page-date-location',
   templateUrl: './landing-page-date-location.component.html',

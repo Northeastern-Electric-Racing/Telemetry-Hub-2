@@ -3,14 +3,18 @@
 
   <landing-page-mobile style="width: 100%" *ngIf="isMobile; else isDesktop" [time]="time" />
   <ng-template #isDesktop>
-    <vstack style="width: 100%" spacing="40px">
-      <vstack style="width: 100%; padding-top: 30px" spacing="20px">
+    <vstack style="width: 100%" spacing="10px">
+      <vstack style="width: 100%" spacing="0px">
+        <div style="width: 100%; padding-bottom: 0px; padding-top: 10px; display: flex; justify-content: flex-end">
+          <toast-button [onClick]="this.onStartNewRun" label="Start New Run"></toast-button>
+        </div>
+      </vstack>
+
+      <vstack style="width: 100%" spacing="20px">
         <hstack style="width: 100%">
           <landing-page-header style="width: 100%" />
         </hstack>
       </vstack>
-      
-      <toast-button [onClick]="this.onStartNewRun" label="Start New Run"></toast-button>
 
       <vstack style="width: 100%" spacing="20px">
         <hstack style="width: 100%">
@@ -20,7 +24,7 @@
         </hstack>
       </vstack>
 
-      <hstack style="width: 100%">
+      <hstack style="width: 100%" spacing="20px">
         <vstack style="width: 50%" spacing="20px">
           <speed-over-time-display style="width: 100%" />
           <acceleration-over-time-display style="width: 100%" />
