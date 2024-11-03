@@ -7,7 +7,6 @@
       <pack-voltage-graph style="width: 80%; padding-bottom: 30px" [packVoltData]="packVoltData"></pack-voltage-graph>
     </hstack>
   </info-background>
-}
-@if (!isDesktop) {
+} @else {
   <pack-voltage-mobile [packVoltData]="packVoltData" [voltage]="voltage"></pack-voltage-mobile>
 }

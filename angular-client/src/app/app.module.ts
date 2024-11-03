@@ -32,7 +32,6 @@ import Thermometer from 'src/components/thermometer/thermometer.component';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import HStack from 'src/components/hstack/hstack.component';
 import VStack from 'src/components/vstack/vstack.component';
-import ResolutionSelector from 'src/components/resolution-selector/resolution-selector.component';
 import LatencyDisplay from 'src/components/latency-display/latency-display';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MatIconModule } from '@angular/material/icon';
@@ -134,7 +133,6 @@ import CellTempMobile from 'src/pages/charging-page/components/cell-temp/cell-te
     Thermometer,
     VStack,
     HStack,
-    ResolutionSelector,
     LatencyDisplay,
     BatteryInfoDisplay,
     GraphComponent,

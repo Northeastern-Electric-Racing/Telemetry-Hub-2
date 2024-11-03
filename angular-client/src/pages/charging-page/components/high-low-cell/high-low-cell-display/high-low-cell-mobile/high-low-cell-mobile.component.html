@@ -5,8 +5,7 @@
         <hstack>
           @if (isDesktop) {
             <typography variant="info-value" [content]="delta.toFixed(3) + 'V'" additionalStyles="fontSize:30px" />
-          }
-          @if (!isDesktop) {
+          } @else {
             <typography variant="info-value" [content]="delta.toFixed(3) + 'V'" additionalStyles="fontSize:20px" />
           }
         </hstack>
@@ -19,8 +18,7 @@
       <vstack style="width: 10%">
         @if (isDesktop) {
           <typography variant="info-value" [content]="lowCellVoltage.toFixed(3) + 'V'" additionalStyles="fontSize:30px" />
-        }
-        @if (!isDesktop) {
+        } @else {
           <typography variant="info-value" [content]="lowCellVoltage.toFixed(3) + 'V'" additionalStyles="fontSize:20px" />
         }
         <typography variant="info-subtitle" content="Low Cell" additionalStyles="fontSize:15px" />
@@ -33,8 +31,7 @@
         <hstack>
           @if (isDesktop) {
             <typography variant="info-value" [content]="highCellVoltage.toFixed(3) + 'V'" additionalStyles="fontSize:30px" />
-          }
-          @if (!isDesktop) {
+          } @else {
             <typography variant="info-value" [content]="highCellVoltage.toFixed(3) + 'V'" additionalStyles="fontSize:20px" />
           }
         </hstack>
