@@ -2,7 +2,7 @@
   <div style="width: 100%; padding-right: 5px; padding-left: 0px" class="fault-text-body">
     <vstack style="width: 100%">
       <div style="height: 10px"></div>
-      <ng-container *ngFor="let fault of faults; index as i">
+      @for (fault of faults; track fault; let i = $index) {
         <div
           [style]="
             (i % 2 == 0) === faultsShifted
@@ -12,16 +12,20 @@
           (click)="setSelectedFault(fault)"
         >
           <div style="display: flex; flex-direction: row; justify-content: space-between; height: 45px; padding: 10px">
-            <typography variant="info-subtitle" [content]="fault.type" style="align-self: center"></typography>
+            <typography variant="info-subtitle" [content]="fault.format().type" style="align-self: center"></typography>
             <typography
               variant="info-subtitle"
-              [content]="fault.name"
+              [content]="fault.format().name"
               additionalStyles="font-weight: bold;"
               style="align-self: center; padding-left: 5px"
             ></typography>
-            <typography variant="info-subtitle" [content]="fault.displayTime" style="align-self: center"></typography>
+            <typography variant="info-subtitle" [content]="fault.format().time" style="align-self: center"></typography>
           </div>
         </div>
+      } @empty {
+        <li>There are no items.</li>
+      }
+      <ng-container *ngFor="let fault of faults; index as i">
         <div style="height: 2px"></div>
       </ng-container>
       <div style="height: 50px"></div>

@@ -1,19 +1,18 @@
 import APIService from 'src/services/api.service';
 import { NodeWithData } from '../types.utils';
-import { getNodesWithData } from 'src/api/node.api';
+import { getSingleNodeWithData } from 'src/api/node.api';
 
 export const fetchNodeDataOverPeriod = (
-  nodeNames: String[],
-  toTime: number,
-  fromTime: number,
+  nodeName: string,
+  timeToQueryFrom: number,
   serverService: APIService
-): NodeWithData[] => {
+): NodeWithData => {
   let nodeDataIsLoading;
   let nodeDataError!: Error;
   let isNodeDataError!: boolean;
-  let nodesWithData: NodeWithData[] = [];
+  let nodesWithData!: NodeWithData;
 
-  const allNodesAt30Seconds = serverService.query<NodeWithData[]>(() => getNodesWithData(toTime, fromTime));
+  const allNodesAt30Seconds = serverService.query<NodeWithData>(() => getSingleNodeWithData(nodeName, timeToQueryFrom));
   allNodesAt30Seconds.isLoading.subscribe((isLoading: boolean) => {
     nodeDataIsLoading = isLoading;
   });
@@ -21,7 +20,7 @@ export const fetchNodeDataOverPeriod = (
     nodeDataError = error;
     isNodeDataError = true;
   });
-  allNodesAt30Seconds.data.subscribe((data: NodeWithData[]) => {
+  allNodesAt30Seconds.data.subscribe((data: NodeWithData) => {
     console.log(data);
     nodesWithData = data;
   });

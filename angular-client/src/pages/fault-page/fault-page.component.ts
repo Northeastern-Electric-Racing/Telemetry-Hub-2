@@ -4,6 +4,8 @@ import APIService from 'src/services/api.service';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { DataValue } from 'src/utils/socket.utils';
+import { BMSFault } from './shared/indiv-fault/bms-fault.model';
+import { Fault } from './shared/fault.model';
 
 /**
  * Container for the Fault page, obtains data from the storage service.
@@ -34,21 +36,7 @@ export default class FaultPage implements OnInit {
       this.time = new Date();
     }, 1000);
 
-    this.setSelectedFault = (fault: { type: string; name: string; time: string; displayTime: string }) => {
-      console.log(fault);
-      const dataQueryResponse = this.serverService.query<DataValue[]>(() => getDataByDatetime(fault.time));
-      dataQueryResponse.isLoading.subscribe((isLoading: boolean) => {
-        this.selectedFaultDataValuesIsLoading = isLoading;
-      });
-      dataQueryResponse.error.subscribe((error: Error) => {
-        this.selectedFaultDataValuesError = error;
-        this.selectedFaultDataValuesIsError = true;
-      });
-      dataQueryResponse.data.subscribe((data: DataValue[]) => {
-        console.log(data);
-        this.currentData = data;
-      });
-    };
+    this.setSelectedFault = (fault: Fault) => {};
 
     this.storage.get(IdentifierDataType.LOCATION).subscribe((value) => {
       [this.location] = value.values || ['No Location Set'];
@@ -66,5 +54,5 @@ export default class FaultPage implements OnInit {
    * Sets the selected data type.
    * @param dataType The data type to set.
    */
-  setSelectedFault!: (fault: { type: string; name: string; time: string; displayTime: string }) => void;
+  setSelectedFault!: (fault: Fault) => void;
 }

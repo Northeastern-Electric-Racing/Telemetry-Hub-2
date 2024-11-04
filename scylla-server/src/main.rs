@@ -242,7 +242,7 @@ async fn main() {
         // NODES
         .route("/nodes", get(node_controller::get_all_nodes))
         .route(
-            "/nodesWithData/getFullNodesWithinRange/:nodeNames/:fromTime/:toTime",
+            "/nodesWithData/getFullNodesWithinRange/:nodeName/:datetime",
             get(node_controller::get_full_nodes_within_range),
         )
         // RUNS

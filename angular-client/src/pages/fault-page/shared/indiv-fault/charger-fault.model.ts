@@ -1,9 +1,9 @@
 import { NodeWithData } from 'src/utils/types.utils';
-import { AllFaultEnums, Fault } from '../fault.model';
+import { AllFaultNames, Fault } from '../fault.model';
 import APIService from 'src/services/api.service';
 import { fetchNodeDataOverPeriod } from 'src/utils/nodes/fetch-node-data.utils';
 
-export enum CHARGER_FAULT_VALUES {
+export enum CHARGER_FAULT_NAMES {
   COMM_TIMEOUT_FAULT = 'Comm Timeout',
   HARDWARE_FAILURE_FAULT = 'Hardware Failure',
   OVER_TEMP_FAULT = 'Over Temp',
@@ -12,8 +12,8 @@ export enum CHARGER_FAULT_VALUES {
 }
 
 export class ChargerFault implements Fault {
-  name: AllFaultEnums;
-  timeTriggered: Date;
+  name: CHARGER_FAULT_NAMES;
+  timeTriggered: number;
   relvantNodesWithData: NodeWithData[];
 
   /**
@@ -23,23 +23,18 @@ export class ChargerFault implements Fault {
    */
   constructor(
     private serverService: APIService,
-    faultValue: CHARGER_FAULT_VALUES,
-    timeTriggered: Date
+    faultValue: CHARGER_FAULT_NAMES,
+    timeTriggered: string
   ) {
     this.name = faultValue;
-    this.timeTriggered = timeTriggered;
+    this.timeTriggered = +timeTriggered;
     this.relvantNodesWithData = this.updateRelvantNodes(this.timeTriggered);
   }
 
-  format(): { type: String; name: String; timeTriggered: number } {
-    return { type: 'Charger', name: this.name.toString(), timeTriggered: this.timeTriggered.getTime() };
+  format(): { type: string; name: string; time: string } {
+    return { type: 'Charger', name: this.name.toString(), time: new Date(this.timeTriggered).toLocaleTimeString() };
   }
-  updateRelvantNodes(timeTriggered: Date): NodeWithData[] {
-    return fetchNodeDataOverPeriod(
-      ['Charger'],
-      timeTriggered.getTime(),
-      timeTriggered.getTime() - 30 * 1000,
-      this.serverService
-    );
+  updateRelvantNodes(timeTriggered: number): NodeWithData[] {
+    return [fetchNodeDataOverPeriod('Charger', timeTriggered, this.serverService)];
   }
 }

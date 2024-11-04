@@ -6,10 +6,8 @@ const baseURL = (environment as any).url || 'http://localhost:8000';
 const getAllNodes = () => `${baseURL}/nodes`;
 
 /* Nodes with Data */
-const getNodesWithData = (toTime: number, fromTime: number) =>
-  `${baseURL}/nodeWithData/allNodesInTime/${toTime}/${fromTime}`;
-const getSingleNodeWithData = (nodeName: string, toTime: number, fromTime: number) =>
-  `${baseURL}/nodesWithData/singleNode/${nodeName}/${toTime}/${fromTime}`;
+const getSingleNodeWithData = (nodeName: string, timeToQueryFrom: number) =>
+  `${baseURL}/nodesWithData/singleNode/${nodeName}/${timeToQueryFrom}`;
 
 /* Systems */
 const getAllSystems = () => `${baseURL}/systems`;
@@ -25,7 +23,6 @@ const startNewRun = () => `${baseURL}/runs/new`;
 
 export const urls = {
   getAllNodes,
-  getNodesWithData,
   getSingleNodeWithData,
 
   getAllSystems,

@@ -1,10 +1,6 @@
 use prisma_client_rust::{chrono::DateTime, QueryError};
 
-use crate::{
-    prisma::{self, data::WhereParam},
-    processors::ClientData,
-    Database,
-};
+use crate::{prisma, processors::ClientData, Database};
 
 prisma::data::select! {public_data {
     time
@@ -119,13 +115,13 @@ pub async fn add_many(db: &Database, client_data: Vec<ClientData>) -> Result<i64
 pub async fn get_data_for_node_name_within_range(
     db: &Database,
     node_name: String,
-    from_time: i64,
-    to_time: i64,
+    datetime: String,
 ) -> Result<Vec<public_data_with_data_type::Data>, QueryError> {
-    let from_time_datetime = DateTime::from_timestamp_millis(from_time)
-        .expect("Could not parse timestamp")
-        .into();
-    let to_time_datetime = DateTime::from_timestamp_millis(to_time)
+    let from_time_datetime =
+        DateTime::from_timestamp_millis(datetime.parse::<i64>().unwrap() - 30000)
+            .expect("Could not parse timestamp")
+            .into();
+    let to_time_datetime = DateTime::from_timestamp_millis(datetime.parse::<i64>().unwrap())
         .expect("Could not parse timestamp")
         .into();
 

@@ -1,15 +1,15 @@
 import { NodeWithData } from 'src/utils/types.utils';
-import { BMS_FAULTS_VALUES } from './indiv-fault/bms-fault.model';
-import { CHARGER_FAULT_VALUES } from './indiv-fault/charger-fault.model';
-import { DTI_FAULTS_VALUES } from './indiv-fault/dti-fault.model';
-import { MPU_FAULTS_VALUES } from './indiv-fault/mpu-fault.model';
+import { BMS_FAULT_NAMES } from './indiv-fault/bms-fault.model';
+import { DTI_FAULTS_NAMES } from './indiv-fault/dti-fault.model';
+import { MPU_FAULT_NAMES } from './indiv-fault/mpu-fault.model';
+import { CHARGER_FAULT_NAMES } from './indiv-fault/charger-fault.model';
 
 export interface Fault {
-  name: AllFaultEnums;
-  timeTriggered: Date;
+  name: AllFaultNames;
+  timeTriggered: number; // number in Unix, epoch time in ms since 1970
   relvantNodesWithData: NodeWithData[]; // should be made on construction
-  format(): { type: String; name: String; timeTriggered: number };
-  updateRelvantNodes(timeTriggered: Date): NodeWithData[];
+  format(): { type: string; name: string; time: string };
+  updateRelvantNodes(timeTriggered: number): NodeWithData[];
 }
 
-export type AllFaultEnums = BMS_FAULTS_VALUES | CHARGER_FAULT_VALUES | DTI_FAULTS_VALUES | MPU_FAULTS_VALUES;
+export type AllFaultNames = BMS_FAULT_NAMES | CHARGER_FAULT_NAMES | DTI_FAULTS_NAMES | MPU_FAULT_NAMES;

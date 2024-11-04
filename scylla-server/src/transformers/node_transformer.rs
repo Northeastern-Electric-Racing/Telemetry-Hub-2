@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use serde::Serialize;
+use serde_with::serde_as;
 
 use crate::services::{data_service, node_service};
 
@@ -14,10 +15,12 @@ pub struct PublicNode {
     data_types: Vec<PublicDataType>,
 }
 /// The struct defining the node format sent to the client
+#[serde_as]
 #[derive(Serialize, PartialEq)]
 pub struct PublicNodeWithData {
     name: String,
     #[serde(rename = "dataOverTime")]
+    #[serde_as(as = "Vec<(_, _)>")]
     data_over_time: HashMap<PublicDataType, Vec<PublicData>>,
 }
 
@@ -28,26 +31,14 @@ impl From<(String, Vec<data_service::public_data_with_data_type::Data>)> for Pub
 
         let mut condensed_data_types: HashMap<PublicDataType, Vec<PublicData>> = HashMap::new();
 
-        let mut recent_data_type: Option<PublicDataType> = None;
         for data_with_data_type in data.iter() {
-            if let Some(ref recent_data_type_ref) = recent_data_type {
-                if data_with_data_type.data_type_name == recent_data_type_ref.name {
-                    condensed_data_types
-                        .entry(recent_data_type_ref.clone())
-                        .and_modify(|public_data_vec| {
-                            public_data_vec.push(PublicData::from(data_with_data_type))
-                        });
-                    continue;
-                }
-            }
-
-            // If recent_data_type is None or a new data type is found
             let public_data_type = PublicDataType::from(data_with_data_type);
-            let mut data_list = Vec::new();
-            data_list.push(PublicData::from(data_with_data_type));
 
-            condensed_data_types.insert(public_data_type.clone(), data_list);
-            recent_data_type = Some(public_data_type.clone());
+            // Check if `public_data_type` already exists in the map
+            condensed_data_types
+                .entry(public_data_type.clone())
+                .or_insert_with(Vec::new) // Initialize an empty vector if entry doesn't exist
+                .push(PublicData::from(data_with_data_type));
         }
 
         PublicNodeWithData {
