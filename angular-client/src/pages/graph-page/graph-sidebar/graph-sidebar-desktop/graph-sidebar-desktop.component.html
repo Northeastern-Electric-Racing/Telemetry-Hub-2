@@ -16,9 +16,9 @@
           [title]="node.name"
           (click)="toggleDataTypeVisibility(node)"
           [dropDown]="true"
-          [open]="node.dataTypesAreVisible ? true : isNodeOpen(node)"
+          [open]="node.dataTypesAreVisible || isNodeOpen(node)"
         />
-        <div *ngIf="node.dataTypesAreVisible ? true : isNodeOpen(node)" @toggleExpand>
+        <div *ngIf="node.dataTypesAreVisible || isNodeOpen(node)" @toggleExpand>
           <div
             *ngFor="let dataType of node.dataTypesObservable | async | dataTypeFilter: 'name' : searchFilter : node.name"
             style="display: flex; justify-content: center"
