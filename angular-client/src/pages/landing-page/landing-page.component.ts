@@ -15,7 +15,6 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
 })
 export default class LandingPage implements OnInit {
   time = new Date();
-  location: string = 'No Location Set';
   newRunIsLoading = false;
   mobileThreshold = 1070;
   isMobile = window.innerWidth < this.mobileThreshold;
@@ -40,10 +39,6 @@ export default class LandingPage implements OnInit {
     setInterval(() => {
       this.time = new Date();
     }, 1000);
-
-    this.storage.get(IdentifierDataType.LOCATION).subscribe((value) => {
-      [this.location] = value.values || ['No Location Set'];
-    });
   }
 
   onStartNewRun!: () => void;
