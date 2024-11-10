@@ -5,7 +5,7 @@ edition = "2021"
 default-run = "scylla-server"
 
 [dependencies]
-prisma-client-rust = {git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.11", default-features = false,features = ["postgresql", "migrations"] }
+diesel = { version = "2.2.4", features = ["postgres", "r2d2", "chrono"] }
 serde = "1.0.203"
 protobuf-codegen = "3.5.1"
 protobuf = "3.5.1"
@@ -29,9 +29,6 @@ serde_json = "1.0.128"
 [features]
 top = ["dep:console-subscriber"]
 
-[workspace]
-members = ["prisma-cli"]
-
 [build-dependencies]
 protobuf-codegen = "3.5.1"
 
@@ -44,7 +41,3 @@ strip = true  # Automatically strip symbols from the binary.
 [[bin]]
 name = "scylla-server"
 path = "src/main.rs"
-
-[[bin]]
-name = "seed"
-path = "prisma/seed.rs"

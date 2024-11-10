@@ -9,7 +9,7 @@ use crate::{
 pub async fn get_all_data_types(
     State(db): State<Database>,
 ) -> Result<Json<Vec<PublicDataType>>, ScyllaError> {
-    let data_types = data_type_service::get_all_data_types(&db).await?;
+    let data_types = data_type_service::get_all_data_types(&mut db).await?;
 
     let transformed_data_types: Vec<PublicDataType> =
         data_types.iter().map(PublicDataType::from).collect();

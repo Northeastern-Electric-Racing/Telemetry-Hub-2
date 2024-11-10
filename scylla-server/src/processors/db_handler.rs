@@ -6,10 +6,7 @@ use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, instrument, trace, warn, Level};
 
 use crate::{
-    services::{
-        data_service, data_type_service, driver_service, location_service, node_service,
-        system_service,
-    },
+    services::{data_service, data_type_service},
     Database,
 };
 
@@ -113,7 +110,7 @@ impl DbHandler {
     /// On cancellation, will await one final queue message to cleanup anything remaining in the channel
     pub async fn batching_loop(
         mut batch_queue: Receiver<Vec<ClientData>>,
-        database: Database,
+        database: &mut Database,
         saturate_batches: bool,
         cancel_token: CancellationToken,
     ) {
@@ -125,21 +122,14 @@ impl DbHandler {
                         info!("{} batches remaining!", batch_queue.len()+1);
                     info!(
                         "A cleanup batch uploaded: {:?}",
-                        data_service::add_many(&database, final_msgs).await
+                        data_service::add_many(database, final_msgs).await
                     );
                     }
                     info!("No more messages to cleanup.");
                     break;
                 },
                 Some(msgs) = batch_queue.recv() => {
-                    if saturate_batches {
-                        let shared_db = database.clone();
-                        tokio::spawn(async move {
-                            Self::batch_upload(msgs, &shared_db).await;
-                         });
-                    } else {
-                        Self::batch_upload(msgs, &database).await;
-                    }
+                    Self::batch_upload(msgs, database).await;
                     debug!(
                         "DB send: {} of {}",
                         batch_queue.len(),
@@ -168,8 +158,8 @@ impl DbHandler {
         }
     }
 
-    #[instrument(level = Level::DEBUG, skip(msg))]
-    async fn batch_upload(msg: Vec<ClientData>, db: &Database) {
+    #[instrument(level = Level::DEBUG, skip(msg, db))]
+    async fn batch_upload(msg: Vec<ClientData>, db: &mut Database) {
         match data_service::add_many(db, msg).await {
             Ok(count) => info!("Batch uploaded: {:?}", count),
             Err(err) => warn!("Error in batch upload: {:?}", err),
@@ -222,18 +212,10 @@ impl DbHandler {
             self.last_time = tokio::time::Instant::now();
         }
 
-        // upsert if not present, a sort of cache of upserted types really
-        if !self.node_list.contains(&msg.node) {
-            info!("Upserting node: {}", msg.node);
-            if let Err(msg) = node_service::upsert_node(&self.db, msg.node.clone()).await {
-                warn!("DB error node upsert: {:?}", msg);
-            }
-            self.node_list.push(msg.node.clone());
-        }
         if !self.datatype_list.contains(&msg.name) {
             info!("Upserting data type: {}", msg.name);
             if let Err(msg) = data_type_service::upsert_data_type(
-                &self.db,
+                &mut self.db,
                 msg.name.clone(),
                 msg.unit.clone(),
                 msg.node.clone(),
@@ -243,78 +225,6 @@ impl DbHandler {
                 warn!("DB error datatype upsert: {:?}", msg);
             }
             self.datatype_list.push(msg.name.clone());
-        }
-
-        // if data has some special meanings, push them to the database immediately, notably no matter what also enter batching logic
-        match msg.name.as_str() {
-            // TODO remove driver from here, as driver is not car sourced
-            "Driver" => {
-                debug!("Upserting driver: {:?}", msg.values);
-                if let Err(err) = driver_service::upsert_driver(
-                    &self.db,
-                    (*msg.values.first().unwrap_or(&0.0f32)).to_string(),
-                    msg.run_id,
-                )
-                .await
-                {
-                    warn!("Driver upsert error: {:?}", err);
-                }
-            }
-            // TODO see above
-            "location" => {
-                debug!("Upserting location name: {:?}", msg.values);
-                self.location_lock
-                    .add_loc_name((*msg.values.first().unwrap_or(&0.0f32)).to_string());
-                self.is_location = true;
-            }
-            // TODO see above
-            "system" => {
-                debug!("Upserting system: {:?}", msg.values);
-                if let Err(err) = system_service::upsert_system(
-                    &self.db,
-                    (*msg.values.first().unwrap_or(&0.0f32)).to_string(),
-                    msg.run_id,
-                )
-                .await
-                {
-                    warn!("System upsert error: {:?}", err);
-                }
-            }
-            "GPS-Location" => {
-                debug!("Upserting location points: {:?}", msg.values);
-                self.location_lock.add_points(
-                    *msg.values.first().unwrap_or(&0.0f32),
-                    *msg.values.get(1).unwrap_or(&0.0f32),
-                );
-                self.is_location = true;
-            }
-            "Radius" => {
-                debug!("Upserting location radius: {:?}", msg.values);
-                self.location_lock
-                    .add_radius(*msg.values.first().unwrap_or(&0.0f32));
-                self.is_location = true;
-            }
-            _ => {}
-        }
-        // if location has been modified, push a new location of the loc lock object returns Some
-        if self.is_location {
-            trace!("Checking location status...");
-            if let Some(loc) = self.location_lock.finalize() {
-                debug!("Upserting location: {:?}", loc);
-                if let Err(err) = location_service::upsert_location(
-                    &self.db,
-                    loc.location_name,
-                    loc.lat as f64,
-                    loc.long as f64,
-                    loc.radius as f64,
-                    msg.run_id,
-                )
-                .await
-                {
-                    warn!("Location upsert error: {:?}", err);
-                }
-            }
-            self.is_location = false;
         }
 
         // no matter what, batch upload the message

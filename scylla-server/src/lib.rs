@@ -1,20 +1,20 @@
 use std::sync::atomic::AtomicI32;
 
+use diesel::PgConnection;
+
 pub mod controllers;
 pub mod error;
 pub mod processors;
 pub mod services;
-pub mod transformers;
 
-#[allow(clippy::all)]
-#[allow(warnings)]
-pub mod prisma;
+pub mod models;
+pub mod schema;
 
 pub mod command_data;
 pub mod serverdata;
 
 /// The type descriptor of the database passed to the middlelayer through axum state
-pub type Database = std::sync::Arc<prisma::PrismaClient>;
+pub type Database = PgConnection;
 
 #[derive(clap::ValueEnum, Debug, PartialEq, Copy, Clone, Default)]
 #[clap(rename_all = "kebab_case")]

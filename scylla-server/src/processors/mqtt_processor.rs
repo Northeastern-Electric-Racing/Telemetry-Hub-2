@@ -5,7 +5,6 @@ use std::{
 };
 
 use chrono::TimeDelta;
-use prisma_client_rust::bigdecimal::ToPrimitive;
 use protobuf::Message;
 use ringbuffer::RingBuffer;
 use rumqttc::v5::{
@@ -172,7 +171,7 @@ impl MqttProcessor {
                     let avg_latency = if latency_ringbuffer.is_empty() {
                         0
                     } else {
-                        latency_ringbuffer.iter().sum::<TimeDelta>().num_milliseconds() / latency_ringbuffer.len().to_i64().unwrap_or_default()
+                        latency_ringbuffer.iter().sum::<TimeDelta>().num_milliseconds() / latency_ringbuffer.len() as i64
                     };
 
                     let client_data = ClientData {

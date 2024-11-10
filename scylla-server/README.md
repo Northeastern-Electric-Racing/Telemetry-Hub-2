@@ -1,12 +1,6 @@
 # Scylla Server (Rust)
 
 
-### Generate prisma
-
-```
-cargo prisma generate
-```
-
 ### Run the app
 
 ```

@@ -2,15 +2,11 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
-use prisma_client_rust::{
-    prisma_errors::query_engine::{RecordNotFound, UniqueKeyViolation},
-    QueryError,
-};
 use tracing::warn;
 
 pub enum ScyllaError {
-    /// Any prisma query which errors out
-    PrismaError(QueryError),
+    /// Deseil error
+    DbError(diesel::result::Error),
     /// An instruction was not encodable
     InvalidEncoding(String),
     /// Could not communicate to car
@@ -19,9 +15,9 @@ pub enum ScyllaError {
     EmptyResult,
 }
 
-impl From<QueryError> for ScyllaError {
-    fn from(error: QueryError) -> Self {
-        ScyllaError::PrismaError(error)
+impl From<diesel::result::Error> for ScyllaError {
+    fn from(error: diesel::result::Error) -> Self {
+        ScyllaError::DbError(error)
     }
 }
 
@@ -29,15 +25,7 @@ impl From<QueryError> for ScyllaError {
 impl IntoResponse for ScyllaError {
     fn into_response(self) -> Response {
         let (status, reason) = match self {
-            ScyllaError::PrismaError(error) if error.is_prisma_error::<UniqueKeyViolation>() => (
-                StatusCode::CONFLICT,
-                format!("Unique Key Violation: {}", error),
-            ),
-            ScyllaError::PrismaError(error) if error.is_prisma_error::<RecordNotFound>() => (
-                StatusCode::NOT_FOUND,
-                format!("Record Not Found: {}", error),
-            ),
-            ScyllaError::PrismaError(error) => (
+            ScyllaError::DbError(error) => (
                 StatusCode::BAD_REQUEST,
                 format!("Misc query error: {}", error),
             ),

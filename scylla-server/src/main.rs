@@ -15,8 +15,7 @@ use scylla_server::{
     controllers::{
         self,
         car_command_controller::{self},
-        data_type_controller, driver_controller, location_controller, node_controller,
-        run_controller, system_controller,
+        data_type_controller, run_controller,
     },
     prisma::PrismaClient,
     processors::{
@@ -138,12 +137,13 @@ async fn main() {
     }
 
     // create the database stuff
-    let db: Database = Arc::new(
-        PrismaClient::_builder()
-            .build()
-            .await
-            .expect("Could not build prisma DB"),
-    );
+    let manager = ConnectionManager::<DbConnection>::new(&std::env::var("DATABASE_URL").unwrap());
+    // Refer to the `r2d2` documentation for more methods to use
+    // when building a connection pool
+    let db = Pool::builder()
+        .test_on_check_out(true)
+        .build(manager)
+        .expect("Could not build connection pool");
 
     // create the socket stuff
     let (socket_layer, io) = SocketIo::builder()
@@ -170,14 +170,14 @@ async fn main() {
     let token = CancellationToken::new();
     // spawn the database handler
     task_tracker.spawn(
-        db_handler::DbHandler::new(mqtt_receive, Arc::clone(&db), cli.batch_upsert_time * 1000)
+        db_handler::DbHandler::new(mqtt_receive, db.clone(), cli.batch_upsert_time * 1000)
             .handling_loop(db_send, token.clone()),
     );
     // spawn the database inserter, if we have it enabled
     if !cli.disable_data_upload {
         task_tracker.spawn(db_handler::DbHandler::batching_loop(
             db_receive,
-            Arc::clone(&db),
+            db.clone(),
             cli.saturate_batch,
             token.clone(),
         ));
@@ -196,7 +196,7 @@ async fn main() {
         None
     } else {
         // creates the initial run
-        let curr_run = run_service::create_run(&db, chrono::offset::Utc::now())
+        let curr_run = run_service::create_run(db.clone(), chrono::offset::Utc::now())
             .await
             .expect("Could not create initial run!");
         debug!("Configuring current run: {:?}", curr_run);
@@ -231,18 +231,9 @@ async fn main() {
         )
         // DATA TYPE
         .route("/datatypes", get(data_type_controller::get_all_data_types))
-        // DRIVERS
-        .route("/drivers", get(driver_controller::get_all_drivers))
-        // LOCATIONS
-        .route("/locations", get(location_controller::get_all_locations))
-        // NODES
-        .route("/nodes", get(node_controller::get_all_nodes))
-        // RUNS
         .route("/runs", get(run_controller::get_all_runs))
         .route("/runs/:id", get(run_controller::get_run_by_id))
         .route("/runs/new", post(run_controller::new_run))
-        // SYSTEMS
-        .route("/systems", get(system_controller::get_all_systems))
         // CONFIG
         .route(
             "/config/set/:configKey",

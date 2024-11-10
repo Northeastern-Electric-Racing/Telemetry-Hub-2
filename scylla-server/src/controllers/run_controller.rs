@@ -11,7 +11,7 @@ use crate::{
 
 /// get a list of runs
 pub async fn get_all_runs(State(db): State<Database>) -> Result<Json<Vec<PublicRun>>, ScyllaError> {
-    let run_data = run_service::get_all_runs(&db).await?;
+    let run_data = run_service::get_all_runs(&mut db).await?;
 
     let transformed_run_data: Vec<PublicRun> = run_data.iter().map(PublicRun::from).collect();
 
@@ -23,7 +23,7 @@ pub async fn get_run_by_id(
     State(db): State<Database>,
     Path(run_id): Path<i32>,
 ) -> Result<Json<PublicRun>, ScyllaError> {
-    let run_data = run_service::get_run_by_id(&db, run_id).await?;
+    let run_data = run_service::get_run_by_id(&mut db, run_id).await?;
 
     if run_data.is_none() {
         return Err(ScyllaError::EmptyResult);
@@ -39,7 +39,7 @@ pub async fn get_run_by_id(
 /// create a new run with an auto-incremented ID
 /// note the new run must be updated so the channel passed in notifies the data processor to use the new run
 pub async fn new_run(State(db): State<Database>) -> Result<Json<PublicRun>, ScyllaError> {
-    let run_data = run_service::create_run(&db, chrono::offset::Utc::now()).await?;
+    let run_data = run_service::create_run(&mut db, chrono::offset::Utc::now()).await?;
 
     crate::RUN_ID.store(run_data.id, Ordering::Relaxed);
     tracing::info!(

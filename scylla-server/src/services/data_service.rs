@@ -1,11 +1,6 @@
-use prisma_client_rust::QueryError;
+use diesel::prelude::*;
 
-use crate::{prisma, processors::ClientData, Database};
-
-prisma::data::select! {public_data {
-    time
-    values
-}}
+use crate::{models::Data, processors::ClientData, Database};
 
 /// Get datapoints that mach criteria
 /// * `db` - The prisma client to make the call to
@@ -15,10 +10,10 @@ prisma::data::select! {public_data {
 /// * `fetch_data_type` whether to fetch the data type associated with this data
 ///   returns: A result containing the data or the QueryError propogated by the db
 pub async fn get_data(
-    db: &Database,
+    db: &mut Database,
     data_type_name: String,
     run_id: i32,
-) -> Result<Vec<public_data::Data>, QueryError> {
+) -> Result<Vec<Data>, diesel::result::Error> {
     db.data()
         .find_many(vec![
             prisma::data::data_type_name::equals(data_type_name),
@@ -37,9 +32,9 @@ pub async fn get_data(
 /// * `rin_id` - The run id to assign the data point to, note this run must already exist!
 ///   returns: A result containing the data or the QueryError propogated by the db
 pub async fn add_data(
-    db: &Database,
+    db: &mut Database,
     client_data: ClientData,
-) -> Result<public_data::Data, QueryError> {
+) -> Result<Data, diesel::result::Error> {
     db.data()
         .create(
             prisma::data_type::name::equals(client_data.name),
@@ -58,7 +53,10 @@ pub async fn add_data(
 /// * `db` - The prisma client to make the call to
 /// * `client_data` - A list of data to batch insert
 ///   returns: A result containing the number of rows inserted or the QueryError propogated by the db
-pub async fn add_many(db: &Database, client_data: Vec<ClientData>) -> Result<i64, QueryError> {
+pub async fn add_many(
+    db: &mut Database,
+    client_data: Vec<ClientData>,
+) -> Result<i64, diesel::result::Error> {
     db.data()
         .create_many(
             client_data

@@ -1,3 +1,3 @@
 #!/bin/sh
 
-cargo prisma migrate deploy && exec /usr/src/myapp/target/release/scylla-server
+prisma-cli migrate deploy && exec /usr/local/bin/scylla-server
