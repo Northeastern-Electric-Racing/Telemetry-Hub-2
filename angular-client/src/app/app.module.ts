@@ -45,7 +45,10 @@ import { GraphDialog } from 'src/components/graph-dialog/graph-dialog.component'
 import { SteeringAngleDisplay } from 'src/components/steering-angle-display/steering-angle-display.component';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import HalfGauge from 'src/components/half-gauge/half-gauge.component';
 import { Divider } from 'src/components/divider/divider';
 import { DriverComponent } from 'src/components/driver-component/driver-component';
@@ -55,7 +58,6 @@ import { AccelerationGraphs } from 'src/components/acceleration-graphs/accelerat
 import SpeedDisplay from 'src/components/speed-display/speed-display.component';
 import SpeedOverTimeDisplay from 'src/components/speed-over-time-display/speed-over-time-display.component';
 import TorqueDisplay from 'src/components/torque-display/torque-display.component';
-import MapInfoDisplay from 'src/components/map-info-display/map-info-display.component';
 import AccelerationOverTimeDisplay from 'src/components/acceleration-over-time-display/acceleration-over-time-display.component';
 import BrakePressureDisplay from 'src/components/brake-pressure-display/brake-pressure-display.component';
 import { SidebarModule } from 'primeng/sidebar';
@@ -151,7 +153,6 @@ import { ViewerDisplay } from 'src/pages/landing-page/components/viewer-display/
     SpeedDisplay,
     SpeedOverTimeDisplay,
     TorqueDisplay,
-    MapInfoDisplay,
     AccelerationOverTimeDisplay,
     BrakePressureDisplay,
     RasberryPi,
@@ -196,7 +197,7 @@ import { ViewerDisplay } from 'src/pages/landing-page/components/viewer-display/
     LatencyDisplay,
     DateLocation,
     CurrentRunDisplay,
-    ViewerDisplay
+    ViewerDisplay,
   ],
   bootstrap: [AppContext],
   imports: [
@@ -219,59 +220,193 @@ import { ViewerDisplay } from 'src/pages/landing-page/components/viewer-display/
     MatToolbarModule,
     MatButtonModule,
     MatInputModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
-  providers: [DialogService, MessageService, provideHttpClient(withInterceptorsFromDi())]
+  providers: [
+    DialogService,
+    MessageService,
+    provideHttpClient(withInterceptorsFromDi()),
+  ],
 })
 export class AppModule {
   constructor(
     private matIconRegistry: MatIconRegistry,
-    private domSanitizer: DomSanitizer
+    private domSanitizer: DomSanitizer,
   ) {
     this.matIconRegistry
       .addSvgIcon(
         'steering_wheel',
-        this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/search_hands_free.svg')
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/search_hands_free.svg',
+        ),
       )
-      .addSvgIcon('wifi', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/wifi.svg'))
-      .addSvgIcon('speed', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/speed.svg'))
-      .addSvgIcon('person', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/person.svg'))
-      .addSvgIcon('eye', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/eye_tracking.svg'))
-      .addSvgIcon('timelapse', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/timelapse.svg'))
-      .addSvgIcon('cell_tower', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/cell_tower.svg'))
-      .addSvgIcon('map', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/map.svg'))
-      .addSvgIcon('360', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/360.svg'))
-      .addSvgIcon('electric_car', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/electric_car.svg'))
-      .addSvgIcon('memory', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/memory.svg'))
-      .addSvgIcon('back_hand', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/back_hand.svg'))
+      .addSvgIcon(
+        'wifi',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/wifi.svg',
+        ),
+      )
+      .addSvgIcon(
+        'speed',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/speed.svg',
+        ),
+      )
+      .addSvgIcon(
+        'person',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/person.svg',
+        ),
+      )
+      .addSvgIcon(
+        'eye',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/eye_tracking.svg',
+        ),
+      )
+      .addSvgIcon(
+        'timelapse',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/timelapse.svg',
+        ),
+      )
+      .addSvgIcon(
+        'cell_tower',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/cell_tower.svg',
+        ),
+      )
+      .addSvgIcon(
+        'map',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/map.svg',
+        ),
+      )
+      .addSvgIcon(
+        '360',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/360.svg',
+        ),
+      )
+      .addSvgIcon(
+        'electric_car',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/electric_car.svg',
+        ),
+      )
+      .addSvgIcon(
+        'memory',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/memory.svg',
+        ),
+      )
+      .addSvgIcon(
+        'back_hand',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/back_hand.svg',
+        ),
+      )
       .addSvgIcon(
         'battery_charging_full',
-        this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/battery_charging_full.svg')
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/battery_charging_full.svg',
+        ),
       )
-      .addSvgIcon('menu', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/menu.svg'))
-      .addSvgIcon('home', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/home.svg'))
-      .addSvgIcon('bar_chart', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/bar_chart.svg'))
-      .addSvgIcon('search', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/search.svg'))
-      .addSvgIcon('arrow_right', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/arrow_right.svg'))
-      .addSvgIcon('ev_station', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/ev_station.svg'))
+      .addSvgIcon(
+        'menu',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/menu.svg',
+        ),
+      )
+      .addSvgIcon(
+        'home',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/home.svg',
+        ),
+      )
+      .addSvgIcon(
+        'bar_chart',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/bar_chart.svg',
+        ),
+      )
+      .addSvgIcon(
+        'search',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/search.svg',
+        ),
+      )
+      .addSvgIcon(
+        'arrow_right',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/arrow_right.svg',
+        ),
+      )
+      .addSvgIcon(
+        'ev_station',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/ev_station.svg',
+        ),
+      )
       .addSvgIcon(
         'device_thermostat',
-        this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/device_thermostat.svg')
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/device_thermostat.svg',
+        ),
       )
-      .addSvgIcon('electric_meter', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/electric_meter.svg'))
-      .addSvgIcon('warning', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/warning.svg'))
+      .addSvgIcon(
+        'electric_meter',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/electric_meter.svg',
+        ),
+      )
+      .addSvgIcon(
+        'warning',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/warning.svg',
+        ),
+      )
       .addSvgIcon(
         'electrical_services',
-        this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/electrical_services.svg')
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/electrical_services.svg',
+        ),
       )
-      .addSvgIcon('thermostat', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/thermostat.svg'))
-      .addSvgIcon('model_training', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/model_training.svg'))
-      .addSvgIcon('quickreply', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/quickreply.svg'))
-      .addSvgIcon('bolt', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/bolt.svg'))
-      .addSvgIcon('timer', this.domSanitizer.bypassSecurityTrustResourceUrl('../assets/icons/timer.svg'))
+      .addSvgIcon(
+        'thermostat',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/thermostat.svg',
+        ),
+      )
+      .addSvgIcon(
+        'model_training',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/model_training.svg',
+        ),
+      )
+      .addSvgIcon(
+        'quickreply',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/quickreply.svg',
+        ),
+      )
+      .addSvgIcon(
+        'bolt',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/bolt.svg',
+        ),
+      )
+      .addSvgIcon(
+        'timer',
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assets/icons/timer.svg',
+        ),
+      )
       .addSvgIcon(
         'arrow_drop_down_circle',
-        this.domSanitizer.bypassSecurityTrustResourceUrl('../assests/icons/arrow_drop_down_circle.svg')
+        this.domSanitizer.bypassSecurityTrustResourceUrl(
+          '../assests/icons/arrow_drop_down_circle.svg',
+        ),
       );
   }
 }
