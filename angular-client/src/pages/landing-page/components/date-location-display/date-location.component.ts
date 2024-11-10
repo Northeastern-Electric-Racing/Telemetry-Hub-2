@@ -13,27 +13,12 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
 export class DateLocation {
   time = new Date();
   location: string = 'Boston, MA';
-  newRunIsLoading = false;
   mobileThreshold = 1070;
   isMobile = window.innerWidth < this.mobileThreshold;
 
-  constructor(
-    private storage: Storage,
-    private serverService: APIService,
-    private messageService: MessageService
-  ) {}
+  constructor(private storage: Storage) {}
 
   ngOnInit() {
-    this.onStartNewRun = () => {
-      const runsQueryResponse = this.serverService.query(() => startNewRun());
-      runsQueryResponse.isLoading.subscribe((isLoading: boolean) => {
-        this.newRunIsLoading = isLoading;
-      });
-      runsQueryResponse.error.subscribe((error: Error) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message });
-      });
-    };
-
     setInterval(() => {
       this.time = new Date();
     }, 1000);
@@ -42,8 +27,6 @@ export class DateLocation {
       [this.location] = value.values || ['No Location Set'];
     });
   }
-
-  onStartNewRun!: () => void;
 
   @HostListener('window:resize', ['$event'])
   onResize() {
