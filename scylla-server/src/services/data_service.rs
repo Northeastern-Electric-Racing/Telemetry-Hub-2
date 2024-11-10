@@ -1,4 +1,4 @@
-use prisma_client_rust::QueryError;
+use prisma_client_rust::{chrono::DateTime, QueryError};
 
 use crate::{prisma, processors::ClientData, Database};
 
@@ -7,12 +7,19 @@ prisma::data::select! {public_data {
     values
 }}
 
-/// Get datapoints that mach criteria
+prisma::data::select! {public_data_with_data_type {
+    time
+    values
+    data_type_name
+    data_type: select {
+        unit
+    }
+}}
+
+/// Get datapoints that match criteria
 /// * `db` - The prisma client to make the call to
 /// * `data_type_name` - The data type name to filter the data by
 /// * `run_id` - The run id to filter the data
-/// * `fetch_run` whether to fetch the run assocaited with this data
-/// * `fetch_data_type` whether to fetch the data type associated with this data
 ///   returns: A result containing the data or the QueryError propogated by the db
 pub async fn get_data(
     db: &Database,
@@ -29,12 +36,35 @@ pub async fn get_data(
         .await
 }
 
+/// Get all datapoints from the 30 seconds preceding the fault received
+/// * `db` - The prisma client to make the call to
+/// * `datetime` - The datetime in unix time since epoch in ms
+///   returns: A result containing the data or the QueryError propogated by the db
+pub async fn get_data_by_datetime(
+    db: &Database,
+    datetime: String,
+) -> Result<Vec<public_data_with_data_type::Data>, QueryError> {
+    let datetime_utc = DateTime::from_timestamp_millis(datetime.parse::<i64>().unwrap())
+        .expect("Could not parse timestamp");
+    let datetime_30_sec = DateTime::from_timestamp_millis(datetime.parse::<i64>().unwrap() - 30000)
+        .expect("Could not parse timestamp");
+
+    db.data()
+        .find_many(vec![
+            prisma::data::time::lte(datetime_utc.into()),
+            prisma::data::time::gte(datetime_30_sec.into()),
+        ])
+        .select(public_data_with_data_type::select())
+        .exec()
+        .await
+}
+
 /// Adds a datapoint
 /// * `db` - The prisma client to make the call to
 /// * `serverdata` - The protobuf message to parse, note the unit is ignored!
 /// * `unix_time` - The time im miliseconds since unix epoch of the message
 /// * `data_type_name` - The name of the data type, note this data type must already exist!
-/// * `rin_id` - The run id to assign the data point to, note this run must already exist!
+/// * `run_id` - The run id to assign the data point to, note this run must already exist!
 ///   returns: A result containing the data or the QueryError propogated by the db
 pub async fn add_data(
     db: &Database,
@@ -75,6 +105,34 @@ pub async fn add_many(db: &Database, client_data: Vec<ClientData>) -> Result<i64
                 })
                 .collect(),
         )
+        .exec()
+        .await
+}
+
+/// Gets all datatypes
+/// * `db` - The prisma client to make the call to
+///   returns: A result containing the data or the QueryError propogated by the db
+pub async fn get_data_for_node_name_within_range(
+    db: &Database,
+    node_name: String,
+    datetime: String,
+) -> Result<Vec<public_data_with_data_type::Data>, QueryError> {
+    let from_time_datetime =
+        DateTime::from_timestamp_millis(datetime.parse::<i64>().unwrap() - 30000)
+            .expect("Could not parse timestamp")
+            .into();
+    let to_time_datetime = DateTime::from_timestamp_millis(datetime.parse::<i64>().unwrap())
+        .expect("Could not parse timestamp")
+        .into();
+
+    db.data()
+        .find_many(vec![
+            prisma::data::time::gte(from_time_datetime),
+            prisma::data::time::lte(to_time_datetime),
+            // ::is allow us to query multiple layers deep
+            prisma::data::data_type::is(vec![prisma::data_type::node_name::equals(node_name)]),
+        ])
+        .select(public_data_with_data_type::select())
         .exec()
         .await
 }

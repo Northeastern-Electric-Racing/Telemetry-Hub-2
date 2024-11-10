@@ -229,6 +229,10 @@ async fn main() {
             "/data/:dataTypeName/:runId",
             get(controllers::data_controller::get_data),
         )
+        .route(
+            "/dataByDatetime/:datetime",
+            get(controllers::data_controller::get_data_by_datetime),
+        )
         // DATA TYPE
         .route("/datatypes", get(data_type_controller::get_all_data_types))
         // DRIVERS
@@ -237,6 +241,10 @@ async fn main() {
         .route("/locations", get(location_controller::get_all_locations))
         // NODES
         .route("/nodes", get(node_controller::get_all_nodes))
+        .route(
+            "/nodesWithData/getFullNodesWithinRange/:nodeName/:datetime",
+            get(node_controller::get_full_nodes_within_range),
+        )
         // RUNS
         .route("/runs", get(run_controller::get_all_runs))
         .route("/runs/:id", get(run_controller::get_run_by_id))

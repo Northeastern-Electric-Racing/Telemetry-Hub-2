@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+import { DataValue } from './socket.utils';
 
 /**
  * Frontend type of a Node
@@ -6,6 +7,14 @@ import { Observable } from 'rxjs';
 export type Node = {
   name: string;
   dataTypes: DataType[];
+};
+
+/**
+ * Frontend type for a Node that has data types with multiple values
+ */
+export type NodeWithData = {
+  name: string;
+  dataOverTime: Map<DataType, DataValue[]>;
 };
 
 /**
