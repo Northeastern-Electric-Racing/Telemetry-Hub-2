@@ -4,7 +4,7 @@ import Storage from 'src/services/storage.service';
 @Component({
   selector: 'connection-display',
   templateUrl: './connection-display.component.html',
-  styleUrls: ['./connection-display.component.css']
+  styleUrl: './connection-display.component.css'
 })
 export default class ConnectionDisplay {
   connected: boolean = false;

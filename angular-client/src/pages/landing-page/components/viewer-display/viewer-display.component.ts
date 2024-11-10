@@ -5,9 +5,9 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
 @Component({
   selector: 'viewer-display',
   templateUrl: './viewer-display.component.html',
-  styleUrls: ['./viewer-display.component.css']
+  styleUrl: './viewer-display.component.css'
 })
-export default class ViewerDisplay implements OnInit {
+export class ViewerDisplay implements OnInit {
   numViewers: number = 0;
   constructor(private storage: Storage) {}
 
