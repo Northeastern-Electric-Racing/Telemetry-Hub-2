@@ -3,7 +3,6 @@ import { MessageService } from 'primeng/api';
 import { startNewRun } from 'src/api/run.api';
 import APIService from 'src/services/api.service';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 
 /**
  * Container for the landing page, obtains data from the storage service.
