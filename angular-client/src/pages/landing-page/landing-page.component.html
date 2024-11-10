@@ -1,16 +1,34 @@
 <div class="image-container" style="margin-right: 16px; margin-left: 16px">
-  <sidebar-toggle style="position: absolute; margin-top: 16px; margin-left: 16px" />
+  <sidebar-toggle
+    style="position: absolute; margin-top: 16px; margin-left: 16px"
+  />
 
   @if (isMobile) {
     <landing-page-mobile style="width: 100%" [time]="time" />
   } @else {
     <div style="display: flex; flex-direction: column">
-      <div style="width: 100%; padding-bottom: 0px; padding-top: 10px; display: flex; justify-content: flex-end">
+      <div
+        style="
+          width: 100%;
+          padding-bottom: 0px;
+          padding-top: 10px;
+          display: flex;
+          justify-content: flex-end;
+        "
+      >
         <toast-button [onClick]="this.onStartNewRun" label="Start New Run" />
       </div>
 
       <div style="width: 100%; display: grid; column-gap: 10px; row-gap: 10px">
-        <div style="display: flex; justify-content: center; grid-column-start: 1; grid-column-end: 3; height: 100%">
+        <div
+          style="
+            display: flex;
+            justify-content: center;
+            grid-column-start: 1;
+            grid-column-end: 3;
+            height: 100%;
+          "
+        >
           <typography
             variant="xx-large-title"
             [content]="time | date: 'HH:mm:ss'"
@@ -65,10 +83,6 @@
         </div>
         <div style="display: flex; grid-column-start: 6; grid-column-end: 7">
           <brake-pressure-display style="width: 100%" />
-        </div>
-
-        <div style="display: flex; grid-column-start: 1; grid-column-end: 7">
-          <map-info-display style="width: 100%" />
         </div>
       </div>
     </div>
