@@ -21,6 +21,6 @@ export class InfoBackgroundComponent {
   @Input() svgIcon?: string;
   @Input() backgroundColor?: string = Theme.infoBackground;
   @Input() title!: string;
-  @Input() onClick!: () => void;
+  @Input() onClick!: (() => void) | undefined;
   @Input() button?: ButtonInputs;
 }

@@ -1,8 +1,9 @@
 <div class="image-container" style="margin-right: 16px; margin-left: 16px">
   <sidebar-toggle style="position: absolute; margin-top: 16px; margin-left: 16px" />
 
-  <landing-page-mobile style="width: 100%" *ngIf="isMobile; else isDesktop" [time]="time" />
-  <ng-template #isDesktop>
+  @if (isMobile) {
+    <landing-page-mobile style="width: 100%" [time]="time" />
+  } @else {
     <div style="display: flex; flex-direction: column">
       <div style="width: 100%; padding-bottom: 0px; padding-top: 10px; display: flex; justify-content: flex-end">
         <toast-button [onClick]="this.onStartNewRun" label="Start New Run"></toast-button>
@@ -71,5 +72,5 @@
         </div>
       </div>
     </div>
-  </ng-template>
+  }
 </div>
