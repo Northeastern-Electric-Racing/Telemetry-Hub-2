@@ -12,7 +12,7 @@ pub struct Data {
     pub runId: i32,
 }
 
-#[derive(Queryable, Debug, Identifiable, Insertable, Selectable, Serialize)]
+#[derive(Queryable, Debug, Identifiable, Insertable, Selectable, Serialize, AsChangeset)]
 #[diesel(table_name = crate::schema::dataType)]
 #[diesel(primary_key(name))]
 #[diesel(check_for_backend(diesel::pg::Pg))]

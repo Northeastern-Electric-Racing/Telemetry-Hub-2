@@ -29,7 +29,7 @@ pub async fn upsert_data_type(
         .values(&val)
         .on_conflict(dataType::name)
         .do_update()
-        .set(val)
+        .set(&val)
         .returning(DataType::as_returning())
         .get_result(db)
 }
