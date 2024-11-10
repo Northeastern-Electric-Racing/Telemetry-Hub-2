@@ -2,11 +2,11 @@ import { Component } from '@angular/core';
 import Storage from 'src/services/storage.service';
 
 @Component({
-  selector: 'landing-page-connection-display',
-  templateUrl: './landing-page-connection-display.component.html',
-  styleUrl: './landing-page-connection-display.component.css'
+  selector: 'connection-display',
+  templateUrl: './connection-display.component.html',
+  styleUrl: './connection-display.component.css'
 })
-export default class LandingPageConnectionDisplay {
+export default class ConnectionDisplay {
   connected: boolean = false;
   constructor(private storage: Storage) {}
 

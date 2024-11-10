@@ -33,7 +33,6 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import HStack from 'src/components/hstack/hstack.component';
 import VStack from 'src/components/vstack/vstack.component';
 import ResolutionSelector from 'src/components/resolution-selector/resolution-selector.component';
-import LatencyDisplay from 'src/components/latency-display/latency-display';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -54,8 +53,6 @@ import { DriverComponent } from 'src/components/driver-component/driver-componen
 import PieChart from 'src/components/pie-chart/pie-chart.component';
 import RasberryPi from 'src/components/raspberry-pi/raspberry-pi.component';
 import { AccelerationGraphs } from 'src/components/acceleration-graphs/acceleration-graphs.component';
-import ViewerDisplay from 'src/components/viewer-display/viewer-display.component';
-import ConnectionDisplay from 'src/components/connection-display/connection-display.component';
 import SpeedDisplay from 'src/components/speed-display/speed-display.component';
 import SpeedOverTimeDisplay from 'src/components/speed-over-time-display/speed-over-time-display.component';
 import TorqueDisplay from 'src/components/torque-display/torque-display.component';
@@ -105,12 +102,11 @@ import CombinedStatusMobile from 'src/pages/charging-page/components/combined-st
 import PackVoltageMobileDisplay from 'src/pages/charging-page/components/pack-voltage/pack-voltage-display/pack-voltage-mobile/pack-voltage-mobile.component';
 import HighLowCellMobile from 'src/pages/charging-page/components/high-low-cell/high-low-cell-display/high-low-cell-mobile/high-low-cell-mobile.component';
 import CellTempMobile from 'src/pages/charging-page/components/cell-temp/cell-temp-display/cell-temp-mobile/cell-temp-mobile.component';
-import LandingPageHeader from 'src/pages/landing-page/components/landing-page-header/landing-page-header.component';
-import LandingPageConnectionDisplay from 'src/pages/landing-page/components/landing-page-connection-display/landing-page-connection-display.component';
-import LandingPageLatencyDisplay from 'src/pages/landing-page/components/landing-page-latency-display/landing-page-latency-display.component';
-import { LandingPageDateLocation } from 'src/pages/landing-page/components/landing-page-date-location/landing-page-date-location.component';
-import { LandingPageCurrentRunDisplay } from 'src/pages/landing-page/components/landing-page-current-run-display/landing-page-current-run-display.component';
-import { LandingPageViewerDisplay } from 'src/pages/landing-page/components/landing-page-viewer-display/landing-page-viewer-display.component';
+import ConnectionDisplay from 'src/pages/landing-page/components/connection-display/connection-display.component';
+import { CurrentRunDisplay } from 'src/pages/landing-page/components/current-run-display/current-run-display.component';
+import LatencyDisplay from 'src/components/latency-display/latency-display';
+import { DateLocation } from 'src/pages/landing-page/components/date-location-display/date-location.component';
+import { ViewerDisplay } from 'src/pages/landing-page/components/viewer-display/viewer-display.component';
 
 @NgModule({
   declarations: [
@@ -142,7 +138,6 @@ import { LandingPageViewerDisplay } from 'src/pages/landing-page/components/land
     VStack,
     HStack,
     ResolutionSelector,
-    LatencyDisplay,
     BatteryInfoDisplay,
     GraphComponent,
     InfoGraph,
@@ -155,7 +150,6 @@ import { LandingPageViewerDisplay } from 'src/pages/landing-page/components/land
     PieChart,
     AccelerationGraphs,
     ViewerDisplay,
-    ConnectionDisplay,
     SpeedDisplay,
     SpeedOverTimeDisplay,
     TorqueDisplay,
@@ -200,12 +194,11 @@ import { LandingPageViewerDisplay } from 'src/pages/landing-page/components/land
     PackVoltageMobileDisplay,
     HighLowCellMobile,
     CellTempMobile,
-    LandingPageHeader,
-    LandingPageConnectionDisplay,
-    LandingPageLatencyDisplay,
-    LandingPageDateLocation,
-    LandingPageCurrentRunDisplay,
-    LandingPageViewerDisplay
+    ConnectionDisplay,
+    LatencyDisplay,
+    DateLocation,
+    CurrentRunDisplay,
+    ViewerDisplay
   ],
   bootstrap: [AppContext],
   imports: [

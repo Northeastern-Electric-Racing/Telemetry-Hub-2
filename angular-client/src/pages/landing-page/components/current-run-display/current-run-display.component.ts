@@ -2,11 +2,11 @@ import { Component } from '@angular/core';
 import Storage from 'src/services/storage.service';
 
 @Component({
-  selector: 'landing-page-current-run-display',
-  templateUrl: './landing-page-current-run-display.component.html',
-  styleUrl: './landing-page-current-run-display.component.css'
+  selector: 'current-run-display',
+  templateUrl: './current-run-display.component.html',
+  styleUrl: './current-run-display.component.css'
 })
-export class LandingPageCurrentRunDisplay {
+export class CurrentRunDisplay {
   currentRun: number = 0;
   constructor(private storage: Storage) {}
 

@@ -3,11 +3,11 @@ import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 
 @Component({
-  selector: 'landing-page-viewer-display',
-  templateUrl: './landing-page-viewer-display.component.html',
-  styleUrl: './landing-page-viewer-display.component.css'
+  selector: 'viewer-display',
+  templateUrl: './viewer-display.component.html',
+  styleUrl: './viewer-display.component.css'
 })
-export class LandingPageViewerDisplay implements OnInit {
+export class ViewerDisplay implements OnInit {
   numViewers: number = 0;
   constructor(private storage: Storage) {}
 
