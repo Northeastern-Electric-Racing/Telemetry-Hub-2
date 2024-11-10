@@ -5,12 +5,11 @@ use tokio::{sync::mpsc::Sender, time::Duration};
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, instrument, trace, warn, Level};
 
+use crate::{ClientData, LocationData};
 use crate::{
     services::{data_service, data_type_service},
     Database,
 };
-
-use super::{ClientData, LocationData};
 
 /// A struct defining an in progress location packet
 struct LocLock {

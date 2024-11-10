@@ -42,10 +42,6 @@ use tracing_subscriber::{fmt::format::FmtSpan, EnvFilter};
 #[derive(Parser, Debug)]
 #[command(version)]
 struct ScyllaArgs {
-    /// Whether to enable the Scylla production mode
-    #[arg(short = 'p', long, env = "SCYLLA_PROD")]
-    prod: bool,
-
     /// Whether to enable batch saturation (parallel batching)
     #[arg(short = 's', long, env = "SCYLLA_SATURATE_BATCH")]
     saturate_batch: bool,
@@ -188,40 +184,31 @@ async fn main() {
         ));
     }
 
-    // if PROD_SCYLLA=false, also procur a client for use in the config state
-    let client: Option<Arc<AsyncClient>> = if !cli.prod {
-        info!("Running processor in mock mode, no data will be stored");
-        let recv = MockProcessor::new(io);
-        tokio::spawn(recv.generate_mock());
-        None
-    } else {
-        // creates the initial run
-        let curr_run = run_service::create_run(db.clone(), chrono::offset::Utc::now())
-            .await
-            .expect("Could not create initial run!");
-        debug!("Configuring current run: {:?}", curr_run);
+    // creates the initial run
+    let curr_run = run_service::create_run(db.clone(), chrono::offset::Utc::now())
+        .await
+        .expect("Could not create initial run!");
+    debug!("Configuring current run: {:?}", curr_run);
 
-        RUN_ID.store(curr_run.id, Ordering::Relaxed);
-        // run prod if this isnt present
-        // create and spawn the mqtt processor
-        info!("Running processor in MQTT (production) mode");
-        let (recv, opts) = MqttProcessor::new(
-            mqtt_send,
-            io,
-            token.clone(),
-            MqttProcessorOptions {
-                mqtt_path: cli.siren_host_url,
-                initial_run: curr_run.id,
-                static_rate_limit_time: cli.static_rate_limit_value,
-                rate_limit_mode: cli.rate_limit_mode,
-                upload_ratio: cli.socketio_discard_percent,
-            },
-        );
-        let (client, eventloop) = AsyncClient::new(opts, 600);
-        let client_sharable: Arc<AsyncClient> = Arc::new(client);
-        task_tracker.spawn(recv.process_mqtt(client_sharable.clone(), eventloop));
-        Some(client_sharable)
-    };
+    RUN_ID.store(curr_run.id, Ordering::Relaxed);
+    // run prod if this isnt present
+    // create and spawn the mqtt processor
+    info!("Running processor in MQTT (production) mode");
+    let (recv, opts) = MqttProcessor::new(
+        mqtt_send,
+        io,
+        token.clone(),
+        MqttProcessorOptions {
+            mqtt_path: cli.siren_host_url,
+            initial_run: curr_run.id,
+            static_rate_limit_time: cli.static_rate_limit_value,
+            rate_limit_mode: cli.rate_limit_mode,
+            upload_ratio: cli.socketio_discard_percent,
+        },
+    );
+    let (client, eventloop) = AsyncClient::new(opts, 600);
+    let client_sharable: Arc<AsyncClient> = Arc::new(client);
+    task_tracker.spawn(recv.process_mqtt(client_sharable.clone(), eventloop));
 
     let app = Router::new()
         // DATA
