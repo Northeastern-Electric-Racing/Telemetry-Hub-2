@@ -32,7 +32,6 @@ import Thermometer from 'src/components/thermometer/thermometer.component';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import HStack from 'src/components/hstack/hstack.component';
 import VStack from 'src/components/vstack/vstack.component';
-import ResolutionSelector from 'src/components/resolution-selector/resolution-selector.component';
 import LatencyDisplay from 'src/components/latency-display/latency-display';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MatIconModule } from '@angular/material/icon';
@@ -74,8 +73,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { ReactiveFormsModule } from '@angular/forms';
-import { NodeFilterPipe } from 'src/utils/pipes/node-filter-pipe';
-import { DataTypeFilterPipe } from 'src/utils/pipes/data-type-filter-pipe';
+import { NodeFilterPipe } from 'src/utils/pipes/node-filter.pipe';
+import { DataTypeFilterPipe } from 'src/utils/pipes/data-type-filter.pipe';
 import { SwitchComponent } from 'src/components/switch/switch.component';
 import { DoubleLineGraphComponent } from 'src/components/double-line-graph/double-line-graph.component';
 import BatteryInfoDesktop from 'src/pages/charging-page/components/battery-info-display/battery-info-desktop/battery-info-desktop.component';
@@ -135,7 +134,6 @@ import CellTempMobile from 'src/pages/charging-page/components/cell-temp/cell-te
     Thermometer,
     VStack,
     HStack,
-    ResolutionSelector,
     LatencyDisplay,
     BatteryInfoDisplay,
     GraphComponent,

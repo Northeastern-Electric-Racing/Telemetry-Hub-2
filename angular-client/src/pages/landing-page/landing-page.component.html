@@ -1,22 +1,21 @@
 <div class="image-container" style="margin-right: 16px; margin-left: 16px">
   <sidebar-toggle style="position: absolute; margin-top: 16px; margin-left: 16px" />
 
-  <landing-page-mobile style="width: 100%" *ngIf="isMobile; else isDesktop" [time]="time" />
-  <ng-template #isDesktop>
+  @if (isMobile) {
+    <landing-page-mobile style="width: 100%" [time]="time" />
+  } @else {
     <vstack style="width: 100%" spacing="40px">
       <hstack style="width: 100%">
         <vstack style="width: 50%">
           <typography style="width: 100%; text-align: center" variant="xx-large-title" [content]="time | date: 'HH:mm:ss'" />
           <driver-component style="width: 100%" />
         </vstack>
-
         <vstack style="width: 50%">
           <hstack style="width: 100%"
             ><typography variant="header" content="{{ time | date: 'MM/dd/yyyy' }} | {{ location }} " />
             <latency-display style="width: 40%" />
             <toast-button [onClick]="this.onStartNewRun" label="Start New Run"></toast-button>
           </hstack>
-
           <hstack style="width: 100%">
             <viewer-display style="height: 200px; width: 33%" />
             <torque-display style="height: 200px; width: 33%" />
@@ -29,22 +28,18 @@
           <speed-over-time-display style="width: 100%" />
           <acceleration-over-time-display style="width: 100%" />
         </vstack>
-
         <acceleration-graphs style="width: 60%; height: 550px" />
       </hstack>
-
       <hstack style="width: 100%">
         <map-info-display style="width: 50%" />
-
         <vstack style="width: 50%">
           <motor-info style="width: 100%; height: 250px"> </motor-info>
         </vstack>
       </hstack>
-
       <hstack style="width: 100%">
         <raspberry-pi style="width: 80%" />
         <brake-pressure-display style="height: 180px; width: 20%" />
       </hstack>
     </vstack>
-  </ng-template>
+  }
 </div>

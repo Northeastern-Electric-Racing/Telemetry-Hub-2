@@ -7,6 +7,7 @@ The Angular Frontend for Argos.
 Make sure you're in the `angular-client` directory.
 
 Set environment/environment.ts to the following for local development:
+
 ```
 export const environment = {
   production: false,
@@ -27,7 +28,6 @@ To run the client in development mode run:
 
 Navigate to `http://localhost:4200/` to ensure the website is running, and you're done! The application will automatically reload if you change any of the source files.
 
-
 ## Code scaffolding
 
 Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
@@ -35,5 +35,3 @@ Run `ng generate component component-name` to generate a new component. You can 
 ## Build
 
 Run `npm run build` to build the project. The build artifacts will be stored in the `dist/` directory.
-
-

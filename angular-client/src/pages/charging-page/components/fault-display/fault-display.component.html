@@ -2,7 +2,7 @@
   <div style="width: 100%; padding-right: 5px; padding-left: 0px" class="fault-text-body">
     <vstack style="width: 100%">
       <div style="height: 10px"></div>
-      <ng-container *ngFor="let fault of faults; index as i">
+      @for (fault of faults; track fault; let i = $index) {
         <div
           [style]="
             (i % 2 == 0) === faultsShifted
@@ -22,7 +22,7 @@
           </div>
         </div>
         <div style="height: 2px"></div>
-      </ng-container>
+      }
       <div style="height: 50px"></div>
     </vstack>
   </div>
