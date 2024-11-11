@@ -1,31 +1,28 @@
-use diesel::prelude::*;
-
-use crate::{models::Data, processors::ClientData, Database};
+use crate::{
+    models::Data,
+    schema::{self, data, run},
+    ClientData, Database,
+};
+use diesel::{dsl::insert_into, prelude::*};
 
 /// Get datapoints that mach criteria
-/// * `db` - The prisma client to make the call to
+/// * `db` - The database connection to use
 /// * `data_type_name` - The data type name to filter the data by
 /// * `run_id` - The run id to filter the data
-/// * `fetch_run` whether to fetch the run assocaited with this data
-/// * `fetch_data_type` whether to fetch the data type associated with this data
-///   returns: A result containing the data or the QueryError propogated by the db
+///   returns: A result containing the data or the error propogated by the db
 pub async fn get_data(
     db: &mut Database,
     data_type_name: String,
     run_id: i32,
 ) -> Result<Vec<Data>, diesel::result::Error> {
-    db.data()
-        .find_many(vec![
-            prisma::data::data_type_name::equals(data_type_name),
-            prisma::data::run_id::equals(run_id),
-        ])
-        .select(public_data::select())
-        .exec()
-        .await
+    data::table
+        .filter(data::runId.eq(run_id))
+        .filter(data::dataTypeName.eq(data_type_name))
+        .load(db)
 }
 
 /// Adds a datapoint
-/// * `db` - The prisma client to make the call to
+/// * `db` - The database connection to use
 /// * `serverdata` - The protobuf message to parse, note the unit is ignored!
 /// * `unix_time` - The time im miliseconds since unix epoch of the message
 /// * `data_type_name` - The name of the data type, note this data type must already exist!
@@ -35,44 +32,48 @@ pub async fn add_data(
     db: &mut Database,
     client_data: ClientData,
 ) -> Result<Data, diesel::result::Error> {
-    db.data()
-        .create(
-            prisma::data_type::name::equals(client_data.name),
-            client_data.timestamp.fixed_offset(),
-            prisma::run::id::equals(client_data.run_id),
-            vec![prisma::data::values::set(
-                client_data.values.iter().map(|f| *f as f64).collect(),
-            )],
-        )
-        .select(public_data::select())
-        .exec()
-        .await
+    use schema::data::dsl::*;
+    insert_into(data)
+        .values((
+            dataTypeName.eq(client_data.name),
+            time.eq(client_data.timestamp),
+            runId.eq(client_data.run_id),
+            values.eq(client_data
+                .values
+                .iter()
+                .map(|v| Some(*v as f64))
+                .collect::<Vec<_>>()),
+        ))
+        .get_result(db)
 }
 
 /// Adds many datapoints via a batch insert
-/// * `db` - The prisma client to make the call to
+/// * `db` - The database connection to use
 /// * `client_data` - A list of data to batch insert
 ///   returns: A result containing the number of rows inserted or the QueryError propogated by the db
 pub async fn add_many(
     db: &mut Database,
     client_data: Vec<ClientData>,
-) -> Result<i64, diesel::result::Error> {
-    db.data()
-        .create_many(
+) -> Result<Vec<Data>, diesel::result::Error> {
+    use schema::data::dsl::*;
+
+    insert_into(data)
+        .values(
             client_data
                 .iter()
-                .map(|f| {
-                    prisma::data::create_unchecked(
-                        f.name.to_string(),
-                        f.timestamp.fixed_offset(),
-                        f.run_id,
-                        vec![prisma::data::values::set(
-                            f.values.iter().map(|f| *f as f64).collect(),
-                        )],
+                .map(|single_client_data| {
+                    (
+                        dataTypeName.eq(single_client_data.name.clone()),
+                        time.eq(single_client_data.timestamp),
+                        runId.eq(single_client_data.run_id),
+                        values.eq(single_client_data
+                            .values
+                            .iter()
+                            .map(|v| Some(*v as f64))
+                            .collect::<Vec<_>>()),
                     )
                 })
-                .collect(),
+                .collect::<Vec<_>>(),
         )
-        .exec()
-        .await
+        .get_results(db)
 }

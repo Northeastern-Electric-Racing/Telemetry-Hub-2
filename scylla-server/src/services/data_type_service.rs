@@ -1,15 +1,15 @@
 use crate::{models::DataType, schema::dataType, Database};
-use diesel::prelude::*;
+use diesel::{associations::HasTable, prelude::*};
 
 /// Gets all datatypes
-/// * `db` - The prisma client to make the call to
+/// * `d ` - The connection to the database
 ///   returns: A result containing the data or the QueryError propogated by the db
 pub async fn get_all_data_types(db: &mut Database) -> Result<Vec<DataType>, diesel::result::Error> {
     dataType::table.load(db)
 }
 
 /// Upserts a datatype, either creating or updating one depending on its existence
-/// * `db` - The prisma client to make the call to
+/// * `db` - The database connection to use
 /// * `data_type_name` - The data type name to upsert
 /// * `unit` - The unit of the data
 /// * `node_name` - The name of the node linked to the data type, must already exist!

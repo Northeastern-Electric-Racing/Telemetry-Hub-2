@@ -1,8 +1,9 @@
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::Serialize;
-#[derive(Queryable, Debug, Identifiable, Serialize)]
+#[derive(Queryable, Debug, Identifiable, Insertable, Selectable, Serialize, AsChangeset)]
 #[diesel(table_name = crate::schema::data)]
+#[diesel(belongs_to(DataType))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Data {
     pub id: String,

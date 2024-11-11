@@ -3,10 +3,7 @@ use axum::{
     Json,
 };
 
-use crate::{
-    error::ScyllaError, services::data_service, transformers::data_transformer::PublicData,
-    Database,
-};
+use crate::{error::ScyllaError, services::data_service, Database};
 
 /// Get all of the data points of a certain data type name and run ID
 pub async fn get_data(
