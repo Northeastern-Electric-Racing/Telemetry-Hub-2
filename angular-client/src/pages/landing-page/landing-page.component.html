@@ -10,8 +10,8 @@
       <div
         style="
           width: 100%;
-          padding-bottom: 0px;
-          padding-top: 10px;
+          padding-bottom: 5px;
+          padding-top: 5px;
           display: flex;
           justify-content: flex-end;
         "
@@ -19,72 +19,58 @@
         <toast-button [onClick]="this.onStartNewRun" label="Start New Run" />
       </div>
 
-      <div style="width: 100%; display: grid; column-gap: 10px; row-gap: 10px">
-        <div
-          style="
-            display: flex;
-            justify-content: center;
-            grid-column-start: 1;
-            grid-column-end: 3;
-            height: 100%;
-          "
-        >
+      <mat-grid-list cols="6" gutterSize="10px" rowHeight="2rem">
+        <mat-grid-tile [colspan]="2" rowspan="4">
           <typography
             variant="xx-large-title"
             [content]="time | date: 'HH:mm:ss'"
             additionalStyles="font-size: 7rem; text-align: center-bottom"
           />
-        </div>
-        <div style="display: flex; grid-column-start: 3; grid-column-end: 4">
+        </mat-grid-tile>
+        <mat-grid-tile [colspan]="1" rowspan="4">
           <date-location style="height: 100%; width: 100%" />
-        </div>
-        <div style="display: flex; grid-column-start: 4; grid-column-end: 5">
+        </mat-grid-tile>
+        <mat-grid-tile [colspan]="1" rowspan="4">
           <connection-display style="height: 100%; width: 100%" />
-        </div>
+        </mat-grid-tile>
 
-        <div style="display: flex; grid-column-start: 5; grid-column-end: 6">
+        <mat-grid-tile [colspan]="1" rowspan="4">
           <current-run-display style="height: 100%; width: 100%" />
-        </div>
+        </mat-grid-tile>
 
-        <div style="display: flex; grid-column-start: 6; grid-column-end: 7">
+        <mat-grid-tile [colspan]="1" rowspan="4">
           <viewer-display style="width: 100%; height: 100%" />
-        </div>
+        </mat-grid-tile>
 
-        <div style="display: flex; grid-column-start: 1; grid-column-end: 3">
-          <driver-component style="width: 100%; height: 250px" />
-        </div>
-        <div style="display: flex; grid-column-start: 3; grid-column-end: 4">
-          <torque-display style="width: 100%; height: 250px" />
-        </div>
-        <div style="display: flex; grid-column-start: 4; grid-column-end: 7">
+        <mat-grid-tile [colspan]="2" rowspan="5">
+          <driver-component style="width: 100%; height: 100%" />
+        </mat-grid-tile>
+        <mat-grid-tile [colspan]="1" rowspan="5">
+          <torque-display style="width: 100%; height: 100%" />
+        </mat-grid-tile>
+        <mat-grid-tile [colspan]="3" rowspan="5">
           <motor-info style="width: 100%; height: 100%" />
-        </div>
+        </mat-grid-tile>
 
-        <div
-          style="
-            display: flex;
-            flex-direction: column;
-            height: 550px;
-            justify-content: space-between;
-            grid-column-start: 1;
-            grid-column-end: 4;
-          "
-        >
-          <speed-over-time-display style="width: 100%" />
-          <acceleration-over-time-display style="width: 100%" />
-        </div>
+        <mat-grid-tile [colspan]="3" [rowspan]="7">
+          <speed-over-time-display style="width: 100%; height: 100%" />
+        </mat-grid-tile>
 
-        <div style="display: flex; grid-column-start: 4; grid-column-end: 7">
-          <acceleration-graphs style="width: 100%; height: 550px" />
-        </div>
+        <mat-grid-tile [colspan]="3" [rowspan]="14">
+          <acceleration-graphs style="width: 100%; height: 100%" />
+        </mat-grid-tile>
 
-        <div style="display: flex; grid-column-start: 1; grid-column-end: 6">
-          <raspberry-pi style="width: 100%" />
-        </div>
-        <div style="display: flex; grid-column-start: 6; grid-column-end: 7">
-          <brake-pressure-display style="width: 100%" />
-        </div>
-      </div>
+        <mat-grid-tile [colspan]="3" [rowspan]="7">
+          <acceleration-over-time-display style="width: 100%; height: 100%" />
+        </mat-grid-tile>
+
+        <mat-grid-tile [colspan]="5" rowspan="5">
+          <raspberry-pi style="width: 100%; height: 100%" />
+        </mat-grid-tile>
+        <mat-grid-tile [colspan]="1" rowspan="5">
+          <brake-pressure-display style="width: 100%; height: 100%" />
+        </mat-grid-tile>
+      </mat-grid-list>
     </div>
   }
 </div>
