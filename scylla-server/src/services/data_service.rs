@@ -16,8 +16,11 @@ pub async fn get_data(
     run_id: i32,
 ) -> Result<Vec<Data>, diesel::result::Error> {
     data::table
-        .filter(data::runId.eq(run_id))
-        .filter(data::dataTypeName.eq(data_type_name))
+        .filter(
+            data::runId
+                .eq(run_id)
+                .and(data::dataTypeName.eq(data_type_name)),
+        )
         .load(db)
 }
 
@@ -29,7 +32,7 @@ pub async fn get_data(
 /// * `rin_id` - The run id to assign the data point to, note this run must already exist!
 ///   returns: A result containing the data or the QueryError propogated by the db
 pub async fn add_data(
-    db: &mut Database,
+    db: &mut Datab``ase,
     client_data: ClientData,
 ) -> Result<Data, diesel::result::Error> {
     use schema::data::dsl::*;
