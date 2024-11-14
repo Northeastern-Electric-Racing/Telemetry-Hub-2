@@ -15,7 +15,7 @@ use test_utils::cleanup_and_prepare;
 const TEST_KEYWORD: &str = "test";
 
 #[tokio::test]
-async fn test_get_all_datatypes() -> Result<(), QueryError> {
+async fn test_get_all_datatypes() -> Result<(), diesel::result::Error> {
     let db = cleanup_and_prepare().await?;
 
     // ensure datatypes is empty
@@ -25,7 +25,7 @@ async fn test_get_all_datatypes() -> Result<(), QueryError> {
 }
 
 #[tokio::test]
-async fn test_datatype_fail_upsert_no_node() -> Result<(), QueryError> {
+async fn test_datatype_fail_upsert_no_node() -> Result<(), diesel::result::Error> {
     let db = cleanup_and_prepare().await?;
 
     // should fail since no node exists
@@ -42,7 +42,7 @@ async fn test_datatype_fail_upsert_no_node() -> Result<(), QueryError> {
 }
 
 #[tokio::test]
-async fn test_datatype_create() -> Result<(), QueryError> {
+async fn test_datatype_create() -> Result<(), diesel::result::Error> {
     let data_type_name: String = "test".to_owned();
     let unit: String = "testUnitCreation".to_owned();
     let node_name: String = "testNode".to_owned();

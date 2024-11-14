@@ -27,6 +27,7 @@ clap = { version = "4.5.11", features = ["derive", "env"] }
 axum-extra = { version = "0.9.3", features = ["query"] }
 chrono = { version = "0.4.38", features = ["serde"] }
 serde_json = "1.0.128"
+diesel_migrations = { version = "2.2.0", features = ["postgres"] }
 
 [features]
 top = ["dep:console-subscriber"]

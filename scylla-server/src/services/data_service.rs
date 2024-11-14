@@ -47,7 +47,7 @@ pub async fn add_data(
 pub async fn add_many(
     db: &mut Database,
     client_data: Vec<ClientData>,
-) -> Result<Vec<Data>, diesel::result::Error> {
+) -> Result<usize, diesel::result::Error> {
     diesel::insert_into(data)
         .values(
             client_data
@@ -66,5 +66,5 @@ pub async fn add_many(
                 })
                 .collect::<Vec<_>>(),
         )
-        .get_results(db)
+        .execute(db)
 }

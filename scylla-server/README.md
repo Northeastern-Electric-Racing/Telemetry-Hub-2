@@ -10,14 +10,23 @@ docker compose up odyssey-timescale
 
 ```
 # in this directory
-SOURCE_DATABASE_URL=postgresql://postgres:password@127.0.0.1:5432/postgres cargo run
+cargo run
 ```
 
 ### Test this app
 
-#### Seed some data
+#### Get started with DB
 
-Run `cargo prisma-seed`
+Download the diesel CLI:
+```
+# Linux/MacOS
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/diesel-rs/diesel/releases/latest/download/diesel_cli-installer.sh | sh
+
+# Windows
+powershell -c "irm https://github.com/diesel-rs/diesel/releases/latest/download/diesel_cli-installer.ps1 | iex"
+```
+
+With this you can run manual migrations and change the schema.
 
 
 #### Integration tests

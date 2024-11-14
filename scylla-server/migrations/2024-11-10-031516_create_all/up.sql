@@ -14,7 +14,7 @@ CREATE TABLE "run" (
 
 -- CreateTable
 CREATE TABLE "data" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "values" DOUBLE PRECISION[],
     "dataTypeName" TEXT NOT NULL,
     "time" TIMESTAMPTZ NOT NULL,

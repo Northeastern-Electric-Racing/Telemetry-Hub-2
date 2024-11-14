@@ -5,10 +5,7 @@ use tokio::{sync::mpsc::Sender, time::Duration};
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, instrument, trace, warn, Level};
 
-use crate::{
-    services::{data_service, data_type_service},
-    Database,
-};
+use crate::services::{data_service, data_type_service};
 use crate::{ClientData, LocationData, PoolHandle};
 
 /// A struct defining an in progress location packet
@@ -123,20 +120,27 @@ impl DbHandler {
                     // cleanup all remaining messages if batches start backing up
                     while let Some(final_msgs) = batch_queue.recv().await {
                         info!("{} batches remaining!", batch_queue.len()+1);
-                    info!(
-                        "A cleanup batch uploaded: {:?}",
-                        data_service::add_many(&mut database, final_msgs).await
-                    );
+                        // do not spawn new tasks in this mode, see below comment for chunk_size math
+                        let chunk_size = final_msgs.len() / ((final_msgs.len() / 16380) + 1);
+                        for chunk in final_msgs.chunks(chunk_size).collect::<Vec<_>>() {
+                            info!(
+                                "A cleanup batch uploaded: {:?}",
+                                data_service::add_many(&mut database, chunk.to_vec()).await
+                        );
+                        }
                     }
                     info!("No more messages to cleanup.");
                     break;
                 },
                 Some(msgs) = batch_queue.recv() => {
-                    let Ok(mut database) = pool.get() else {
-                        warn!("Could not get connection for batch upload!");
-                        continue;
-                    };
-                    Self::batch_upload(msgs, &mut database).await;
+                    // libpq has max 65535 params, therefore batch
+                    // max for batch is 65535/4 params per message, hence the below, rounded down with a margin for safety
+                    // TODO avoid this code batch uploading the remainder messages as a new batch, combine it with another safely
+                    let chunk_size = msgs.len() / ((msgs.len() / 16380) + 1);
+                    debug!("Batch uploading {} chunks in parrallel", msgs.len() / chunk_size);
+                    for chunk in msgs.chunks(chunk_size).collect::<Vec<_>>() {
+                        tokio::spawn(DbHandler::batch_upload(chunk.to_vec(), pool.clone()));
+                    }
                     debug!(
                         "DB send: {} of {}",
                         batch_queue.len(),
@@ -165,9 +169,13 @@ impl DbHandler {
         }
     }
 
-    #[instrument(level = Level::DEBUG, skip(msg, db))]
-    async fn batch_upload(msg: Vec<ClientData>, db: &mut Database) {
-        match data_service::add_many(db, msg).await {
+    #[instrument(level = Level::DEBUG, skip(msg, pool))]
+    async fn batch_upload(msg: Vec<ClientData>, pool: PoolHandle) {
+        let Ok(mut database) = pool.get() else {
+            warn!("Could not get connection for batch upload!");
+            return;
+        };
+        match data_service::add_many(&mut database, msg).await {
             Ok(count) => info!("Batch uploaded: {:?}", count),
             Err(err) => warn!("Error in batch upload: {:?}", err),
         }

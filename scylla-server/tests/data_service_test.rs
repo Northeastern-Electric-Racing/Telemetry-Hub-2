@@ -1,18 +1,12 @@
 #[path = "test_utils.rs"]
 mod test_utils;
 
-use prisma_client_rust::QueryError;
-use scylla_server::{
-    processors::ClientData,
-    services::{data_service, data_type_service, node_service, run_service},
-    transformers::data_transformer::PublicData,
-};
 use test_utils::cleanup_and_prepare;
 
 const TEST_KEYWORD: &str = "test";
 
 #[tokio::test]
-async fn test_data_service() -> Result<(), QueryError> {
+async fn test_data_service() -> Result<(), diesel::result::Error> {
     let db = cleanup_and_prepare().await?;
 
     run_service::create_run_with_id(&db, chrono::DateTime::from_timestamp_millis(0).unwrap(), 0)
@@ -31,7 +25,7 @@ async fn test_data_service() -> Result<(), QueryError> {
 }
 
 #[tokio::test]
-async fn test_data_add() -> Result<(), QueryError> {
+async fn test_data_add() -> Result<(), diesel::result::Error> {
     let db = cleanup_and_prepare().await?;
 
     node_service::upsert_node(&db, TEST_KEYWORD.to_owned()).await?;
@@ -70,7 +64,7 @@ async fn test_data_add() -> Result<(), QueryError> {
 }
 
 #[tokio::test]
-async fn test_data_fetch_empty() -> Result<(), QueryError> {
+async fn test_data_fetch_empty() -> Result<(), diesel::result::Error> {
     let db = cleanup_and_prepare().await?;
 
     // should be empty, nothing was added to run
@@ -82,7 +76,7 @@ async fn test_data_fetch_empty() -> Result<(), QueryError> {
 }
 
 #[tokio::test]
-async fn test_data_no_prereqs() -> Result<(), QueryError> {
+async fn test_data_no_prereqs() -> Result<(), diesel::result::Error> {
     let db = cleanup_and_prepare().await?;
 
     // should err out as data type name doesnt exist yet

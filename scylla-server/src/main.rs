@@ -13,6 +13,7 @@ use diesel::{
     r2d2::{ConnectionManager, Pool},
     PgConnection,
 };
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use dotenvy::dotenv;
 use rumqttc::v5::AsyncClient;
 use scylla_server::{
@@ -98,6 +99,8 @@ struct ScyllaArgs {
     socketio_discard_percent: u8,
 }
 
+const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
+
 #[tokio::main]
 async fn main() {
     let cli = ScyllaArgs::parse();
@@ -131,6 +134,7 @@ async fn main() {
     }
 
     // create the database stuff
+    info!("Initializing database connections...");
     dotenv().ok();
     let manager = ConnectionManager::<PgConnection>::new(std::env::var("DATABASE_URL").unwrap());
     // Refer to the `r2d2` documentation for more methods to use
@@ -139,6 +143,11 @@ async fn main() {
         .test_on_check_out(true)
         .build(manager)
         .expect("Could not build connection pool");
+
+    let mut conn = db.get().unwrap();
+    conn.run_pending_migrations(MIGRATIONS)
+        .expect("Could not run migrations!");
+    info!("Successfully migrated DB!");
 
     // create the socket stuff
     let (socket_layer, io) = SocketIo::builder()

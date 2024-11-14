@@ -1,3 +1,0 @@
-[alias]
-prisma = "run --release --package prisma-cli --"
-prisma-seed = "run --release --bin seed"

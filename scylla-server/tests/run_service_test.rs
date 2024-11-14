@@ -6,7 +6,7 @@ use test_utils::cleanup_and_prepare;
 mod test_utils;
 
 #[tokio::test]
-async fn test_get_all_runs() -> Result<(), QueryError> {
+async fn test_get_all_runs() -> Result<(), diesel::result::Error> {
     let db = cleanup_and_prepare().await?;
 
     // ensure runs is empty
@@ -16,7 +16,7 @@ async fn test_get_all_runs() -> Result<(), QueryError> {
 }
 
 #[tokio::test]
-async fn test_get_run_by_id() -> Result<(), QueryError> {
+async fn test_get_run_by_id() -> Result<(), diesel::result::Error> {
     let db = cleanup_and_prepare().await?;
 
     // add a run

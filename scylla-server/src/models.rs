@@ -7,7 +7,7 @@ use serde::Serialize;
 #[diesel(belongs_to(DataType))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Data {
-    pub id: String,
+    pub id: i32,
     pub values: Option<Vec<Option<f64>>>,
     pub dataTypeName: String,
     pub time: DateTime<Utc>,
