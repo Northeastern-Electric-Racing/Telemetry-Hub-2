@@ -6,6 +6,8 @@ default-run = "scylla-server"
 
 [dependencies]
 diesel = { version = "2.2.4", features = ["postgres", "r2d2", "chrono"] }
+pq-sys = { version = "0.6", features = ["bundled"] }
+dotenvy = "0.15"
 serde = "1.0.203"
 protobuf-codegen = "3.5.1"
 protobuf = "3.5.1"

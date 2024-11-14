@@ -1,7 +1,4 @@
-use std::sync::atomic::AtomicI32;
-
-use chrono::{DateTime, Utc, serde::ts_milliseconds};
-use diesel::PgConnection;
+use chrono::serde::ts_milliseconds;
 
 pub mod controllers;
 pub mod error;
@@ -16,8 +13,12 @@ pub mod schema;
 pub mod command_data;
 pub mod serverdata;
 
+pub mod transformers;
+
 /// The type descriptor of the database passed to the middlelayer through axum state
-pub type Database = PgConnection;
+pub type Database = diesel::PgConnection;
+
+pub type PoolHandle = diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 #[derive(clap::ValueEnum, Debug, PartialEq, Copy, Clone, Default)]
 #[clap(rename_all = "kebab_case")]
@@ -30,8 +31,7 @@ pub enum RateLimitMode {
 }
 
 // Atomic to keep track the current run id across EVERYTHING (very scary)
-pub static RUN_ID: AtomicI32 = AtomicI32::new(-1);
-
+pub static RUN_ID: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(-1);
 
 /// Represents the client data
 /// This has the dual purposes of
@@ -47,7 +47,7 @@ pub struct ClientData {
     pub values: Vec<f32>,
     /// Client expects time in milliseconds, so serialize as such
     #[serde(with = "ts_milliseconds")]
-    pub timestamp: DateTime<Utc>,
+    pub timestamp: chrono::DateTime<chrono::Utc>,
 
     /// client doesnt parse node
     #[serde(skip_serializing)]

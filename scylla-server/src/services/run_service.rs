@@ -1,19 +1,12 @@
-use diesel::{dsl::insert_into, prelude::*};
-use std::vec;
-
+use crate::{models::Run, schema::run::dsl::*, Database};
 use chrono::{DateTime, Utc};
-
-use crate::{
-    models::Run,
-    schema::{self, run},
-    Database,
-};
+use diesel::prelude::*;
 
 /// Gets all runs
 /// * `db` - The prisma client to make the call to
 ///   returns: A result containing the data or the QueryError propogated by the db
 pub async fn get_all_runs(db: &mut Database) -> Result<Vec<Run>, diesel::result::Error> {
-    run::table.load(db)
+    run.load(db)
 }
 
 /// Gets a single run by its id
@@ -24,7 +17,7 @@ pub async fn get_run_by_id(
     db: &mut Database,
     run_id: i32,
 ) -> Result<Option<Run>, diesel::result::Error> {
-    run::table.find(run_id).first(db).optional()
+    run.find(run_id).first(db).optional()
 }
 
 /// Creates a run
@@ -35,9 +28,9 @@ pub async fn create_run(
     db: &mut Database,
     timestamp: DateTime<Utc>,
 ) -> Result<Run, diesel::result::Error> {
-    use schema::run::dsl::*;
-
-    insert_into(run).values(time.eq(timestamp)).get_result(db)
+    diesel::insert_into(run)
+        .values((time.eq(timestamp), notes.eq("A")))
+        .get_result(db)
 }
 
 /// Creates a run with a given id
@@ -50,9 +43,7 @@ pub async fn create_run_with_id(
     timestamp: DateTime<Utc>,
     run_id: i32,
 ) -> Result<Run, diesel::result::Error> {
-    use schema::run::dsl::*;
-
-    insert_into(run)
-        .values((time.eq(timestamp), id.eq(run_id)))
+    diesel::insert_into(run)
+        .values((time.eq(timestamp), id.eq(run_id), notes.eq("A")))
         .get_result(db)
 }

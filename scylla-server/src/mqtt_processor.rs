@@ -152,19 +152,20 @@ impl MqttProcessor {
                 },
                 _ = view_interval.tick() => {
                     trace!("Updating viewership data!");
-                    if let Ok(sockets) = self.io.sockets() {
+                    let sockets = self.io.sockets();
+                    let sockets_cnt = match sockets {
+                        Ok(s) => s.len() as f32,
+                        Err(_) => -1f32,
+                    };
                     let client_data = ClientData {
                         name: "Viewers".to_string(),
                         node: "Internal".to_string(),
                         unit: "".to_string(),
                         run_id: crate::RUN_ID.load(Ordering::Relaxed),
                         timestamp: chrono::offset::Utc::now(),
-                        values: vec![sockets.len() as f32]
+                        values: vec![sockets_cnt]
                     };
                     self.send_socket_msg(client_data, &mut upload_counter);
-                    } else {
-                        warn!("Could not fetch socket count");
-                    }
                 }
                 _ = latency_interval.tick() => {
                     // set latency to 0 if no messages are in buffer

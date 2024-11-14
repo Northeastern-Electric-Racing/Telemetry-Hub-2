@@ -5,11 +5,11 @@ use tokio::{sync::mpsc::Sender, time::Duration};
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, instrument, trace, warn, Level};
 
-use crate::{ClientData, LocationData};
 use crate::{
     services::{data_service, data_type_service},
     Database,
 };
+use crate::{ClientData, LocationData, PoolHandle};
 
 /// A struct defining an in progress location packet
 struct LocLock {
@@ -67,14 +67,12 @@ impl LocLock {
 /// A few threads to manage the processing and inserting of special types,
 /// upserting of metadata for data, and batch uploading the database
 pub struct DbHandler {
-    /// The list of nodes seen by this instance, used for when to upsert
-    node_list: Vec<String>,
     /// The list of data types seen by this instance, used for when to upsert
     datatype_list: Vec<String>,
     /// The broadcast channel which provides serial datapoints for processing
     receiver: Receiver<ClientData>,
-    /// The database
-    db: Database,
+    /// The database pool handle
+    pool: PoolHandle,
     /// An internal state of an in progress location packet
     location_lock: LocLock,
     /// Whether the location has been modified this loop
@@ -90,12 +88,15 @@ pub struct DbHandler {
 impl DbHandler {
     /// Make a new db handler
     /// * `recv` - the broadcast reciver of which clientdata will be sent
-    pub fn new(receiver: Receiver<ClientData>, db: Database, upload_interval: u64) -> DbHandler {
+    pub fn new(
+        receiver: Receiver<ClientData>,
+        pool: PoolHandle,
+        upload_interval: u64,
+    ) -> DbHandler {
         DbHandler {
-            node_list: vec![],
             datatype_list: vec![],
             receiver,
-            db,
+            pool,
             location_lock: LocLock::new(),
             is_location: false,
             data_queue: vec![],
@@ -109,26 +110,33 @@ impl DbHandler {
     /// On cancellation, will await one final queue message to cleanup anything remaining in the channel
     pub async fn batching_loop(
         mut batch_queue: Receiver<Vec<ClientData>>,
-        database: &mut Database,
-        saturate_batches: bool,
+        pool: PoolHandle,
         cancel_token: CancellationToken,
     ) {
         loop {
             tokio::select! {
                 _ = cancel_token.cancelled() => {
+                    let Ok(mut database) = pool.get() else {
+                        warn!("Could not get connection for cleanup");
+                        break;
+                    };
                     // cleanup all remaining messages if batches start backing up
                     while let Some(final_msgs) = batch_queue.recv().await {
                         info!("{} batches remaining!", batch_queue.len()+1);
                     info!(
                         "A cleanup batch uploaded: {:?}",
-                        data_service::add_many(database, final_msgs).await
+                        data_service::add_many(&mut database, final_msgs).await
                     );
                     }
                     info!("No more messages to cleanup.");
                     break;
                 },
                 Some(msgs) = batch_queue.recv() => {
-                    Self::batch_upload(msgs, database).await;
+                    let Ok(mut database) = pool.get() else {
+                        warn!("Could not get connection for batch upload!");
+                        continue;
+                    };
+                    Self::batch_upload(msgs, &mut database).await;
                     debug!(
                         "DB send: {} of {}",
                         batch_queue.len(),
@@ -212,9 +220,13 @@ impl DbHandler {
         }
 
         if !self.datatype_list.contains(&msg.name) {
+            let Ok(mut database) = self.pool.get() else {
+                warn!("Could not get connection for dataType upsert");
+                return;
+            };
             info!("Upserting data type: {}", msg.name);
             if let Err(msg) = data_type_service::upsert_data_type(
-                &mut self.db,
+                &mut database,
                 msg.name.clone(),
                 msg.unit.clone(),
                 msg.node.clone(),

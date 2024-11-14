@@ -1,11 +1,11 @@
-use crate::{models::DataType, schema::dataType, Database};
-use diesel::{associations::HasTable, prelude::*};
+use crate::{models::DataType, schema::dataType::dsl::*, Database};
+use diesel::prelude::*;
 
 /// Gets all datatypes
 /// * `d ` - The connection to the database
 ///   returns: A result containing the data or the QueryError propogated by the db
 pub async fn get_all_data_types(db: &mut Database) -> Result<Vec<DataType>, diesel::result::Error> {
-    dataType::table.load(db)
+    dataType.load(db)
 }
 
 /// Upserts a datatype, either creating or updating one depending on its existence
@@ -17,17 +17,17 @@ pub async fn get_all_data_types(db: &mut Database) -> Result<Vec<DataType>, dies
 pub async fn upsert_data_type(
     db: &mut Database,
     data_type_name: String,
-    unit: String,
+    new_unit: String,
     node_name: String,
 ) -> Result<DataType, diesel::result::Error> {
     let val = DataType {
         name: data_type_name,
-        unit,
+        unit: new_unit,
         nodeName: node_name,
     };
-    diesel::insert_into(dataType::table)
+    diesel::insert_into(dataType)
         .values(&val)
-        .on_conflict(dataType::name)
+        .on_conflict(name)
         .do_update()
         .set(&val)
         .returning(DataType::as_returning())

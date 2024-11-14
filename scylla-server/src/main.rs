@@ -9,23 +9,25 @@ use axum::{
     Extension, Router,
 };
 use clap::Parser;
+use diesel::{
+    r2d2::{ConnectionManager, Pool},
+    PgConnection,
+};
+use dotenvy::dotenv;
 use rumqttc::v5::AsyncClient;
-use scylla_server::RUN_ID;
 use scylla_server::{
     controllers::{
         self,
         car_command_controller::{self},
         data_type_controller, run_controller,
     },
-    prisma::PrismaClient,
-    processors::{
-        db_handler,
-        mock_processor::MockProcessor,
-        mqtt_processor::{MqttProcessor, MqttProcessorOptions},
-        ClientData,
-    },
     services::run_service::{self},
-    Database, RateLimitMode,
+    PoolHandle, RateLimitMode,
+};
+use scylla_server::{
+    db_handler,
+    mqtt_processor::{MqttProcessor, MqttProcessorOptions},
+    ClientData, RUN_ID,
 };
 use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::{signal, sync::mpsc};
@@ -42,10 +44,6 @@ use tracing_subscriber::{fmt::format::FmtSpan, EnvFilter};
 #[derive(Parser, Debug)]
 #[command(version)]
 struct ScyllaArgs {
-    /// Whether to enable batch saturation (parallel batching)
-    #[arg(short = 's', long, env = "SCYLLA_SATURATE_BATCH")]
-    saturate_batch: bool,
-
     /// Whether to disable batch data uploading (will not disable upsertion of special types)
     #[arg(long, env = "SCYLLA_DATA_UPLOAD_DISABLE")]
     disable_data_upload: bool,
@@ -133,10 +131,11 @@ async fn main() {
     }
 
     // create the database stuff
-    let manager = ConnectionManager::<DbConnection>::new(&std::env::var("DATABASE_URL").unwrap());
+    dotenv().ok();
+    let manager = ConnectionManager::<PgConnection>::new(std::env::var("DATABASE_URL").unwrap());
     // Refer to the `r2d2` documentation for more methods to use
     // when building a connection pool
-    let db = Pool::builder()
+    let db: PoolHandle = Pool::builder()
         .test_on_check_out(true)
         .build(manager)
         .expect("Could not build connection pool");
@@ -174,7 +173,6 @@ async fn main() {
         task_tracker.spawn(db_handler::DbHandler::batching_loop(
             db_receive,
             db.clone(),
-            cli.saturate_batch,
             token.clone(),
         ));
     } else {
@@ -185,7 +183,7 @@ async fn main() {
     }
 
     // creates the initial run
-    let curr_run = run_service::create_run(db.clone(), chrono::offset::Utc::now())
+    let curr_run = run_service::create_run(&mut db.get().unwrap(), chrono::offset::Utc::now())
         .await
         .expect("Could not create initial run!");
     debug!("Configuring current run: {:?}", curr_run);
@@ -224,7 +222,7 @@ async fn main() {
         // CONFIG
         .route(
             "/config/set/:configKey",
-            post(car_command_controller::send_config_command).layer(Extension(client)),
+            post(car_command_controller::send_config_command).layer(Extension(client_sharable)),
         )
         // for CORS handling
         .layer(
