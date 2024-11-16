@@ -11,6 +11,7 @@ pub struct PublicData {
     pub time_ms: i64,
     pub values: Vec<f64>,
 }
+
 // custom impls to avoid comparing values fields
 impl Ord for PublicData {
     fn cmp(&self, other: &Self) -> Ordering {
