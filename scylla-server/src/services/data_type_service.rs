@@ -28,7 +28,7 @@ pub async fn upsert_data_type(
     diesel::insert_into(dataType)
         .values(&val)
         .on_conflict(name)
-        .do_update()
+        .do_update() // actually allows for the upsert ability
         .set(&val)
         .returning(DataType::as_returning())
         .get_result(db)

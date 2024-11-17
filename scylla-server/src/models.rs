@@ -24,7 +24,7 @@ pub struct DataType {
     pub nodeName: String,
 }
 
-#[derive(Queryable, Debug, Identifiable, Selectable, Serialize)]
+#[derive(Queryable, Debug, Identifiable, Insertable, Selectable, Serialize, AsChangeset)]
 #[diesel(table_name = crate::schema::run)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Run {
