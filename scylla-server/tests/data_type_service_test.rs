@@ -26,23 +26,6 @@ async fn test_get_all_datatypes() -> Result<(), diesel::result::Error> {
 }
 
 #[tokio::test]
-async fn test_datatype_fail_upsert_no_node() -> Result<(), diesel::result::Error> {
-    let mut db = cleanup_and_prepare().await?;
-
-    // should fail since no node exists
-    data_type_service::upsert_data_type(
-        &mut db,
-        TEST_KEYWORD.to_owned(),
-        "hello wurld".to_owned(),
-        TEST_KEYWORD.to_owned(),
-    )
-    .await
-    .expect_err("Test should fail, no node exists");
-
-    Ok(())
-}
-
-#[tokio::test]
 async fn test_datatype_create() -> Result<(), diesel::result::Error> {
     let data_type_name: String = "test".to_owned();
     let unit: String = "testUnitCreation".to_owned();

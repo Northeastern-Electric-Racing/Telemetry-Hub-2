@@ -13,9 +13,7 @@ pub async fn cleanup_and_prepare() -> Result<Database, diesel::result::Error> {
         .unwrap_or_else(|_| panic!("Error connecting to {}", database_url));
 
     diesel::delete(data::table).execute(&mut client)?;
-
     diesel::delete(dataType::table).execute(&mut client)?;
-
     diesel::delete(run::table).execute(&mut client)?;
 
     Ok(client)

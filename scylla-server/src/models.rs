@@ -4,7 +4,7 @@ use serde::Serialize;
 
 #[derive(Queryable, Debug, Identifiable, Insertable, Selectable, Serialize, AsChangeset)]
 #[diesel(table_name = crate::schema::data)]
-#[diesel(belongs_to(DataType))]
+#[diesel(belongs_to(DataType, foreign_key = dataTypeName))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Data {
     pub id: i32,
