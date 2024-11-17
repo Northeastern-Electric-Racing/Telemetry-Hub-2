@@ -1,13 +1,10 @@
 #!/bin/sh
-
 echo "Starting db"
-cd ..
+cd ../compose
 docker compose up -d odyssey-timescale
+cd ..
 
-echo "Deploying prisma"
 cd ./scylla-server
-cargo prisma migrate deploy
-
 echo "Running tests"
 DATABASE_URL=postgresql://postgres:password@127.0.0.1:5432/postgres cargo test -- --test-threads=1
 

@@ -33,10 +33,11 @@ With this you can run manual migrations and change the schema.
 
 Since this app uses the database for testing, you must follow these steps, or run `./integration_test.sh`:
 ```
-docker volume rm argos_db-data
-docker compose up odyssey-timescale
-cargo prisma migrate deploy
-SOURCE_DATABASE_URL=postgresql://postgres:password@127.0.0.1:5432/postgres cargo test -- --test-threads=1
+// Run in /compose folder (in main dir)
+docker compose up -d odyssey-timescale
+
+// Run this in your command line in /scylla-server
+DATABASE_URL=postgresql://postgres:password@127.0.0.1:5432/postgres cargo test -- --test-threads=1
 ```
 
 #### Test it yourself!
