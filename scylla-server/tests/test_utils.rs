@@ -1,24 +1,20 @@
-use std::sync::Arc;
+use diesel::prelude::*;
+use dotenvy::dotenv;
+use scylla_server::{
+    schema::{data, dataType, run},
+    Database,
+};
 
-use prisma_client_rust::QueryError;
-use scylla_server::{prisma::PrismaClient, Database};
+pub async fn cleanup_and_prepare() -> Result<Database, diesel::result::Error> {
+    dotenv().ok();
 
-pub async fn cleanup_and_prepare() -> Result<Database, QueryError> {
-    let client = Arc::new(PrismaClient::_builder().build().await.unwrap());
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let mut client = PgConnection::establish(&database_url)
+        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url));
 
-    client.data().delete_many(vec![]).exec().await?;
-
-    client.data_type().delete_many(vec![]).exec().await?;
-
-    client.driver().delete_many(vec![]).exec().await?;
-
-    client.location().delete_many(vec![]).exec().await?;
-
-    client.node().delete_many(vec![]).exec().await?;
-
-    client.run().delete_many(vec![]).exec().await?;
-
-    client.system().delete_many(vec![]).exec().await?;
+    diesel::delete(data::table).execute(&mut client)?;
+    diesel::delete(dataType::table).execute(&mut client)?;
+    diesel::delete(run::table).execute(&mut client)?;
 
     Ok(client)
 }

@@ -9,24 +9,26 @@ use axum::{
     Extension, Router,
 };
 use clap::Parser;
+use diesel::{
+    r2d2::{ConnectionManager, Pool},
+    PgConnection,
+};
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+use dotenvy::dotenv;
 use rumqttc::v5::AsyncClient;
-use scylla_server::RUN_ID;
 use scylla_server::{
     controllers::{
         self,
         car_command_controller::{self},
-        data_type_controller, driver_controller, location_controller, node_controller,
-        run_controller, system_controller,
-    },
-    prisma::PrismaClient,
-    processors::{
-        db_handler,
-        mock_processor::MockProcessor,
-        mqtt_processor::{MqttProcessor, MqttProcessorOptions},
-        ClientData,
+        data_type_controller, run_controller,
     },
     services::run_service::{self},
-    Database, RateLimitMode,
+    PoolHandle, RateLimitMode,
+};
+use scylla_server::{
+    db_handler,
+    mqtt_processor::{MqttProcessor, MqttProcessorOptions},
+    ClientData, RUN_ID,
 };
 use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::{signal, sync::mpsc};
@@ -43,14 +45,6 @@ use tracing_subscriber::{fmt::format::FmtSpan, EnvFilter};
 #[derive(Parser, Debug)]
 #[command(version)]
 struct ScyllaArgs {
-    /// Whether to enable the Scylla production mode
-    #[arg(short = 'p', long, env = "SCYLLA_PROD")]
-    prod: bool,
-
-    /// Whether to enable batch saturation (parallel batching)
-    #[arg(short = 's', long, env = "SCYLLA_SATURATE_BATCH")]
-    saturate_batch: bool,
-
     /// Whether to disable batch data uploading (will not disable upsertion of special types)
     #[arg(long, env = "SCYLLA_DATA_UPLOAD_DISABLE")]
     disable_data_upload: bool,
@@ -105,6 +99,8 @@ struct ScyllaArgs {
     socketio_discard_percent: u8,
 }
 
+const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
+
 #[tokio::main]
 async fn main() {
     let cli = ScyllaArgs::parse();
@@ -138,12 +134,20 @@ async fn main() {
     }
 
     // create the database stuff
-    let db: Database = Arc::new(
-        PrismaClient::_builder()
-            .build()
-            .await
-            .expect("Could not build prisma DB"),
-    );
+    info!("Initializing database connections...");
+    dotenv().ok();
+    let manager = ConnectionManager::<PgConnection>::new(std::env::var("DATABASE_URL").unwrap());
+    // Refer to the `r2d2` documentation for more methods to use
+    // when building a connection pool
+    let db: PoolHandle = Pool::builder()
+        .test_on_check_out(true)
+        .build(manager)
+        .expect("Could not build connection pool");
+
+    let mut conn = db.get().unwrap();
+    conn.run_pending_migrations(MIGRATIONS)
+        .expect("Could not run migrations!");
+    info!("Successfully migrated DB!");
 
     // create the socket stuff
     let (socket_layer, io) = SocketIo::builder()
@@ -170,15 +174,14 @@ async fn main() {
     let token = CancellationToken::new();
     // spawn the database handler
     task_tracker.spawn(
-        db_handler::DbHandler::new(mqtt_receive, Arc::clone(&db), cli.batch_upsert_time * 1000)
+        db_handler::DbHandler::new(mqtt_receive, db.clone(), cli.batch_upsert_time * 1000)
             .handling_loop(db_send, token.clone()),
     );
     // spawn the database inserter, if we have it enabled
     if !cli.disable_data_upload {
         task_tracker.spawn(db_handler::DbHandler::batching_loop(
             db_receive,
-            Arc::clone(&db),
-            cli.saturate_batch,
+            db.clone(),
             token.clone(),
         ));
     } else {
@@ -188,40 +191,31 @@ async fn main() {
         ));
     }
 
-    // if PROD_SCYLLA=false, also procur a client for use in the config state
-    let client: Option<Arc<AsyncClient>> = if !cli.prod {
-        info!("Running processor in mock mode, no data will be stored");
-        let recv = MockProcessor::new(io);
-        tokio::spawn(recv.generate_mock());
-        None
-    } else {
-        // creates the initial run
-        let curr_run = run_service::create_run(&db, chrono::offset::Utc::now())
-            .await
-            .expect("Could not create initial run!");
-        debug!("Configuring current run: {:?}", curr_run);
+    // creates the initial run
+    let curr_run = run_service::create_run(&mut db.get().unwrap(), chrono::offset::Utc::now())
+        .await
+        .expect("Could not create initial run!");
+    debug!("Configuring current run: {:?}", curr_run);
 
-        RUN_ID.store(curr_run.id, Ordering::Relaxed);
-        // run prod if this isnt present
-        // create and spawn the mqtt processor
-        info!("Running processor in MQTT (production) mode");
-        let (recv, opts) = MqttProcessor::new(
-            mqtt_send,
-            io,
-            token.clone(),
-            MqttProcessorOptions {
-                mqtt_path: cli.siren_host_url,
-                initial_run: curr_run.id,
-                static_rate_limit_time: cli.static_rate_limit_value,
-                rate_limit_mode: cli.rate_limit_mode,
-                upload_ratio: cli.socketio_discard_percent,
-            },
-        );
-        let (client, eventloop) = AsyncClient::new(opts, 600);
-        let client_sharable: Arc<AsyncClient> = Arc::new(client);
-        task_tracker.spawn(recv.process_mqtt(client_sharable.clone(), eventloop));
-        Some(client_sharable)
-    };
+    RUN_ID.store(curr_run.id, Ordering::Relaxed);
+    // run prod if this isnt present
+    // create and spawn the mqtt processor
+    info!("Running processor in MQTT (production) mode");
+    let (recv, opts) = MqttProcessor::new(
+        mqtt_send,
+        io,
+        token.clone(),
+        MqttProcessorOptions {
+            mqtt_path: cli.siren_host_url,
+            initial_run: curr_run.id,
+            static_rate_limit_time: cli.static_rate_limit_value,
+            rate_limit_mode: cli.rate_limit_mode,
+            upload_ratio: cli.socketio_discard_percent,
+        },
+    );
+    let (client, eventloop) = AsyncClient::new(opts, 600);
+    let client_sharable: Arc<AsyncClient> = Arc::new(client);
+    task_tracker.spawn(recv.process_mqtt(client_sharable.clone(), eventloop));
 
     let app = Router::new()
         // DATA
@@ -231,22 +225,13 @@ async fn main() {
         )
         // DATA TYPE
         .route("/datatypes", get(data_type_controller::get_all_data_types))
-        // DRIVERS
-        .route("/drivers", get(driver_controller::get_all_drivers))
-        // LOCATIONS
-        .route("/locations", get(location_controller::get_all_locations))
-        // NODES
-        .route("/nodes", get(node_controller::get_all_nodes))
-        // RUNS
         .route("/runs", get(run_controller::get_all_runs))
         .route("/runs/:id", get(run_controller::get_run_by_id))
         .route("/runs/new", post(run_controller::new_run))
-        // SYSTEMS
-        .route("/systems", get(system_controller::get_all_systems))
         // CONFIG
         .route(
             "/config/set/:configKey",
-            post(car_command_controller::send_config_command).layer(Extension(client)),
+            post(car_command_controller::send_config_command).layer(Extension(client_sharable)),
         )
         // for CORS handling
         .layer(

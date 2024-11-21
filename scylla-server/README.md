@@ -4,37 +4,6 @@ The backend written in Rust for Argos.
 
 ## Local Development
 
-Before doing any of the following make sure you've installed Rust: https://www.rust-lang.org/learn/get-started
-
-We specifically need cargo (Rust's build tool and package manager), so run 'cargo --version' to make sure you've correctly installed Rust.
-
-### Setup the Database
-
-In the root project directory run the following to create the timescaledb instance in docker:
-
-```
-docker compose up -d odyssey-timescale
-```
-
-To setup environment variables, cd into the scylla-server directory and create a file named `.env` containing the following contents:
-
-```
-SOURCE_DATABASE_URL=postgresql://postgres:password@127.0.0.1:5432/postgres
-```
-
-To setup Prisma, in the scylla-server directory run:
-
-```
-cargo prisma generate
-```
-
-To setup the database and seed some data run:
-
-```
-cargo prisma migrate deploy
-cargo prisma-seed
-```
-
 ### Run the app
 
 In scylla-server run:
@@ -47,20 +16,17 @@ And you're done!
 
 ## Test this app
 
-#### Seed some data
+#### Get started with DB
 
-Run `cargo prisma-seed`
+Download the diesel CLI from [here](https://diesel.rs/guides/getting-started).
+
+With this you can run manual migrations and change the schema.
 
 #### Integration tests
 
-Since this app uses the database for testing, you must follow these steps, or run `./integration_test.sh`:
-
-```
-docker volume rm argos_db-data
-docker compose up -d odyssey-timescale
-cargo prisma migrate deploy
-cargo test -- --test-threads=1
-```
+Since this app uses the database for testing, you must:
+1. Install the diesel CLI.
+2. run `./integration_test.sh`:
 
 #### Test it yourself!
 

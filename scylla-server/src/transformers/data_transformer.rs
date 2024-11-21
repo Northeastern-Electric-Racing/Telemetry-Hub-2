@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use serde::Serialize;
 
-use crate::{processors::ClientData, services::data_service};
+use crate::ClientData;
 
 /// The struct defining the data format sent to the client
 #[derive(Serialize, Debug)]
@@ -11,6 +11,7 @@ pub struct PublicData {
     pub time_ms: i64,
     pub values: Vec<f64>,
 }
+
 // custom impls to avoid comparing values fields
 impl Ord for PublicData {
     fn cmp(&self, other: &Self) -> Ordering {
@@ -33,10 +34,15 @@ impl PartialEq for PublicData {
 impl Eq for PublicData {}
 
 /// convert the prisma type to the client type for JSON encoding
-impl From<&data_service::public_data::Data> for PublicData {
-    fn from(value: &data_service::public_data::Data) -> Self {
+impl From<crate::models::Data> for PublicData {
+    fn from(value: crate::models::Data) -> Self {
         PublicData {
-            values: value.values.clone(),
+            values: value
+                .values
+                .unwrap_or_default()
+                .into_iter()
+                .flatten()
+                .collect(),
             time_ms: value.time.timestamp_millis(),
         }
     }

@@ -5,7 +5,6 @@ use std::{
 };
 
 use chrono::TimeDelta;
-use prisma_client_rust::bigdecimal::ToPrimitive;
 use protobuf::Message;
 use ringbuffer::RingBuffer;
 use rumqttc::v5::{
@@ -153,26 +152,27 @@ impl MqttProcessor {
                 },
                 _ = view_interval.tick() => {
                     trace!("Updating viewership data!");
-                    if let Ok(sockets) = self.io.sockets() {
+                    let sockets = self.io.sockets();
+                    let sockets_cnt = match sockets {
+                        Ok(s) => s.len() as f32,
+                        Err(_) => -1f32,
+                    };
                     let client_data = ClientData {
                         name: "Viewers".to_string(),
                         node: "Internal".to_string(),
                         unit: "".to_string(),
                         run_id: crate::RUN_ID.load(Ordering::Relaxed),
                         timestamp: chrono::offset::Utc::now(),
-                        values: vec![sockets.len() as f32]
+                        values: vec![sockets_cnt]
                     };
                     self.send_socket_msg(client_data, &mut upload_counter);
-                    } else {
-                        warn!("Could not fetch socket count");
-                    }
                 }
                 _ = latency_interval.tick() => {
                     // set latency to 0 if no messages are in buffer
                     let avg_latency = if latency_ringbuffer.is_empty() {
                         0
                     } else {
-                        latency_ringbuffer.iter().sum::<TimeDelta>().num_milliseconds() / latency_ringbuffer.len().to_i64().unwrap_or_default()
+                        latency_ringbuffer.iter().sum::<TimeDelta>().num_milliseconds() / latency_ringbuffer.len() as i64
                     };
 
                     let client_data = ClientData {
@@ -238,7 +238,7 @@ impl MqttProcessor {
         // get the node and datatype from the topic extracted at the beginning
         let node = split.0;
 
-        let data_type = split.1.replace('/', "-");
+        let data_type = String::from(topic);
 
         // extract the unix time
         // levels of time priority

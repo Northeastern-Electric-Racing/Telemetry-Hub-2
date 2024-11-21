@@ -15,7 +15,8 @@ export interface NodeWithVisibilityToggle extends Node {
   dataTypesAreVisible: boolean;
 }
 
-export interface NodeWithVisibilityToggleObservable extends NodeWithVisibilityToggle {
+export interface NodeWithVisibilityToggleObservable
+  extends NodeWithVisibilityToggle {
   dataTypesObservable: Observable<DataType[]>;
 }
 
@@ -34,7 +35,6 @@ export type Run = {
   id: number;
   locationName: string;
   driverName: string;
-  systemName: string;
   time: Date;
 };
 

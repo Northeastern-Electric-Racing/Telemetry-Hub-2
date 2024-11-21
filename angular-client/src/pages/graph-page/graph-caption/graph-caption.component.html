@@ -4,7 +4,11 @@
       @if (dataTypeName) {
         <div>
           <div>
-            <typography variant="large-header" [content]="dataTypeName" additionalStyles="margin: 12px 0px" />
+            <typography
+              variant="large-header"
+              [content]="dataTypeName"
+              additionalStyles="margin: 12px 0px"
+            />
             <typography
               variant="large-secondary-header"
               [content]="value + ' ' + dataTypeUnit"
@@ -13,16 +17,25 @@
           </div>
         </div>
       } @else {
-        <typography variant="large-header" content="No Data Selected" additionalStyles="margin: 12px 0px" />
+        <typography
+          variant="large-header"
+          content="No Data Selected"
+          additionalStyles="margin: 12px 0px"
+        />
       }
     </div>
     <div class="right-info">
       <div class="driver-info">
-        <typography variant="header" [content]="run?.driverName ?? 'No Driver Selected'" />
+        <typography
+          variant="header"
+          [content]="run?.driverName ?? 'No Driver Selected'"
+        />
       </div>
       <div class="system-info">
-        <typography variant="subheader" [content]="run?.systemName ?? 'No System Selected'" />
-        <typography variant="subheader" [content]="run?.locationName ?? 'No Location Selected'" />
+        <typography
+          variant="subheader"
+          [content]="run?.locationName ?? 'No Location Selected'"
+        />
       </div>
     </div>
   </div>
