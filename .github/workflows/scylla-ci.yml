@@ -36,6 +36,8 @@ jobs:
          - name: Build
            run: cargo build --verbose
          - name: Run # so we can migrate the database, run for a little than bail
+           env:
+             DATABASE_URL: postgresql://postgres:password@127.0.0.1:5432/postgres
            run: |
                 cargo run & ID=$!; sleep 10s; kill $ID
          - name: Test
