@@ -8,8 +8,6 @@ pub struct PublicRun {
     pub location_name: String,
     #[serde(rename = "driverName")]
     pub driver_name: String,
-    #[serde(rename = "systemName")]
-    pub system_name: String,
     #[serde(rename = "time")]
     pub time_ms: i64,
 }
@@ -20,7 +18,6 @@ impl From<crate::models::Run> for PublicRun {
             id: value.id,
             location_name: value.locationName.unwrap_or_default(),
             driver_name: value.driverName.clone().unwrap_or_default(),
-            system_name: value.driverName.unwrap_or_default(), // TODO no system name
             time_ms: value.time.timestamp_millis(),
         }
     }
