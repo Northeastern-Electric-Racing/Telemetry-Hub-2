@@ -36,7 +36,8 @@ jobs:
            working-directory: compose
            run: docker compose up -d odyssey-timescale
          - name: Run # so we can migrate the database, run for a little than bail
-           run: cargo run & ID=$!, sleep 5s; kill $ID
+           run: |
+                cargo run & ID=$!; sleep 5s; kill $ID
          - name: Test
            run: cargo test -- --test-threads=1
          - name: Cleanup
