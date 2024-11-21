@@ -7,3 +7,7 @@ src/environments/environment.ts
 Dockerfile
 .dockerignore
 README.md
+/.angular
+/dist
+/node_modules
+

@@ -1,19 +1,25 @@
-# Scylla Server (Rust)
+# Scylla Server
 
+The backend written in Rust for Argos.
+
+## Local Development
+
+```
+cargo prisma migrate deploy
+cargo prisma-seed
+```
 
 ### Run the app
 
-```
-# in argos proper
-docker compose up odyssey-timescale
-```
+In scylla-server run:
 
 ```
-# in this directory
 cargo run
 ```
 
-### Test this app
+And you're done!
+
+## Test this app
 
 #### Get started with DB
 
@@ -28,17 +34,9 @@ powershell -c "irm https://github.com/diesel-rs/diesel/releases/latest/download/
 
 With this you can run manual migrations and change the schema.
 
-
 #### Integration tests
 
 Since this app uses the database for testing, you must follow these steps, or run `./integration_test.sh`:
-```
-// Run in /compose folder (in main dir)
-docker compose up -d odyssey-timescale
-
-// Run this in your command line in /scylla-server
-DATABASE_URL=postgresql://postgres:password@127.0.0.1:5432/postgres cargo test -- --test-threads=1
-```
 
 #### Test it yourself!
 
@@ -55,7 +53,9 @@ Follow this confluence doc: https://nerdocs.atlassian.net/wiki/spaces/NER/pages/
 #### Debug logging
 
 #### Activate logs
-Modify the RUST_LOG env variable.  Usually you dont want third party crate logs, so `RUST_LOG=none,scylla_server=trace`.  You can replace both none and trace with the levels you want.  The levels are:
+
+Modify the RUST_LOG env variable. Usually you dont want third party crate logs, so `RUST_LOG=none,scylla_server=trace`. You can replace both none and trace with the levels you want. The levels are:
+
 - none: not a darn thing
 - trace: very verbose, could print on every message, which would flood the log especially if run on a server receiving millions of the cars messages
 - debug: helpful info not constantly printed in high load situations, good for periodic task info or init/end status checks
@@ -65,16 +65,13 @@ Modify the RUST_LOG env variable.  Usually you dont want third party crate logs,
 
 #### Develop with logs
 
-When developing, take advantage of easy logging.  Use `debug!`, `trace!` etc macros. with anything you may need, but be sure to abide by the conventions above when making a final PR.
+When developing, take advantage of easy logging. Use `debug!`, `trace!` etc macros. with anything you may need, but be sure to abide by the conventions above when making a final PR.
 
-Have an async function that takes time and is somewhat important for performance?  Use tracing::instrument macro on the function definition to capture performance data.
+Have an async function that takes time and is somewhat important for performance? Use tracing::instrument macro on the function definition to capture performance data.
 
-
-
-### Deploy this app
+## Deploy this app
 
 See main README.
-
 
 #### Env variables & CLI Customization
 

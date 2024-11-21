@@ -30,7 +30,7 @@ FROM nginx:latest as Production
 WORKDIR /usr/local/app
 
 # copy dist
-COPY --from=Build /usr/src/app/dist/angular-client /usr/share/nginx/html
+COPY --from=Build /usr/src/app/dist/angular-client/browser /usr/share/nginx/html
 
 RUN rm /etc/nginx/conf.d/default.conf
 

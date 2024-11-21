@@ -2,8 +2,17 @@
   <vstack>
     <hstack style="width: 100%">
       <div class="graph-container">
-        <graph-component [data]="xData" color="#4d9ac9" title="Longitudinal Acceleration" graphContainerId="xGraph" />
-        <typography variant="info-subtitle" content="Longitudinal Acceleration" additionalStyles="margin-top: 10px" />
+        <graph-component
+          [data]="xData"
+          color="#4d9ac9"
+          title="Longitudinal Acceleration"
+          graphContainerId="xGraph"
+        />
+        <typography
+          variant="info-subtitle"
+          content="Longitudinal Acceleration"
+          additionalStyles="margin-top: 10px"
+        />
       </div>
       <div class="right-panel">
         <div class="vBar"></div>
@@ -20,15 +29,28 @@
               additionalStyles="fontSize: 20px; margin-bottom: 10px; color: #797a7a"
             />
           </div>
-          <typography variant="info-subtitle" content="Peak Long. Accel." additionalStyles="" />
+          <typography
+            variant="info-subtitle"
+            content="Peak Long. Accel."
+            additionalStyles=""
+          />
         </div>
       </div>
     </hstack>
     <div class="hBar"></div>
     <hstack style="width: 100%">
       <div class="graph-container">
-        <graph-component [data]="yData" color="#17ff00" title="Lateral Acceleration" graphContainerId="yGraph" />
-        <typography variant="info-subtitle" content="Lateral Acceleration" additionalStyles="margin-top: 10px" />
+        <graph-component
+          [data]="yData"
+          color="#17ff00"
+          title="Lateral Acceleration"
+          graphContainerId="yGraph"
+        />
+        <typography
+          variant="info-subtitle"
+          content="Lateral Acceleration"
+          additionalStyles="margin-top: 10px"
+        />
       </div>
       <div class="right-panel">
         <div class="vBar"></div>
@@ -45,7 +67,11 @@
               additionalStyles="fontSize: 20px; margin-bottom: 10px; color: #797a7a"
             />
           </div>
-          <typography variant="info-subtitle" content="Peak Lat. Accel." additionalStyles="" />
+          <typography
+            variant="info-subtitle"
+            content="Peak Lat. Accel."
+            additionalStyles=""
+          />
         </div>
       </div>
     </hstack>
