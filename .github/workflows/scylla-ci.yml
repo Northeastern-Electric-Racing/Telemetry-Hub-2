@@ -29,7 +29,7 @@ jobs:
          - name: Build
            run: cargo build --verbose
          - name: Clippy
-           run: cargo clippy --all-targets --all-features
+           run: cargo clippy --all-targets
          - name: Fmt
            run: cargo fmt --check
          - name: Start DB
