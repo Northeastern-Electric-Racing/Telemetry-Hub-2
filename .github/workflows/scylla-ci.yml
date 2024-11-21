@@ -26,8 +26,6 @@ jobs:
            uses: actions/checkout@v4
            with:
             submodules: recursive
-         - name: Build
-           run: cargo build --verbose
          - name: Clippy
            run: cargo clippy --all-targets
          - name: Fmt
@@ -35,10 +33,14 @@ jobs:
          - name: Start DB
            working-directory: compose
            run: docker compose up -d odyssey-timescale
+         - name: Build
+           run: cargo build --verbose
          - name: Run # so we can migrate the database, run for a little than bail
            run: |
-                cargo run & ID=$!; sleep 5s; kill $ID
+                cargo run & ID=$!; sleep 10s; kill $ID
          - name: Test
+           env:
+             DATABASE_URL: postgresql://postgres:password@127.0.0.1:5432/postgres
            run: cargo test -- --test-threads=1
          - name: Cleanup
            working-directory: compose
