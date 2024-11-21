@@ -23,12 +23,22 @@ jobs:
 
       steps:
          - name: Setup Rust
-           uses: actions/checkout@v3
+           uses: actions/checkout@v4
            with:
             submodules: recursive
-         - name: Generate prisma
-           run: cargo prisma generate
          - name: Build
            run: cargo build --verbose
          - name: Clippy
-           run: cargo clippy --verbose -- -D warnings
+           run: cargo clippy --all-targets --all-features
+         - name: Fmt
+           run: cargo fmt --check
+         - name: Start DB
+           working-directory: compose
+           run: docker compose up -d odyssey-timescale
+         - name: Run # so we can migrate the database, run for a little than bail
+           run: cargo run & ID=$!, sleep 5s; kill $ID
+         - name: Test
+           run: cargo test -- --test-threads=1
+         - name: Cleanup
+           working-directory: compose
+           run: docker compose down

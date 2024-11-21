@@ -4,11 +4,6 @@ The backend written in Rust for Argos.
 
 ## Local Development
 
-```
-cargo prisma migrate deploy
-cargo prisma-seed
-```
-
 ### Run the app
 
 In scylla-server run:
@@ -23,20 +18,15 @@ And you're done!
 
 #### Get started with DB
 
-Download the diesel CLI:
-```
-# Linux/MacOS
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/diesel-rs/diesel/releases/latest/download/diesel_cli-installer.sh | sh
-
-# Windows
-powershell -c "irm https://github.com/diesel-rs/diesel/releases/latest/download/diesel_cli-installer.ps1 | iex"
-```
+Download the diesel CLI from [here](https://diesel.rs/guides/getting-started).
 
 With this you can run manual migrations and change the schema.
 
 #### Integration tests
 
-Since this app uses the database for testing, you must follow these steps, or run `./integration_test.sh`:
+Since this app uses the database for testing, you must:
+1. Install the diesel CLI.
+2. run `./integration_test.sh`:
 
 #### Test it yourself!
 
