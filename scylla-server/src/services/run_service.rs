@@ -1,4 +1,4 @@
-use crate::{models::Run, schema::run::dsl::*, Database, LocationData};
+use crate::{models::Run, schema::run::dsl::*, Database};
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 
@@ -45,5 +45,21 @@ pub async fn create_run_with_id(
 ) -> Result<Run, diesel::result::Error> {
     diesel::insert_into(run)
         .values((time.eq(timestamp), id.eq(run_id), notes.eq("A")))
+        .get_result(db)
+}
+
+/// Updates a run with GPS points
+/// * `db` - The prisma client to make the call to
+/// * `run_id` - The run id to upsert
+/// * `lat` - The latitude
+/// * `long` - The longitude
+pub async fn update_run_with_coords(
+    db: &mut Database,
+    run_id: i32,
+    lat: f64,
+    long: f64,
+) -> Result<Run, diesel::result::Error> {
+    diesel::update(run.filter(id.eq(run_id)))
+        .set((latitude.eq(lat), longitude.eq(long)))
         .get_result(db)
 }

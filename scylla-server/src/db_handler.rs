@@ -5,61 +5,8 @@ use tokio::{sync::mpsc::Sender, time::Duration};
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, instrument, trace, warn, Level};
 
-use crate::services::{data_service, data_type_service};
-use crate::{ClientData, LocationData, PoolHandle};
-
-/// A struct defining an in progress location packet
-struct LocLock {
-    location_name: Option<String>,
-    points: Option<(f32, f32)>,
-    radius: Option<f32>,
-}
-
-impl LocLock {
-    pub fn new() -> LocLock {
-        LocLock {
-            location_name: None,
-            points: None,
-            radius: None,
-        }
-    }
-
-    /// Add the location name to the packet
-    pub fn add_loc_name(&mut self, loc_name: String) {
-        self.location_name = Some(loc_name);
-    }
-
-    /// Add points to the packet
-    pub fn add_points(&mut self, lat: f32, long: f32) {
-        self.points = Some((lat, long));
-    }
-
-    /// Add a radius to the packet
-    pub fn add_radius(&mut self, radius: f32) {
-        self.radius = Some(radius);
-    }
-
-    /// Attempt to finalize the packet, returning a location data and clearing this object or None if still in progress
-    pub fn finalize(&mut self) -> Option<LocationData> {
-        if self.location_name.is_some() && self.points.is_some() && self.radius.is_some() {
-            self.clear();
-            return Some(LocationData {
-                location_name: self.location_name.clone().unwrap(),
-                lat: self.points.unwrap().0,
-                long: self.points.unwrap().1,
-                radius: self.radius.unwrap(),
-            });
-        }
-        None
-    }
-
-    /// Clear the internal state
-    fn clear(&mut self) {
-        self.location_name = None;
-        self.points = None;
-        self.radius = None;
-    }
-}
+use crate::services::{data_service, data_type_service, run_service};
+use crate::{ClientData, PoolHandle, RUN_ID};
 
 /// A few threads to manage the processing and inserting of special types,
 /// upserting of metadata for data, and batch uploading the database
@@ -70,10 +17,6 @@ pub struct DbHandler {
     receiver: Receiver<ClientData>,
     /// The database pool handle
     pool: PoolHandle,
-    /// An internal state of an in progress location packet
-    location_lock: LocLock,
-    /// Whether the location has been modified this loop
-    is_location: bool,
     /// the queue of data
     data_queue: Vec<ClientData>,
     /// the time since last batch
@@ -94,8 +37,6 @@ impl DbHandler {
             datatype_list: vec![],
             receiver,
             pool,
-            location_lock: LocLock::new(),
-            is_location: false,
             data_queue: vec![],
             last_time: tokio::time::Instant::now(),
             upload_interval,
@@ -244,6 +185,28 @@ impl DbHandler {
                 warn!("DB error datatype upsert: {:?}", msg);
             }
             self.datatype_list.push(msg.name.clone());
+        }
+
+        // Check for GPS points, insert them into current run if available
+        if msg.name == "TPU/GPS/Location" {
+            debug!("Upserting run with location points!");
+            let Ok(mut database) = self.pool.get() else {
+                warn!("Could not get connection for db points update");
+                return;
+            };
+            // ensure lat AND long present in message, just a sanity check
+            if msg.values.len() < 2 {
+                warn!("GPS message found without both lat and long!");
+            } else if let Err(err) = run_service::update_run_with_coords(
+                &mut database,
+                RUN_ID.load(std::sync::atomic::Ordering::Relaxed),
+                msg.values[0].into(),
+                msg.values[1].into(),
+            )
+            .await
+            {
+                warn!("DB error run gps points upsert: {:?}", err);
+            }
         }
 
         // no matter what, batch upload the message

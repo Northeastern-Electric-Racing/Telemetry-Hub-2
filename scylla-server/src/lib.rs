@@ -7,7 +7,9 @@ pub mod services;
 pub mod db_handler;
 pub mod mqtt_processor;
 
+#[allow(non_snake_case)]
 pub mod models;
+#[allow(non_snake_case)]
 pub mod schema;
 
 pub mod command_data;
@@ -52,14 +54,4 @@ pub struct ClientData {
     /// client doesnt parse node
     #[serde(skip_serializing)]
     pub node: String,
-}
-
-/// A final location packet
-/// This has the purpose of representing the struct for the service layer to unpack for insertion, and therefore is not serialized
-#[derive(Debug)]
-struct LocationData {
-    location_name: String,
-    lat: f32,
-    long: f32,
-    radius: f32,
 }

@@ -4,7 +4,6 @@ CREATE TABLE "run" (
     "locationName" TEXT,
     "latitude" DOUBLE PRECISION,
     "longitude" DOUBLE PRECISION,
-    "radius" DOUBLE PRECISION,
     "driverName" TEXT,
     "notes" TEXT NOT NULL,
     "time" TIMESTAMPTZ NOT NULL,

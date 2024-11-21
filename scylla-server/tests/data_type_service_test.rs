@@ -11,8 +11,6 @@ use scylla_server::{
 };
 use test_utils::cleanup_and_prepare;
 
-const TEST_KEYWORD: &str = "test";
-
 #[tokio::test]
 async fn test_get_all_datatypes() -> Result<(), diesel::result::Error> {
     let mut db = cleanup_and_prepare().await?;

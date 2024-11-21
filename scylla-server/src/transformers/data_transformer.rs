@@ -39,7 +39,7 @@ impl From<crate::models::Data> for PublicData {
         PublicData {
             values: value
                 .values
-                .unwrap_or(vec![])
+                .unwrap_or_default()
                 .into_iter()
                 .flatten()
                 .collect(),
