@@ -1,37 +1,17 @@
 import { Component } from '@angular/core';
+import { last } from 'rxjs';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 
-enum BMS_FAULTS_TYPES {
-  CELLS_NOT_BALANCING = 1,
-  CELL_VOLTAGE_TOO_LOW = 2,
-  CELL_VOLTAGE_TOO_HIGH = 4,
-  PACK_TOO_HOT = 8,
-  OPEN_WIRING_FAULT = 16,
-  INTERNAL_SOFTWARE_FAULT = 32,
-  INTERNAL_THERMAL_ERROR = 64,
-  INTERNAL_CELL_COMM_FAULT = 128,
-  CURRENT_SENSOR_FAULT = 256,
-  CHARGE_READING_MISMATCH = 512,
-  LOW_CELL_VOLTAGE = 1024,
-  WEAK_PACK_FAULT = 2048,
-  EXTERNAL_CAN_FAULT = 4096,
-  DISCHARGE_LIMIT_ENFORCEMENT_FAULT = 8192,
-  CHARGER_SAFETY_RELAY = 16384,
-  BATTERY_THERMISTOR = 32768,
-  CHARGER_CAN_FAULT = 65536,
-  CHARGER_LIMIT_ENFORCEMENT_FAULT = 131072
-}
-
 enum FaultType {
   BMS = 'BMS',
-  Charger = 'Charger'
+  Charger = 'Charger',
 }
 
 @Component({
   selector: 'fault-display',
   templateUrl: './fault-display.component.html',
-  styleUrls: ['./fault-display.component.css']
+  styleUrls: ['./fault-display.component.css'],
 })
 export default class FaultDisplay {
   faults: { type: string; name: string; time: string }[] = [];
@@ -40,119 +20,171 @@ export default class FaultDisplay {
     onClick: () => {
       this.faults = [];
     },
-    icon: 'restart_alt'
+    icon: 'restart_alt',
   };
+
   constructor(private storage: Storage) {}
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.COMM_TIMEOUT_FAULT).subscribe((value) => {
-      this.addFault(parseInt(value.values[0]), 'Comm Timeout', FaultType.Charger);
+    const chargerFaultAndDisplayNames = [
+      {
+        displayName: 'Comm Timeout',
+        faultIdentifier: IdentifierDataType.COMM_TIMEOUT_FAULT,
+      },
+      {
+        displayName: 'Hardware Failure',
+        faultIdentifier: IdentifierDataType.HARDWARE_FAILURE_FAULT,
+      },
+      {
+        displayName: 'Over Temp',
+        faultIdentifier: IdentifierDataType.OVER_TEMP_FAULT,
+      },
+      {
+        displayName: 'Over Voltage Fault',
+        faultIdentifier: IdentifierDataType.OVER_VOLTAGE_FAULT,
+      },
+      {
+        displayName: 'Wrong Battery Connect',
+        faultIdentifier: IdentifierDataType.WRONG_BAT_CONNECT_FAULT,
+      },
+    ];
+    // Subscribe to each charger fault, with a display name (to display when the fault is triggered)
+    chargerFaultAndDisplayNames.forEach((faultAndDisplayName) => {
+      this.faultSubcribe(
+        faultAndDisplayName.displayName,
+        faultAndDisplayName.faultIdentifier,
+        FaultType.Charger,
+      );
     });
 
-    this.storage.get(IdentifierDataType.HARDWARE_FAILURE_FAULT).subscribe((value) => {
-      this.addFault(parseInt(value.values[0]), 'Hardware Failure', FaultType.Charger);
-    });
+    const bmsFaultAndDisplayNames = [
+      {
+        displayName: 'Open Wire',
+        faultIdentifier: IdentifierDataType.OPEN_WIRE,
+      },
+      {
+        displayName: 'Charger Limit Enforcement',
+        faultIdentifier: IdentifierDataType.CHARGER_LIMIT_ENFORCEMENT_FAULT,
+      },
+      {
+        displayName: 'Charger Can Fault',
+        faultIdentifier: IdentifierDataType.CHARGER_CAN_FAULT,
+      },
+      {
+        displayName: 'Battery Thermistor',
+        faultIdentifier: IdentifierDataType.BATTERY_THERMISTOR,
+      },
+      {
+        displayName: 'Charger Safety Relay',
+        faultIdentifier: IdentifierDataType.CHARGER_SAFETY_RELAY,
+      },
+      {
+        displayName: 'Discharge Limit Enforcement',
+        faultIdentifier: IdentifierDataType.DISCHARGE_LIMIT_ENFORCEMENT_FAULT,
+      },
+      {
+        displayName: 'External Can Fault',
+        faultIdentifier: IdentifierDataType.EXTERNAL_CAN_FAULT,
+      },
+      {
+        displayName: 'Weak Pack Fault',
+        faultIdentifier: IdentifierDataType.WEAK_PACK_FAULT,
+      },
+      {
+        displayName: 'Low Cell Voltage',
+        faultIdentifier: IdentifierDataType.LOW_CELL_VOLTAGE,
+      },
+      {
+        displayName: 'Charge Reading Mismatch',
+        faultIdentifier: IdentifierDataType.CHARGE_READING_MISMATCH,
+      },
+      {
+        displayName: 'Current Sensor Fault',
+        faultIdentifier: IdentifierDataType.CURRENT_SENSOR_FAULT,
+      },
+      {
+        displayName: 'Internal Cell Comm Fault',
+        faultIdentifier: IdentifierDataType.INTERNAL_CELL_COMM_FAULT,
+      },
+      {
+        displayName: 'Internal Software Fault',
+        faultIdentifier: IdentifierDataType.INTERNAL_SOFTWARE_FAULT,
+      },
+      {
+        displayName: 'Pack Overheat',
+        faultIdentifier: IdentifierDataType.PACK_OVERHEAT,
+      },
+      {
+        displayName: 'Cell Undervoltage',
+        faultIdentifier: IdentifierDataType.CELL_UNDERVOLTAGE,
+      },
+      {
+        displayName: 'Cell Overvoltage',
+        faultIdentifier: IdentifierDataType.CELL_OVERVOLTAGE,
+      },
+      {
+        displayName: 'Cells Not Balancing',
+        faultIdentifier: IdentifierDataType.CELLS_NOT_BALANCING,
+      },
+    ];
 
-    this.storage.get(IdentifierDataType.OVER_TEMP_FAULT).subscribe((value) => {
-      this.addFault(parseInt(value.values[0]), 'Over Temp', FaultType.Charger);
-    });
-
-    this.storage.get(IdentifierDataType.VOLTAGE_WRONG_FAULT).subscribe((value) => {
-      this.addFault(parseInt(value.values[0]), 'Voltage Wrong', FaultType.Charger);
-    });
-
-    this.storage.get(IdentifierDataType.WRONG_BAT_CONNECT_FAULT).subscribe((value) => {
-      this.addFault(parseInt(value.values[0]), 'Wrong Battery Connect', FaultType.Charger);
-    });
-
-    this.storage.get(IdentifierDataType.BMS_FAULTS).subscribe((value) => {
-      const bmsFaultID = parseInt(value.values[0]);
-      this.addFault(bmsFaultID, this.getBMSFaultName(bmsFaultID), FaultType.BMS);
+    // Subscribe to each BMS fault, with a display name (to display when the fault is triggered)
+    bmsFaultAndDisplayNames.forEach((faultAndDisplayName) => {
+      this.faultSubcribe(
+        faultAndDisplayName.displayName,
+        faultAndDisplayName.faultIdentifier,
+        FaultType.BMS,
+      );
     });
   }
 
   /**
-   * Adds the fault name, with the current time to the faults array, if the faultValue is NOT 0.
+   * Subscribes to the the {@link faultIdentifier} as key in {@link storage} given and
+   * checks each message to see if it is a fault using {@link addFault}.
+   *
+   * @param displayName the name of the fault to be displayed.
+   * @param faultIdentifier the identifier for the fault.
+   * @param faultType the type of the fault.
+   */
+  private faultSubcribe(
+    displayName: string,
+    faultIdentifier: IdentifierDataType,
+    faultType: FaultType,
+  ) {
+    let lastFaultValue = 0;
+    this.storage.get(faultIdentifier).subscribe((value) => {
+      let newValue = parseInt(value.values[0]);
+      this.addFault(newValue, displayName, faultType, lastFaultValue);
+      lastFaultValue = newValue;
+    });
+  }
+
+  /**
+   * Adds the fault name, with the current time to the faults array, if the faultValue is NOT 0 and
+   * the last message was a positive for the fault (lastFaultValue is 0).
    * Shifts through the fault array to keep only the most recent 50 faults.
    *
    * @param faultValue an string with an integer value.
    * @param faultName the name of the fault, to be displayed.
    */
-  addFault(faultValue: number, faultName: string, faultType: FaultType) {
-    if (faultValue !== 0) {
+  private addFault(
+    faultValue: number,
+    faultName: string,
+    faultType: FaultType,
+    lastFaultValue: number,
+  ) {
+    // only add fault if it is positve for a fault and the last value for this fault was not a fault
+    if (faultValue !== 0 && lastFaultValue === 0) {
       if (this.faults.length >= 50) {
         this.faults.pop();
       }
       this.faultsShifted = !this.faultsShifted;
 
-      this.faults.unshift({ type: faultType, name: faultName, time: new Date().toLocaleTimeString() });
+      this.faults.unshift({
+        type: faultType,
+        name: faultName,
+        time: new Date().toLocaleTimeString(),
+      });
     }
-  }
-
-  /**
-   * This is based on the shepard enum for faults:
-   * https://github.com/Northeastern-Electric-Racing/ShepherdBMS-2/blob/6eb3f863ed131a15bdf98665532cb7807bbd2920/Core/Inc/datastructs.h#L39
-   */
-  getBMSFaultName(faultValue: number): string {
-    let faultName = '';
-    switch (faultValue) {
-      case 0:
-        break;
-      case BMS_FAULTS_TYPES.CELLS_NOT_BALANCING:
-        faultName = 'Cells Not Balancing';
-        break;
-      case BMS_FAULTS_TYPES.CELL_VOLTAGE_TOO_LOW:
-        faultName = 'Cell Voltage too Low';
-        break;
-      case BMS_FAULTS_TYPES.CELL_VOLTAGE_TOO_HIGH:
-        faultName = 'Cell Voltage too High';
-        break;
-      case BMS_FAULTS_TYPES.PACK_TOO_HOT:
-        faultName = ' Pack too Hot';
-        break;
-      case BMS_FAULTS_TYPES.OPEN_WIRING_FAULT:
-        faultName = 'Open Wiring Fault';
-        break;
-      case BMS_FAULTS_TYPES.INTERNAL_SOFTWARE_FAULT:
-        faultName = 'Internal Software Fault';
-        break;
-      case BMS_FAULTS_TYPES.INTERNAL_THERMAL_ERROR:
-        faultName = 'Internal Thermal Error';
-        break;
-      case BMS_FAULTS_TYPES.INTERNAL_CELL_COMM_FAULT:
-        faultName = 'Internal Cell Comm Fault';
-        break;
-      case BMS_FAULTS_TYPES.CURRENT_SENSOR_FAULT:
-        faultName = 'Current Sensor Fault';
-        break;
-      case BMS_FAULTS_TYPES.CHARGE_READING_MISMATCH:
-        faultName = 'Charge Reading Mismatch';
-        break;
-      case BMS_FAULTS_TYPES.LOW_CELL_VOLTAGE:
-        faultName = 'Low Cell Voltage';
-        break;
-      case BMS_FAULTS_TYPES.WEAK_PACK_FAULT:
-        faultName = 'Weak Pack Fault';
-        break;
-      case BMS_FAULTS_TYPES.EXTERNAL_CAN_FAULT:
-        faultName = 'External Can Fault';
-        break;
-      case BMS_FAULTS_TYPES.DISCHARGE_LIMIT_ENFORCEMENT_FAULT:
-        faultName = 'Discharge Limit Enforcement Fault';
-        break;
-      case BMS_FAULTS_TYPES.CHARGER_SAFETY_RELAY:
-        faultName = 'Charger Safety Relay';
-        break;
-      case BMS_FAULTS_TYPES.BATTERY_THERMISTOR:
-        faultName = 'Battery Thermistor';
-        break;
-      case BMS_FAULTS_TYPES.CHARGER_CAN_FAULT:
-        faultName = 'Charger Can Fault';
-        break;
-      case BMS_FAULTS_TYPES.CHARGER_LIMIT_ENFORCEMENT_FAULT:
-        faultName = 'Charger Limit Enforcement Fault';
-        break;
-    }
-    return faultName;
   }
 }
