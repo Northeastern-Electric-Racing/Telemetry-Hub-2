@@ -238,7 +238,7 @@ impl MqttProcessor {
         // get the node and datatype from the topic extracted at the beginning
         let node = split.0;
 
-        let data_type = String::from(split.1);
+        let data_type = String::from(topic);
 
         // extract the unix time
         // levels of time priority

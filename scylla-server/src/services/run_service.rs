@@ -6,7 +6,7 @@ use diesel::prelude::*;
 /// * `db` - The prisma client to make the call to
 ///   returns: A result containing the data or the QueryError propogated by the db
 pub async fn get_all_runs(db: &mut Database) -> Result<Vec<Run>, diesel::result::Error> {
-    run.load(db)
+    run.order(id.asc()).get_results(db)
 }
 
 /// Gets a single run by its id

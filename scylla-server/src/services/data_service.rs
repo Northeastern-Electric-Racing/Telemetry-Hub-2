@@ -40,7 +40,7 @@ pub async fn add_data(
         .get_result(db)
 }
 
-/// Adds many datapoints via a batch insert
+/// Adds many datapoints via a batch insert, skips any data which conflicts with existing data
 /// * `db` - The database connection to use
 /// * `client_data` - A list of data to batch insert
 ///   returns: A result containing the number of rows inserted or the QueryError propogated by the db
@@ -66,5 +66,6 @@ pub async fn add_many(
                 })
                 .collect::<Vec<_>>(),
         )
+        .on_conflict_do_nothing()
         .execute(db)
 }

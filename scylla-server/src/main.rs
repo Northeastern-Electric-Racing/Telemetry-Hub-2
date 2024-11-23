@@ -4,6 +4,7 @@ use std::{
 };
 
 use axum::{
+    extract::DefaultBodyLimit,
     http::Method,
     routing::{get, post},
     Extension, Router,
@@ -20,7 +21,7 @@ use scylla_server::{
     controllers::{
         self,
         car_command_controller::{self},
-        data_type_controller, run_controller,
+        data_type_controller, file_insertion_controller, run_controller,
     },
     services::run_service::{self},
     PoolHandle, RateLimitMode,
@@ -233,6 +234,9 @@ async fn main() {
             "/config/set/:configKey",
             post(car_command_controller::send_config_command).layer(Extension(client_sharable)),
         )
+        // FILE INSERT
+        .route("/insert/file", post(file_insertion_controller::insert_file))
+        .layer(DefaultBodyLimit::disable())
         // for CORS handling
         .layer(
             CorsLayer::new()
