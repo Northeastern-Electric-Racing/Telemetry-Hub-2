@@ -36,7 +36,7 @@ pub async fn insert_file(
             }
             // if this is the last item in the list
             None => {
-                run_rng.insert(it.1..=std::u64::MAX, it.0);
+                run_rng.insert(it.1..=u64::MAX, it.0);
                 continue;
             }
         }
