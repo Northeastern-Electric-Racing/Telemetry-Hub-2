@@ -10,6 +10,7 @@ pub struct PublicRun {
     pub driver_name: String,
     #[serde(rename = "time")]
     pub time_ms: i64,
+    pub notes: String,
 }
 
 impl From<crate::models::Run> for PublicRun {
@@ -19,6 +20,7 @@ impl From<crate::models::Run> for PublicRun {
             location_name: value.locationName.unwrap_or_default(),
             driver_name: value.driverName.clone().unwrap_or_default(),
             time_ms: value.time.timestamp_millis(),
+            notes: value.notes.unwrap_or_default(),
         }
     }
 }

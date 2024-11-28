@@ -25,7 +25,7 @@ diesel::table! {
         latitude -> Nullable<Float8>,
         longitude -> Nullable<Float8>,
         driverName -> Nullable<Text>,
-        notes -> Text,
+        notes -> Nullable<Text>,
         time -> Timestamptz,
     }
 }
@@ -33,4 +33,8 @@ diesel::table! {
 diesel::joinable!(data -> dataType (dataTypeName));
 diesel::joinable!(data -> run (runId));
 
-diesel::allow_tables_to_appear_in_same_query!(data, dataType, run,);
+diesel::allow_tables_to_appear_in_same_query!(
+    data,
+    dataType,
+    run,
+);

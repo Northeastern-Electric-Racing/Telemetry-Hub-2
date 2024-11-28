@@ -5,7 +5,7 @@ CREATE TABLE "run" (
     "latitude" DOUBLE PRECISION,
     "longitude" DOUBLE PRECISION,
     "driverName" TEXT,
-    "notes" TEXT NOT NULL,
+    "notes" TEXT,
     "time" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "run_pkey" PRIMARY KEY ("id")

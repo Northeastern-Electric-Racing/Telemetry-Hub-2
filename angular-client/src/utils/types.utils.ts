@@ -36,6 +36,7 @@ export type Run = {
   locationName: string;
   driverName: string;
   time: Date;
+  notes: string;
 };
 
 export type Coordinate = {

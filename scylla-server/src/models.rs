@@ -33,6 +33,6 @@ pub struct Run {
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
     pub driverName: Option<String>,
-    pub notes: String,
+    pub notes: Option<String>,
     pub time: DateTime<Utc>,
 }
