@@ -1,6 +1,6 @@
-use tokio::sync::mpsc::Receiver;
+use tokio::sync::{broadcast, mpsc};
 
-use tokio::{sync::mpsc::Sender, time::Duration};
+use tokio::time::Duration;
 
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, instrument, trace, warn, Level};
@@ -14,7 +14,7 @@ pub struct DbHandler {
     /// The list of data types seen by this instance, used for when to upsert
     datatype_list: Vec<String>,
     /// The broadcast channel which provides serial datapoints for processing
-    receiver: Receiver<ClientData>,
+    receiver: broadcast::Receiver<ClientData>,
     /// The database pool handle
     pool: PoolHandle,
     /// the queue of data
@@ -29,7 +29,7 @@ impl DbHandler {
     /// Make a new db handler
     /// * `recv` - the broadcast reciver of which clientdata will be sent
     pub fn new(
-        receiver: Receiver<ClientData>,
+        receiver: broadcast::Receiver<ClientData>,
         pool: PoolHandle,
         upload_interval: u64,
     ) -> DbHandler {
@@ -47,7 +47,7 @@ impl DbHandler {
     /// It uses the queue from data queue to insert to the database specified
     /// On cancellation, will await one final queue message to cleanup anything remaining in the channel
     pub async fn batching_loop(
-        mut batch_queue: Receiver<Vec<ClientData>>,
+        mut batch_queue: mpsc::Receiver<Vec<ClientData>>,
         pool: PoolHandle,
         cancel_token: CancellationToken,
     ) {
@@ -94,7 +94,7 @@ impl DbHandler {
 
     /// A batching loop that consumes messages but does not upload anything
     pub async fn fake_batching_loop(
-        mut batch_queue: Receiver<Vec<ClientData>>,
+        mut batch_queue: mpsc::Receiver<Vec<ClientData>>,
         cancel_token: CancellationToken,
     ) {
         loop {
@@ -129,7 +129,7 @@ impl DbHandler {
     /// On cancellation, the messages currently in the queue will be sent as a final flush of any remaining messages received before cancellation
     pub async fn handling_loop(
         mut self,
-        data_channel: Sender<Vec<ClientData>>,
+        data_channel: mpsc::Sender<Vec<ClientData>>,
         cancel_token: CancellationToken,
     ) {
         loop {
@@ -140,7 +140,7 @@ impl DbHandler {
                     self.data_queue.clear();
                     break;
                 },
-                Some(msg) = self.receiver.recv() => {
+                Ok(msg) = self.receiver.recv() => {
                     self.handle_msg(msg, &data_channel).await;
                 }
             }
@@ -148,12 +148,8 @@ impl DbHandler {
     }
 
     #[instrument(skip(self), level = Level::TRACE)]
-    async fn handle_msg(&mut self, msg: ClientData, data_channel: &Sender<Vec<ClientData>>) {
-        trace!(
-            "Mqtt dispatcher: {} of {}",
-            self.receiver.len(),
-            self.receiver.max_capacity()
-        );
+    async fn handle_msg(&mut self, msg: ClientData, data_channel: &mpsc::Sender<Vec<ClientData>>) {
+        trace!("Mqtt dispatcher: {}", self.receiver.len(),);
 
         // If the time is greater than upload interval, push to batch upload thread and clear queue
         if tokio::time::Instant::now().duration_since(self.last_time)
