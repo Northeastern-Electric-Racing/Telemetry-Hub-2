@@ -25,7 +25,7 @@ use super::ClientData;
 /// - mqtt state
 /// - reception via mqtt and subsequent parsing
 /// - labeling of data with runs
-/// - sending data over the channel to a db handler
+/// - sending data over the channel to a db handler and socket
 ///
 /// It also is the main form of rate limiting
 pub struct MqttProcessor {
@@ -107,7 +107,6 @@ impl MqttProcessor {
         // let mut latency_interval = tokio::time::interval(Duration::from_millis(250));
         let mut latency_ringbuffer = ringbuffer::AllocRingBuffer::<TimeDelta>::new(20);
 
-        //let mut upload_counter: u8 = 0;
 
         debug!("Subscribing to siren");
         client
