@@ -78,6 +78,10 @@ impl DbHandler {
                     // max for batch is 65535/4 params per message, hence the below, rounded down with a margin for safety
                     // TODO avoid this code batch uploading the remainder messages as a new batch, combine it with another safely
                     let chunk_size = msgs.len() / ((msgs.len() / 16380) + 1);
+                    if chunk_size == 0 {
+                        warn!("Could not insert {} messages, chunk size zero!", msgs.len());
+                        continue;
+                    }
                     debug!("Batch uploading {} chunks in parrallel", msgs.len() / chunk_size);
                     for chunk in msgs.chunks(chunk_size).collect::<Vec<_>>() {
                         tokio::spawn(DbHandler::batch_upload(chunk.to_vec(), pool.clone()));

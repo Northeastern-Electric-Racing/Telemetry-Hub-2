@@ -1,22 +1,24 @@
-use axum::extract::{Multipart, State};
+use axum::{
+    extract::{Multipart, State},
+    Extension,
+};
 use axum_macros::debug_handler;
 use chrono::DateTime;
 use protobuf::CodedInputStream;
 use rangemap::RangeInclusiveMap;
+use tokio::sync::mpsc;
 use tokio_util::bytes::Buf;
-use tracing::{debug, info, trace};
+use tracing::{debug, info, trace, warn};
 
-use crate::{
-    error::ScyllaError,
-    playback_data,
-    services::{data_service, run_service},
-    ClientData, PoolHandle,
-};
+use crate::{error::ScyllaError, playback_data, services::run_service, ClientData, PoolHandle};
 
+/// Inserts a file using http multipart
+/// This file is parsed and clientdata values are extracted, the run ID of each variable is inferred, and then data is batch uploaded
 // super cool: adding this tag tells you what variable is misbehaving in cases of axum Send+Sync Handler fails
 #[debug_handler]
 pub async fn insert_file(
     State(pool): State<PoolHandle>,
+    Extension(batcher): Extension<mpsc::Sender<Vec<ClientData>>>,
     mut multipart: Multipart,
 ) -> Result<String, ScyllaError> {
     // create a run ID cache
@@ -95,7 +97,9 @@ pub async fn insert_file(
                 .collect::<Vec<_>>()
                 .len()
         );
-        data_service::add_many(&mut db, new_data).await?;
+        if let Err(err) = batcher.send(new_data).await {
+            warn!("Error sending file insert data to batcher! {}", err);
+        };
     }
-    Ok("Successfully inserted all!".to_string())
+    Ok("Successfully sent all to batcher!".to_string())
 }

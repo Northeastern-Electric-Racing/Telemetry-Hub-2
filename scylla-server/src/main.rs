@@ -176,7 +176,7 @@ async fn main() {
     // spawn the database handler
     task_tracker.spawn(
         db_handler::DbHandler::new(mqtt_receive, db.clone(), cli.batch_upsert_time * 1000)
-            .handling_loop(db_send, token.clone()),
+            .handling_loop(db_send.clone(), token.clone()),
     );
     // spawn the database inserter, if we have it enabled
     if !cli.disable_data_upload {
@@ -236,6 +236,7 @@ async fn main() {
         )
         // FILE INSERT
         .route("/insert/file", post(file_insertion_controller::insert_file))
+        .layer(Extension(db_send))
         .layer(DefaultBodyLimit::disable())
         // for CORS handling
         .layer(
