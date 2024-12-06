@@ -25,7 +25,7 @@ diesel::table! {
         latitude -> Nullable<Float8>,
         longitude -> Nullable<Float8>,
         driverName -> Nullable<Text>,
-        notes -> Nullable<Text>,
+        notes -> Text,
         time -> Timestamptz,
     }
 }
