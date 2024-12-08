@@ -29,7 +29,7 @@ pub async fn create_run(
     timestamp: DateTime<Utc>,
 ) -> Result<Run, diesel::result::Error> {
     diesel::insert_into(run)
-        .values((time.eq(timestamp), notes.eq("A")))
+        .values(time.eq(timestamp))
         .get_result(db)
 }
 
@@ -44,7 +44,7 @@ pub async fn create_run_with_id(
     run_id: i32,
 ) -> Result<Run, diesel::result::Error> {
     diesel::insert_into(run)
-        .values((time.eq(timestamp), id.eq(run_id), notes.eq("A")))
+        .values((time.eq(timestamp), id.eq(run_id)))
         .get_result(db)
 }
 
