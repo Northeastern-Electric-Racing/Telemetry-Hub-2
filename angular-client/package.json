@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "lint": "npx eslint .",
+    "prettier-check": "npx prettier --check .",
     "start": "ng serve",
     "build": "ng build",
     "build:production": "ng build --configuration production",
