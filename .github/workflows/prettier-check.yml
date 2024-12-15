@@ -25,9 +25,7 @@ jobs:
           cache-dependency-path: ./angular-client/package-lock.json
       - name: Install modules
         working-directory: ./angular-client
-        run: |
-          ls -la 
-          npm ci
+        run: npm install
       - name: Run prettier check
         working-directory: ./angular-client
         run: npm run prettier-check
