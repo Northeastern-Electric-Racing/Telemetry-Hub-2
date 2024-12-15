@@ -8,7 +8,7 @@ on:
     branches:
       - main
       - develop
-      - 'feature/**'
+      - "feature/**"
 
 jobs:
   run-linting-check:
@@ -17,14 +17,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          submodules: true
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 16.17.1
-          cache: 'npm'
+          cache: "npm"
       - name: Install modules
+        working-directory: ./angular-client
         run: npm install
       - name: Run linting check
+        working-directory: ./angular-client
         run: npm run lint --max-warnings=0
