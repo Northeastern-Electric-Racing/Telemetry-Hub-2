@@ -20,7 +20,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16.17.1
+          node-version: 20.17.0
           cache: "npm"
           cache-dependency-path: ./angular-client/package-lock.json
       - name: Install modules
