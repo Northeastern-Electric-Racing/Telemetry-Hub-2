@@ -1,11 +1,6 @@
 import { Component, ElementRef, Input, Renderer2 } from '@angular/core';
 
-import {
-  ApexNonAxisChartSeries,
-  ApexPlotOptions,
-  ApexChart,
-  ApexFill,
-} from 'ng-apexcharts';
+import { ApexNonAxisChartSeries, ApexPlotOptions, ApexChart, ApexFill } from 'ng-apexcharts';
 import Theme from 'src/services/theme.service';
 
 export type ChartOptions = {
@@ -19,7 +14,7 @@ export type ChartOptions = {
 @Component({
   selector: 'pie-chart',
   templateUrl: 'pie-chart.component.html',
-  styleUrls: ['pie-chart.component.css'],
+  styleUrls: ['pie-chart.component.css']
 })
 export default class PieChart {
   public chartOptions!: Partial<ChartOptions> | any;
@@ -29,7 +24,7 @@ export default class PieChart {
 
   constructor(
     private renderer: Renderer2,
-    private el: ElementRef,
+    private el: ElementRef
   ) {}
 
   ngOnInit() {
@@ -52,9 +47,9 @@ export default class PieChart {
       plotOptions: {
         pie: {
           dataLabels: {
-            offset: -10,
-          },
-        },
+            offset: -10
+          }
+        }
       },
       colors: ['#ce2727', '#2799ce', '#3cba40', '#ba3cb4', '#efce29'],
       chart: {
@@ -62,26 +57,22 @@ export default class PieChart {
         type: 'pie',
         background: this.backgroundColor,
         redrawOnParentResize: true,
-        foreColor: '#ffffff',
+        foreColor: '#ffffff'
       },
       dataLabels: {
         style: {
-          offset: -10,
-        },
+          offset: -10
+        }
       },
       labels,
       legend: {
-        offsetX: 10,
-      },
+        offsetX: 10
+      }
     };
   }
 
   private setChartWidth() {
     const containerWidth = this.el.nativeElement.offsetWidth;
-    this.renderer.setStyle(
-      this.el.nativeElement.querySelector('apx-chart'),
-      'width',
-      containerWidth + 'px',
-    );
+    this.renderer.setStyle(this.el.nativeElement.querySelector('apx-chart'), 'width', containerWidth + 'px');
   }
 }

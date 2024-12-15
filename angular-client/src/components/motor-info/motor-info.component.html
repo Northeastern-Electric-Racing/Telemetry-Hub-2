@@ -3,10 +3,7 @@
     <hstack>
       <vstack style="padding-left: 20px">
         <hstack spacing="5px">
-          <typography
-            variant="info-value"
-            [content]="motorTemp.toString() + '°'"
-          />
+          <typography variant="info-value" [content]="motorTemp.toString() + '°'" />
           <div class="thermometer-container">
             <thermometer [temperature]="motorTemp" [min]="-15" [max]="30" />
           </div>
@@ -20,10 +17,7 @@
         <hstack spacing="0px">
           <vstack spacing="0px">
             <div class="usage-container">
-              <typography
-                variant="info-value"
-                [content]="getTotalUsage([motorUsage, coolUsage]).toString()"
-              />
+              <typography variant="info-value" [content]="getTotalUsage([motorUsage, coolUsage]).toString()" />
               <typography variant="info-unit" [content]="'kWh'" />
             </div>
             <span class="subsubtitle">Total Consumption</span>

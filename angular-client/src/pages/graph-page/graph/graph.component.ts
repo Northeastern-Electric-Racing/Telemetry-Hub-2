@@ -1,14 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import ApexCharts from 'apexcharts';
-import {
-  ApexXAxis,
-  ApexDataLabels,
-  ApexChart,
-  ApexMarkers,
-  ApexGrid,
-  ApexTooltip,
-  ApexFill,
-} from 'ng-apexcharts';
+import { ApexXAxis, ApexDataLabels, ApexChart, ApexMarkers, ApexGrid, ApexTooltip, ApexFill } from 'ng-apexcharts';
 import { BehaviorSubject } from 'rxjs';
 import { GraphData } from 'src/utils/types.utils';
 
@@ -27,7 +19,7 @@ type ChartOptions = {
 @Component({
   selector: 'graph',
   templateUrl: './graph.component.html',
-  styleUrls: ['./graph.component.css'],
+  styleUrls: ['./graph.component.css']
 })
 export default class Graph implements OnChanges {
   @Input() valuesSubject!: BehaviorSubject<GraphData[]>;
@@ -45,8 +37,8 @@ export default class Graph implements OnChanges {
       this.chart.updateSeries([
         {
           name: 'Data Series',
-          data: Array.from(this.data),
-        },
+          data: Array.from(this.data)
+        }
       ]);
 
       if (!this.isSliding && this.timeDiffMs > this.timeRangeMs) {
@@ -55,8 +47,8 @@ export default class Graph implements OnChanges {
           ...this.options,
           xaxis: {
             ...this.options.xaxis,
-            range: this.timeRangeMs,
-          },
+            range: this.timeRangeMs
+          }
         });
       }
     }
@@ -92,58 +84,56 @@ export default class Graph implements OnChanges {
         type: 'line',
         height: '100%',
         zoom: {
-          autoScaleYaxis: true,
+          autoScaleYaxis: true
         },
         animations: {
           enabled: true,
           easing: 'linear',
           dynamicAnimation: {
-            speed: 1000,
-          },
-        },
+            speed: 1000
+          }
+        }
       },
       dataLabels: {
-        enabled: false,
+        enabled: false
       },
       stroke: {
-        curve: 'straight',
+        curve: 'straight'
       },
       markers: {
-        size: 0,
+        size: 0
       },
       xaxis: {
         type: 'category',
         tickAmount: 6,
         labels: {
           style: {
-            colors: '#fff',
+            colors: '#fff'
           },
           formatter: (value) => {
             return (
               '' +
               new Date(value).getHours() +
               ':' +
-              ((new Date(value).getMinutes() < 10 ? '0' : '') +
-                new Date(value).getMinutes()) +
+              ((new Date(value).getMinutes() < 10 ? '0' : '') + new Date(value).getMinutes()) +
               ':' +
-              ((new Date(value).getSeconds() < 10 ? '0' : '') +
-                new Date(value).getSeconds())
+              ((new Date(value).getSeconds() < 10 ? '0' : '') + new Date(value).getSeconds())
             );
-          },
-        },
+          }
+        }
       },
       yaxis: {
         labels: {
           style: {
-            colors: '#fff',
-          },
-        },
+            colors: '#fff'
+          }
+        }
       },
       tooltip: {
         x: {
           //format by hours and minutes and seconds
-          format: 'M/d/yy, h:mm:ss',
-        },
+          format: 'M/d/yy, h:mm:ss'
+        }
       },
       fill: {
         type: 'linear',
@@ -151,19 +141,19 @@ export default class Graph implements OnChanges {
           shadeIntensity: 1,
           opacityFrom: 0.7,
           opacityTo: 0.9,
-          stops: [0, 100],
-        },
+          stops: [0, 100]
+        }
       },
       grid: {
-        show: false,
-      },
+        show: false
+      }
     };
 
     // Weird rendering stuff with apex charts, view link to see why https://github.com/apexcharts/react-apexcharts/issues/187
     setTimeout(() => {
       this.chart = new ApexCharts(chartContainer, {
         series: [{ data: [] }],
-        ...this.options,
+        ...this.options
       });
 
       this.chart.render();
@@ -180,8 +170,8 @@ export default class Graph implements OnChanges {
       ...this.options,
       xaxis: {
         ...this.options.xaxis,
-        range: undefined,
-      },
+        range: undefined
+      }
     });
 
     this.valuesSubject.subscribe((values: GraphData[]) => {

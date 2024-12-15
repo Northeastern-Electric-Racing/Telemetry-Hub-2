@@ -5,13 +5,13 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
 
 enum FaultType {
   BMS = 'BMS',
-  Charger = 'Charger',
+  Charger = 'Charger'
 }
 
 @Component({
   selector: 'fault-display',
   templateUrl: './fault-display.component.html',
-  styleUrls: ['./fault-display.component.css'],
+  styleUrls: ['./fault-display.component.css']
 })
 export default class FaultDisplay {
   faults: { type: string; name: string; time: string }[] = [];
@@ -20,7 +20,7 @@ export default class FaultDisplay {
     onClick: () => {
       this.faults = [];
     },
-    icon: 'restart_alt',
+    icon: 'restart_alt'
   };
 
   constructor(private storage: Storage) {}
@@ -29,112 +29,104 @@ export default class FaultDisplay {
     const chargerFaultAndDisplayNames = [
       {
         displayName: 'Comm Timeout',
-        faultIdentifier: IdentifierDataType.COMM_TIMEOUT_FAULT,
+        faultIdentifier: IdentifierDataType.COMM_TIMEOUT_FAULT
       },
       {
         displayName: 'Hardware Failure',
-        faultIdentifier: IdentifierDataType.HARDWARE_FAILURE_FAULT,
+        faultIdentifier: IdentifierDataType.HARDWARE_FAILURE_FAULT
       },
       {
         displayName: 'Over Temp',
-        faultIdentifier: IdentifierDataType.OVER_TEMP_FAULT,
+        faultIdentifier: IdentifierDataType.OVER_TEMP_FAULT
       },
       {
         displayName: 'Over Voltage Fault',
-        faultIdentifier: IdentifierDataType.OVER_VOLTAGE_FAULT,
+        faultIdentifier: IdentifierDataType.OVER_VOLTAGE_FAULT
       },
       {
         displayName: 'Wrong Battery Connect',
-        faultIdentifier: IdentifierDataType.WRONG_BAT_CONNECT_FAULT,
-      },
+        faultIdentifier: IdentifierDataType.WRONG_BAT_CONNECT_FAULT
+      }
     ];
     // Subscribe to each charger fault, with a display name (to display when the fault is triggered)
     chargerFaultAndDisplayNames.forEach((faultAndDisplayName) => {
-      this.faultSubcribe(
-        faultAndDisplayName.displayName,
-        faultAndDisplayName.faultIdentifier,
-        FaultType.Charger,
-      );
+      this.faultSubcribe(faultAndDisplayName.displayName, faultAndDisplayName.faultIdentifier, FaultType.Charger);
     });
 
     const bmsFaultAndDisplayNames = [
       {
         displayName: 'Open Wire',
-        faultIdentifier: IdentifierDataType.OPEN_WIRE,
+        faultIdentifier: IdentifierDataType.OPEN_WIRE
       },
       {
         displayName: 'Charger Limit Enforcement',
-        faultIdentifier: IdentifierDataType.CHARGER_LIMIT_ENFORCEMENT_FAULT,
+        faultIdentifier: IdentifierDataType.CHARGER_LIMIT_ENFORCEMENT_FAULT
       },
       {
         displayName: 'Charger Can Fault',
-        faultIdentifier: IdentifierDataType.CHARGER_CAN_FAULT,
+        faultIdentifier: IdentifierDataType.CHARGER_CAN_FAULT
       },
       {
         displayName: 'Battery Thermistor',
-        faultIdentifier: IdentifierDataType.BATTERY_THERMISTOR,
+        faultIdentifier: IdentifierDataType.BATTERY_THERMISTOR
       },
       {
         displayName: 'Charger Safety Relay',
-        faultIdentifier: IdentifierDataType.CHARGER_SAFETY_RELAY,
+        faultIdentifier: IdentifierDataType.CHARGER_SAFETY_RELAY
       },
       {
         displayName: 'Discharge Limit Enforcement',
-        faultIdentifier: IdentifierDataType.DISCHARGE_LIMIT_ENFORCEMENT_FAULT,
+        faultIdentifier: IdentifierDataType.DISCHARGE_LIMIT_ENFORCEMENT_FAULT
       },
       {
         displayName: 'External Can Fault',
-        faultIdentifier: IdentifierDataType.EXTERNAL_CAN_FAULT,
+        faultIdentifier: IdentifierDataType.EXTERNAL_CAN_FAULT
       },
       {
         displayName: 'Weak Pack Fault',
-        faultIdentifier: IdentifierDataType.WEAK_PACK_FAULT,
+        faultIdentifier: IdentifierDataType.WEAK_PACK_FAULT
       },
       {
         displayName: 'Low Cell Voltage',
-        faultIdentifier: IdentifierDataType.LOW_CELL_VOLTAGE,
+        faultIdentifier: IdentifierDataType.LOW_CELL_VOLTAGE
       },
       {
         displayName: 'Charge Reading Mismatch',
-        faultIdentifier: IdentifierDataType.CHARGE_READING_MISMATCH,
+        faultIdentifier: IdentifierDataType.CHARGE_READING_MISMATCH
       },
       {
         displayName: 'Current Sensor Fault',
-        faultIdentifier: IdentifierDataType.CURRENT_SENSOR_FAULT,
+        faultIdentifier: IdentifierDataType.CURRENT_SENSOR_FAULT
       },
       {
         displayName: 'Internal Cell Comm Fault',
-        faultIdentifier: IdentifierDataType.INTERNAL_CELL_COMM_FAULT,
+        faultIdentifier: IdentifierDataType.INTERNAL_CELL_COMM_FAULT
       },
       {
         displayName: 'Internal Software Fault',
-        faultIdentifier: IdentifierDataType.INTERNAL_SOFTWARE_FAULT,
+        faultIdentifier: IdentifierDataType.INTERNAL_SOFTWARE_FAULT
       },
       {
         displayName: 'Pack Overheat',
-        faultIdentifier: IdentifierDataType.PACK_OVERHEAT,
+        faultIdentifier: IdentifierDataType.PACK_OVERHEAT
       },
       {
         displayName: 'Cell Undervoltage',
-        faultIdentifier: IdentifierDataType.CELL_UNDERVOLTAGE,
+        faultIdentifier: IdentifierDataType.CELL_UNDERVOLTAGE
       },
       {
         displayName: 'Cell Overvoltage',
-        faultIdentifier: IdentifierDataType.CELL_OVERVOLTAGE,
+        faultIdentifier: IdentifierDataType.CELL_OVERVOLTAGE
       },
       {
         displayName: 'Cells Not Balancing',
-        faultIdentifier: IdentifierDataType.CELLS_NOT_BALANCING,
-      },
+        faultIdentifier: IdentifierDataType.CELLS_NOT_BALANCING
+      }
     ];
 
     // Subscribe to each BMS fault, with a display name (to display when the fault is triggered)
     bmsFaultAndDisplayNames.forEach((faultAndDisplayName) => {
-      this.faultSubcribe(
-        faultAndDisplayName.displayName,
-        faultAndDisplayName.faultIdentifier,
-        FaultType.BMS,
-      );
+      this.faultSubcribe(faultAndDisplayName.displayName, faultAndDisplayName.faultIdentifier, FaultType.BMS);
     });
   }
 
@@ -146,11 +138,7 @@ export default class FaultDisplay {
    * @param faultIdentifier the identifier for the fault.
    * @param faultType the type of the fault.
    */
-  private faultSubcribe(
-    displayName: string,
-    faultIdentifier: IdentifierDataType,
-    faultType: FaultType,
-  ) {
+  private faultSubcribe(displayName: string, faultIdentifier: IdentifierDataType, faultType: FaultType) {
     let lastFaultValue = 0;
     this.storage.get(faultIdentifier).subscribe((value) => {
       let newValue = parseInt(value.values[0]);
@@ -167,12 +155,7 @@ export default class FaultDisplay {
    * @param faultValue an string with an integer value.
    * @param faultName the name of the fault, to be displayed.
    */
-  private addFault(
-    faultValue: number,
-    faultName: string,
-    faultType: FaultType,
-    lastFaultValue: number,
-  ) {
+  private addFault(faultValue: number, faultName: string, faultType: FaultType, lastFaultValue: number) {
     // only add fault if it is positve for a fault and the last value for this fault was not a fault
     if (faultValue !== 0 && lastFaultValue === 0) {
       if (this.faults.length >= 50) {
@@ -183,7 +166,7 @@ export default class FaultDisplay {
       this.faults.unshift({
         type: faultType,
         name: faultName,
-        time: new Date().toLocaleTimeString(),
+        time: new Date().toLocaleTimeString()
       });
     }
   }

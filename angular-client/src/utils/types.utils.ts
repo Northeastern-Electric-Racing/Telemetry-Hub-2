@@ -15,8 +15,7 @@ export interface NodeWithVisibilityToggle extends Node {
   dataTypesAreVisible: boolean;
 }
 
-export interface NodeWithVisibilityToggleObservable
-  extends NodeWithVisibilityToggle {
+export interface NodeWithVisibilityToggleObservable extends NodeWithVisibilityToggle {
   dataTypesObservable: Observable<DataType[]>;
 }
 

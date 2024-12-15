@@ -8,7 +8,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
 @Component({
   selector: 'motor-info',
   templateUrl: './motor-info.component.html',
-  styleUrls: ['./motor-info.component.css'],
+  styleUrls: ['./motor-info.component.css']
 })
 export default class MotorInfo {
   motorUsage: number = 100;
@@ -30,7 +30,7 @@ export default class MotorInfo {
     });
     this.piechartData = [
       { value: this.motorUsage, name: 'Motor' },
-      { value: this.coolUsage, name: 'Cooling' },
+      { value: this.coolUsage, name: 'Cooling' }
     ];
   }
 
