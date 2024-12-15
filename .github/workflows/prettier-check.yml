@@ -22,9 +22,12 @@ jobs:
         with:
           node-version: 18.17.1
           cache: "npm"
+          cache-dependency-path: ./angular-client/package-lock.json
       - name: Install modules
         working-directory: ./angular-client
-        run: npm install
+        run: |
+          ls -la 
+          npm ci
       - name: Run prettier check
         working-directory: ./angular-client
         run: npm run prettier-check
