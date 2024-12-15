@@ -107,7 +107,6 @@ impl MqttProcessor {
         // let mut latency_interval = tokio::time::interval(Duration::from_millis(250));
         let mut latency_ringbuffer = ringbuffer::AllocRingBuffer::<TimeDelta>::new(20);
 
-
         debug!("Subscribing to siren");
         client
             .subscribe("#", rumqttc::v5::mqttbytes::QoS::ExactlyOnce)
