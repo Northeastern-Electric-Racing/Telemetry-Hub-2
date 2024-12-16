@@ -1,6 +1,8 @@
 use std::{collections::HashMap, sync::atomic::Ordering, time::Duration};
 
 use chrono::{DateTime, Utc};
+use regex::Regex;
+use ringbuffer::AllocRingBuffer;
 use serde::Serialize;
 use socketioxide::SocketIo;
 use tokio::sync::broadcast;
@@ -43,13 +45,13 @@ const TIMERS_TOPICS: &[&str] = &[
     "BMS/Charging/Control",
 ];
 
-// #[derive(Serialize)]
-// struct FaultData {
-//     pub topic: &'static str,
-//     pub name: String,
-//     pub occured_at: DateTime<Utc>,
-// }
-// const FAULT_SOCKET_KEY: &str = "faults";
+#[derive(Serialize)]
+struct FaultData {
+    pub topic: &'static str,
+    pub name: String,
+    pub occured_at: DateTime<Utc>,
+}
+const FAULT_SOCKET_KEY: &str = "faults";
 
 pub async fn socket_handler_with_metadata(
     cancel_token: CancellationToken,
@@ -77,10 +79,10 @@ pub async fn socket_handler_with_metadata(
     }
 
     // init faults
-    // let fault_regex: Regex = Regex::new(r"(BMS/Status/F/*|Charger/Box/F_*|MPU/Fault/F_*")
-    //     .expect("Could not compile regex!");
-    // const FAULT_BINS: &[&str] = &["DTI/Fault/FaultCode"];
-    // let mut fault_ringbuffer = AllocRingBuffer::<FaultData>::new(25);
+    let fault_regex: Regex = Regex::new(r"(BMS/Status/F/*|Charger/Box/F_*|MPU/Fault/F_*")
+        .expect("Could not compile regex!");
+    const FAULT_BINS: &[&str] = &["DTI/Fault/FaultCode"];
+    let mut fault_ringbuffer = AllocRingBuffer::<FaultData>::new(25);
 
     loop {
         tokio::select! {
@@ -106,11 +108,12 @@ pub async fn socket_handler_with_metadata(
                     }
                     continue;
                 }
-                // if fault_regex.is_match(&data.name) {
-                //     fault_ringbuffer.push()
-                // } else {
 
-                // }
+                if fault_regex.is_match(&data.name) {
+                    //fault_ringbuffer.push()
+                } else {
+
+                }
 
             }
             _ = timers_interval.tick() => {
