@@ -235,10 +235,8 @@ impl MqttProcessor {
             return None;
         };
 
-        // get the node and datatype from the topic extracted at the beginning
+        // get the node from the topic extracted at the beginning
         let node = split.0;
-
-        let data_type = String::from(split.1);
 
         // extract the unix time
         // levels of time priority
@@ -301,7 +299,7 @@ impl MqttProcessor {
 
         Some(ClientData {
             run_id: crate::RUN_ID.load(Ordering::Relaxed),
-            name: data_type,
+            name: topic.to_string(),
             unit: data.unit,
             values: data.values,
             timestamp: unix_clean,
