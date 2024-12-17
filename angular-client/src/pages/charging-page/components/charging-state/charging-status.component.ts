@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import Theme from 'src/services/theme.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
@@ -9,7 +9,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './charging-status.component.html',
   styleUrls: ['./charging-status.component.css']
 })
-export default class ChargingStatusComponent {
+export default class ChargingStatusComponent implements OnInit {
   isCharging: boolean = false;
   currentSeconds: number = 0;
   totalSeconds: number = Number(sessionStorage.getItem('charging-total-seconds')) || 0;

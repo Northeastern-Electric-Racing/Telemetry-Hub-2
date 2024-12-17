@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 
 @Component({
@@ -6,7 +6,7 @@ import Storage from 'src/services/storage.service';
   templateUrl: './connection-display.component.html',
   styleUrl: './connection-display.component.css'
 })
-export default class ConnectionDisplay {
+export default class ConnectionDisplay implements OnInit {
   connected: boolean = false;
   constructor(private storage: Storage) {}
 

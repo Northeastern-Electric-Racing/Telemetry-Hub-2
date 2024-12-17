@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 
 import { ApexNonAxisChartSeries, ApexPlotOptions, ApexChart, ApexFill } from 'ng-apexcharts';
 
@@ -15,7 +15,7 @@ export type ChartOptions = {
   templateUrl: 'half-gauge.component.html',
   styleUrls: ['half-gauge.component.css']
 })
-export default class HalfGauge {
+export default class HalfGauge implements OnInit {
   public chartOptions!: Partial<ChartOptions> | any;
   @Input() current: number = 50;
   @Input() min: number = 0;

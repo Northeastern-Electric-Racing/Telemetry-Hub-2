@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { GraphData } from 'src/utils/types.utils';
@@ -8,7 +8,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './acceleration-over-time-display.component.html',
   styleUrls: ['./acceleration-over-time-display.component.css']
 })
-export default class AccelerationOverTimeDisplay {
+export default class AccelerationOverTimeDisplay implements OnInit {
   data: GraphData[] = [];
 
   constructor(private storage: Storage) {}

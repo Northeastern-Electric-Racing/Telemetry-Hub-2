@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, Renderer2 } from '@angular/core';
+import { Component, ElementRef, Input, Renderer2, OnInit } from '@angular/core';
 
 import { ApexNonAxisChartSeries, ApexPlotOptions, ApexChart, ApexFill } from 'ng-apexcharts';
 import Theme from 'src/services/theme.service';
@@ -16,7 +16,7 @@ export type ChartOptions = {
   templateUrl: 'pie-chart.component.html',
   styleUrls: ['pie-chart.component.css']
 })
-export default class PieChart {
+export default class PieChart implements OnInit {
   public chartOptions!: Partial<ChartOptions> | any;
   @Input() data: { value: number; name: string }[] = [];
   @Input() backgroundColor: string = Theme.infoBackground;

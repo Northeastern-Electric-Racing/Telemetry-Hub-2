@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 
@@ -7,7 +7,7 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   templateUrl: './torque-display.component.html',
   styleUrls: ['./torque-display.component.css']
 })
-export default class TorqueDisplay {
+export default class TorqueDisplay implements OnInit {
   torque: number = 0;
 
   constructor(private storage: Storage) {}

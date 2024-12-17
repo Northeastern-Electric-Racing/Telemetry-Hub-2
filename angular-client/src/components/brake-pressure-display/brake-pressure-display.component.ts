@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 
@@ -7,7 +7,7 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   templateUrl: './brake-pressure-display.component.html',
   styleUrls: ['./brake-pressure-display.component.css']
 })
-export default class BrakePressureDisplay {
+export default class BrakePressureDisplay implements OnInit {
   brakePressure: number = 0;
   constructor(private storage: Storage) {}
 

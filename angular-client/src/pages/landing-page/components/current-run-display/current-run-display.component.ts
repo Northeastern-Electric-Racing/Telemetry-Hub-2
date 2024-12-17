@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 
 @Component({
@@ -6,7 +6,7 @@ import Storage from 'src/services/storage.service';
   templateUrl: './current-run-display.component.html',
   styleUrl: './current-run-display.component.css'
 })
-export class CurrentRunDisplay {
+export class CurrentRunDisplay implements OnInit {
   currentRun: number = 0;
   constructor(private storage: Storage) {}
 

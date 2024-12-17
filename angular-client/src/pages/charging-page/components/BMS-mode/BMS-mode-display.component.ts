@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { floatPipe } from 'src/utils/pipes.utils';
@@ -15,7 +15,7 @@ enum BMSMODE {
   templateUrl: './BMS-mode-display.component.html',
   styleUrls: ['./BMS-mode-display.component.css']
 })
-export default class BMSModeDisplay {
+export default class BMSModeDisplay implements OnInit {
   bmsMode: BMSMODE = 1;
 
   // Mapping object for colors

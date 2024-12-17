@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import Theme from 'src/services/theme.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
@@ -9,7 +9,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './active-status.component.html',
   styleUrls: ['./active-status.component.css']
 })
-export default class ActiveStatus {
+export default class ActiveStatus implements OnInit {
   isActive: boolean = false;
   currentSeconds: number = 0;
   totalSeconds: number = Number(sessionStorage.getItem('active-total-seconds')) || 0;

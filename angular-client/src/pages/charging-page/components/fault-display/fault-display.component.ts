@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { last } from 'rxjs';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
@@ -13,7 +13,7 @@ enum FaultType {
   templateUrl: './fault-display.component.html',
   styleUrls: ['./fault-display.component.css']
 })
-export default class FaultDisplay {
+export default class FaultDisplay implements OnInit {
   faults: { type: string; name: string; time: string }[] = [];
   faultsShifted: boolean = false;
   resetButton = {
@@ -141,7 +141,7 @@ export default class FaultDisplay {
   private faultSubcribe(displayName: string, faultIdentifier: IdentifierDataType, faultType: FaultType) {
     let lastFaultValue = 0;
     this.storage.get(faultIdentifier).subscribe((value) => {
-      let newValue = parseInt(value.values[0]);
+      const newValue = parseInt(value.values[0]);
       this.addFault(newValue, displayName, faultType, lastFaultValue);
       lastFaultValue = newValue;
     });

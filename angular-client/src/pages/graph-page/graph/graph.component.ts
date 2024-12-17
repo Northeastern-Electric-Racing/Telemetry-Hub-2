@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import ApexCharts from 'apexcharts';
 import { ApexXAxis, ApexDataLabels, ApexChart, ApexMarkers, ApexGrid, ApexTooltip, ApexFill } from 'ng-apexcharts';
 import { BehaviorSubject } from 'rxjs';
@@ -21,7 +21,7 @@ type ChartOptions = {
   templateUrl: './graph.component.html',
   styleUrls: ['./graph.component.css']
 })
-export default class Graph implements OnChanges {
+export default class Graph implements OnChanges, OnInit {
   @Input() valuesSubject!: BehaviorSubject<GraphData[]>;
   options!: ChartOptions;
   chart!: ApexCharts;

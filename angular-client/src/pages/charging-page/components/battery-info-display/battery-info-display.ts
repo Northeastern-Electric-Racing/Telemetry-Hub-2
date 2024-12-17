@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { floatPipe } from 'src/utils/pipes.utils';
 import Storage from 'src/services/storage.service';
@@ -8,7 +8,7 @@ import Storage from 'src/services/storage.service';
   templateUrl: './battery-info-display.html',
   styleUrls: ['./battery-info-display.css']
 })
-export class BatteryInfoDisplay {
+export class BatteryInfoDisplay implements OnInit {
   voltage: number = 0;
   packTemp: number = 0;
   stateOfCharge: number = 0;

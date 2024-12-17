@@ -1,5 +1,5 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { DataType, Node, NodeWithVisibilityToggle, NodeWithVisibilityToggleObservable } from 'src/utils/types.utils';
 import Storage from 'src/services/storage.service';
 import { decimalPipe } from 'src/utils/pipes.utils';
@@ -46,7 +46,7 @@ import { debounceTime, Observable, of, Subscription } from 'rxjs';
     ])
   ]
 })
-export default class GraphSidebarDesktop implements OnInit {
+export default class GraphSidebarDesktop implements OnInit, OnDestroy {
   @Input() nodes!: Node[];
   @Input() selectDataType!: (dataType: DataType) => void;
   nodesWithVisibilityToggle!: Observable<NodeWithVisibilityToggleObservable[]>;

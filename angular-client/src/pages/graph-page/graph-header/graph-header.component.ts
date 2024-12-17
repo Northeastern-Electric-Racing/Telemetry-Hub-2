@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 
 /**
  * Graph Header Component to display the graph page header.
@@ -9,7 +9,7 @@ import { Component, Input } from '@angular/core';
   templateUrl: './graph-header.component.html',
   styleUrls: ['./graph-header.component.css']
 })
-export default class GraphHeader {
+export default class GraphHeader implements OnInit {
   @Input() runId?: number;
 
   time = new Date();

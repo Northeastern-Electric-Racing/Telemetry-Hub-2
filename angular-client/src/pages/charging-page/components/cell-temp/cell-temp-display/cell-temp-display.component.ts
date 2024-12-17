@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { floatPipe } from 'src/utils/pipes.utils';
@@ -9,7 +9,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './cell-temp-display.component.html',
   styleUrls: ['./cell-temp-display.component.css']
 })
-export default class CellTempDisplay {
+export default class CellTempDisplay implements OnInit {
   avgTemp: number = 0;
   maxTemp: number = 0;
   resetGraphButton = {

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 
 /**
  * Simple custom button component that does something on click
@@ -10,7 +10,7 @@ import { Component, Input } from '@angular/core';
   templateUrl: './argos-button.component.html',
   styleUrls: ['./argos-button.component.css']
 })
-export class ButtonComponent {
+export class ButtonComponent implements OnInit {
   @Input() label!: string;
   @Input() onClick!: () => void;
   @Input() additionalStyles?: string;

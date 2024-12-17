@@ -1,11 +1,11 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 
 @Component({
   selector: 'switch',
   templateUrl: './switch.component.html',
   styleUrls: ['./switch.component.css']
 })
-export class SwitchComponent {
+export class SwitchComponent implements OnInit {
   @Input() isOn: boolean = false;
   @Input() offString: string = 'PAUSED';
   @Input() onString: string = 'ALLOWED';

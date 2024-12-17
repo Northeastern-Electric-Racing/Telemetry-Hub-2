@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { MessageService } from 'primeng/api';
 
 @Component({
@@ -6,7 +6,7 @@ import { MessageService } from 'primeng/api';
   templateUrl: './toast-button.component.html',
   styleUrls: ['./toast-button.component.css']
 })
-export class ToastButtonComponent {
+export class ToastButtonComponent implements OnInit {
   @Input() label!: string;
   @Input() onClick!: () => void;
   @Input() additionalStyles?: string;
