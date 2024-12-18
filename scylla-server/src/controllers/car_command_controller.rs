@@ -26,17 +26,12 @@ pub struct ConfigRequest {
 pub async fn send_config_command(
     Path(key): Path<String>,
     Query(data_query): Query<ConfigRequest>,
-    Extension(client): Extension<Option<Arc<AsyncClient>>>,
+    Extension(client): Extension<Arc<AsyncClient>>,
 ) -> Result<(), ScyllaError> {
     info!(
         "Sending car config with key: {}, and values: {:?}",
         key, data_query.data
     );
-    // disable scylla if not prod, as there will be None mqtt client
-    let Some(client) = client else {
-        warn!("Cannot use config endpoint in dev mode!");
-        return Ok(());
-    };
 
     // the protobuf calypso converts into CAN
     let mut payload = CommandData::new();
