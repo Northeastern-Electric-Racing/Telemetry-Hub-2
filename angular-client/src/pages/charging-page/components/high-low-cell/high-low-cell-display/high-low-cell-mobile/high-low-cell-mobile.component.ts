@@ -7,7 +7,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './high-low-cell-mobile.component.html',
   styleUrls: ['./high-low-cell-mobile.component.css']
 })
-export default class HighLowCellMobile implements OnInit {
+export default class HighLowCellMobileComponent implements OnInit {
   @Input() delta: number = 0;
   @Input() lowCellVoltage: number = 0;
   @Input() highCellVoltage: number = 0;

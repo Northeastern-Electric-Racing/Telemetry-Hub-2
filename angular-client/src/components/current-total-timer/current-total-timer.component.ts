@@ -6,7 +6,7 @@ import Storage from 'src/services/storage.service';
   templateUrl: './current-total-timer.component.html',
   styleUrls: ['./current-total-timer.component.css']
 })
-export default class CurrentTotalTimer {
+export default class CurrentTotalTimerComponent {
   @Input() currentTime: number = 0;
   @Input() totalTime: number = 0;
 

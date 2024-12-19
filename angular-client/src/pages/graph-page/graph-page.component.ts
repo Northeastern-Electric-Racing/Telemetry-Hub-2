@@ -14,7 +14,7 @@ import { DataType, GraphData, Node, Run } from 'src/utils/types.utils';
   templateUrl: './graph-page.component.html',
   styleUrls: ['./graph-page.component.css']
 })
-export default class GraphPage implements OnInit {
+export default class GraphPageComponent implements OnInit {
   realTime: boolean = true;
 
   nodes?: Node[];

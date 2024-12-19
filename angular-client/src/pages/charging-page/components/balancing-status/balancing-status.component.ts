@@ -9,7 +9,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './balancing-status.component.html',
   styleUrls: ['./balancing-status.component.css']
 })
-export default class BalancingStatus implements OnInit {
+export default class BalancingStatusComponent implements OnInit {
   isBalancing: boolean = false;
   currentSeconds: number = 0;
   totalSeconds: number = Number(sessionStorage.getItem('balancing-total-seconds')) || 0;

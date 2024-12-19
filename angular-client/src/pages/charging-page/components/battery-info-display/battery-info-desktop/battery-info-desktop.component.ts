@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
   templateUrl: './battery-info-desktop.component.html',
   styleUrls: ['./battery-info-desktop.component.css']
 })
-export default class BatteryInfoDesktop {
+export default class BatteryInfoDesktopComponent {
   @Input() voltage: number = 0;
   @Input() packTemp: number = 0;
   @Input() stateOfCharge: number = 0;

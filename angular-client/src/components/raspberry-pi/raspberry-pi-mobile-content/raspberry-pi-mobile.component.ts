@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
   templateUrl: './raspberry-pi-mobile.component.html',
   styleUrls: ['./raspberry-pi-mobile.component.css']
 })
-export default class RaspberryPiMobile {
+export default class RaspberryPiMobileComponent {
   @Input() cpuUsage: number = 0;
   @Input() cpuTemp: number = 0;
   @Input() ramUsage: number = 0;

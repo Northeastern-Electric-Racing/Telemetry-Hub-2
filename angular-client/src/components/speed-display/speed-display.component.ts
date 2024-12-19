@@ -7,7 +7,7 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   templateUrl: './speed-display.component.html',
   styleUrls: ['./speed-display.component.css']
 })
-export default class SpeedDisplay implements OnInit {
+export default class SpeedDisplayComponent implements OnInit {
   speed: number = 0;
 
   constructor(private storage: Storage) {}

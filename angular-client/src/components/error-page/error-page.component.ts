@@ -9,6 +9,6 @@ import { Component, Input } from '@angular/core';
   templateUrl: './error-page.component.html',
   styleUrls: ['./error-page.component.css']
 })
-export default class ErrorPage {
+export default class ErrorPageComponent {
   @Input() errorMessage!: string;
 }

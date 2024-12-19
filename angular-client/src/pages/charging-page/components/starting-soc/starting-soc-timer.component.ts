@@ -9,7 +9,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './starting-soc-timer.component.html',
   styleUrls: ['./starting-soc-timer.component.css']
 })
-export default class StartingSocTimer {
+export default class StartingSocTimerComponent {
   startingSoc: number = 0;
   constructor(private storage: Storage) {
     this.storage

@@ -8,7 +8,7 @@ import Storage from 'src/services/storage.service';
   templateUrl: './battery-info-display.html',
   styleUrls: ['./battery-info-display.css']
 })
-export class BatteryInfoDisplay implements OnInit {
+export class BatteryInfoDisplayComponent implements OnInit {
   voltage: number = 0;
   packTemp: number = 0;
   stateOfCharge: number = 0;

@@ -7,7 +7,7 @@ import SidebarService from 'src/services/sidebar.service';
   templateUrl: './app-sidebar.component.html',
   styleUrls: ['./app-sidebar.component.css']
 })
-export default class AppSidebar implements OnInit {
+export default class AppSidebarComponent implements OnInit {
   sidebarVisible = false;
 
   constructor(

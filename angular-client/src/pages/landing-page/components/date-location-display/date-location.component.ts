@@ -7,7 +7,7 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   templateUrl: './date-location.component.html',
   styleUrl: './date-location.component.css'
 })
-export class DateLocation implements OnInit {
+export class DateLocationComponent implements OnInit {
   time = new Date();
   location: string = 'Boston, MA';
   mobileThreshold = 1070;

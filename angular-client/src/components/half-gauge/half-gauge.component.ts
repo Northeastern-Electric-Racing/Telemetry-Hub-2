@@ -15,7 +15,7 @@ export type ChartOptions = {
   templateUrl: 'half-gauge.component.html',
   styleUrls: ['half-gauge.component.css']
 })
-export default class HalfGauge implements OnInit {
+export default class HalfGaugeComponent implements OnInit {
   public chartOptions!: Partial<ChartOptions> | any;
   @Input() current: number = 50;
   @Input() min: number = 0;

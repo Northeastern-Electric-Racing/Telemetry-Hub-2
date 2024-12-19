@@ -13,7 +13,7 @@ enum FaultType {
   templateUrl: './fault-display.component.html',
   styleUrls: ['./fault-display.component.css']
 })
-export default class FaultDisplay implements OnInit {
+export default class FaultDisplayComponent implements OnInit {
   faults: { type: string; name: string; time: string }[] = [];
   faultsShifted: boolean = false;
   resetButton = {

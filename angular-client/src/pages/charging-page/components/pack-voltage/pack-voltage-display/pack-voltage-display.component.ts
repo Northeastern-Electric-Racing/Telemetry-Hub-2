@@ -9,7 +9,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './pack-voltage-display.component.html',
   styleUrls: ['./pack-voltage-display.component.css']
 })
-export default class PackVoltageDisplay implements OnInit {
+export default class PackVoltageDisplayComponent implements OnInit {
   voltage: number = 0;
   packVoltData: GraphData[] = [];
   resetGraphButton = {

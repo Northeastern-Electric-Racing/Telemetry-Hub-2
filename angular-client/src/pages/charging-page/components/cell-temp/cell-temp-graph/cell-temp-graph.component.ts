@@ -7,7 +7,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './cell-temp-graph.component.html',
   styleUrls: ['./cell-temp-graph.component.css']
 })
-export default class CellTempGraph implements OnInit {
+export default class CellTempGraphComponent implements OnInit {
   @Input() maxCellTempData: GraphData[] = [];
   constructor(private storage: Storage) {}
   ngOnInit() {}

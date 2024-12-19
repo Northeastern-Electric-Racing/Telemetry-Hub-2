@@ -9,7 +9,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './high-low-cell-display.component.html',
   styleUrls: ['./high-low-cell-display.component.css']
 })
-export default class HighLowCellDisplay implements OnInit {
+export default class HighLowCellDisplayComponent implements OnInit {
   delta: number = 0;
   lowCellVoltage: number = 0;
   highCellVoltage: number = 0;

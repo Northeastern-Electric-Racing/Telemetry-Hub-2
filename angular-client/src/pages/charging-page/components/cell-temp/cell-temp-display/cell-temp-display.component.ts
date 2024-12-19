@@ -9,7 +9,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './cell-temp-display.component.html',
   styleUrls: ['./cell-temp-display.component.css']
 })
-export default class CellTempDisplay implements OnInit {
+export default class CellTempDisplayComponent implements OnInit {
   avgTemp: number = 0;
   maxTemp: number = 0;
   resetGraphButton = {

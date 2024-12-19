@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
   templateUrl: './sidebar-chip.component.html',
   styleUrls: ['./sidebar-chip.component.css']
 })
-export default class SidebarChip {
+export default class SidebarChipComponent {
   @Input() icon: string = '';
   @Input() value: string = '';
 }

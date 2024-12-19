@@ -6,7 +6,7 @@ import Storage from 'src/services/storage.service';
   templateUrl: './connection-display.component.html',
   styleUrl: './connection-display.component.css'
 })
-export default class ConnectionDisplay implements OnInit {
+export default class ConnectionDisplayComponent implements OnInit {
   connected: boolean = false;
   constructor(private storage: Storage) {}
 

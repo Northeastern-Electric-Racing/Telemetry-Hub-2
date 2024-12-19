@@ -14,7 +14,7 @@ import {
   ApexLegend
 } from 'ng-apexcharts';
 import { DialogService } from 'primeng/dynamicdialog';
-import { GraphDialog } from '../graph-dialog/graph-dialog.component';
+import { GraphDialogComponent } from '../graph-dialog/graph-dialog.component';
 import { GraphData } from 'src/utils/types.utils';
 
 type ChartOptions = {
@@ -58,7 +58,7 @@ export class DoubleLineGraphComponent implements OnInit {
   constructor(public dialogService: DialogService) {}
 
   openDialog = () => {
-    this.dialogService.open(GraphDialog, {
+    this.dialogService.open(GraphDialogComponent, {
       header: this.header,
       data: {
         data: this.data1,

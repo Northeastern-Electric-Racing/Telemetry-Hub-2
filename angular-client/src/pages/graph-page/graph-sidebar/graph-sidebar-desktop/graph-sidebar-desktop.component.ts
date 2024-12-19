@@ -46,7 +46,7 @@ import { debounceTime, Observable, of, Subscription } from 'rxjs';
     ])
   ]
 })
-export default class GraphSidebarDesktop implements OnInit, OnDestroy {
+export default class GraphSidebarDesktopComponent implements OnInit, OnDestroy {
   @Input() nodes!: Node[];
   @Input() selectDataType!: (dataType: DataType) => void;
   nodesWithVisibilityToggle!: Observable<NodeWithVisibilityToggleObservable[]>;

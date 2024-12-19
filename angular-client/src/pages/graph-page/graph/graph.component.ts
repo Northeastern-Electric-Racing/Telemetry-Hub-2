@@ -21,7 +21,7 @@ type ChartOptions = {
   templateUrl: './graph.component.html',
   styleUrls: ['./graph.component.css']
 })
-export default class Graph implements OnChanges, OnInit {
+export default class CustomGraphComponent implements OnChanges, OnInit {
   @Input() valuesSubject!: BehaviorSubject<GraphData[]>;
   options!: ChartOptions;
   chart!: ApexCharts;

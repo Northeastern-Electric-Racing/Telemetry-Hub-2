@@ -8,7 +8,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './pack-temp.component.html',
   styleUrls: ['./pack-temp.component.css']
 })
-export default class PackTemp implements OnInit {
+export default class PackTempComponent implements OnInit {
   packTemp: number = 0;
   constructor(private storage: Storage) {}
 

@@ -8,7 +8,7 @@ import { DataType, Run } from 'src/utils/types.utils';
   styleUrls: ['./graph-caption.component.css'],
   templateUrl: './graph-caption.component.html'
 })
-export default class GraphInfo implements OnInit {
+export default class GraphInfoComponent implements OnInit {
   @Input() dataType!: Subject<DataType>;
   @Input() currentValue!: Subject<DataValue | undefined>;
   @Input() onRunSelected!: (run: Run) => void;

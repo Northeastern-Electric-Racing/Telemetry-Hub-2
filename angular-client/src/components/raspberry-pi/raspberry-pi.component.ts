@@ -8,7 +8,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './raspberry-pi.component.html',
   styleUrls: ['./raspberry-pi.component.css']
 })
-export default class RasberryPi implements OnInit {
+export default class RasberryPiComponent implements OnInit {
   cpuUsage: number = 0;
   cpuTemp: number = 0;
   ramUsage: number = 0;

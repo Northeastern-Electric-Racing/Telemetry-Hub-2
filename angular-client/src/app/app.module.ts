@@ -4,34 +4,34 @@ import { AppRoutingModule } from './app-routing.module';
 import { CarouselModule } from 'primeng/carousel';
 import { ToastModule } from 'primeng/toast';
 import { OrderListModule } from 'primeng/orderlist';
-import LandingPage from 'src/pages/landing-page/landing-page.component';
-import ChargingPage from 'src/pages/charging-page/charging-page.component';
-import ChargingPageMobile from 'src/pages/charging-page/charging-page-mobile/charging-page-mobile.component';
-import GraphSidebar from 'src/pages/graph-page/graph-sidebar/graph-sidebar.component';
-import SidebarCard from 'src/pages/graph-page/graph-sidebar/sidebar-card/sidebar-card.component';
-import AppContext from './context/app-context.component';
-import GraphPage from 'src/pages/graph-page/graph-page.component';
-import Typography from 'src/components/typography/typography.component';
-import LoadingPage from 'src/components/loading-page/loading-page.component';
-import ErrorPage from 'src/components/error-page/error-page.component';
-import Header from 'src/components/header/header.component';
-import GraphHeader from 'src/pages/graph-page/graph-header/graph-header.component';
+import LandingPageComponent from 'src/pages/landing-page/landing-page.component';
+import ChargingPageComponent from 'src/pages/charging-page/charging-page.component';
+import ChargingPageMobileComponent from 'src/pages/charging-page/charging-page-mobile/charging-page-mobile.component';
+import GraphSidebarComponent from 'src/pages/graph-page/graph-sidebar/graph-sidebar.component';
+import SidebarCardComponent from 'src/pages/graph-page/graph-sidebar/sidebar-card/sidebar-card.component';
+import AppContextComponent from './context/app-context.component';
+import GraphPageComponent from 'src/pages/graph-page/graph-page.component';
+import TypographyComponent from 'src/components/typography/typography.component';
+import LoadingPageComponent from 'src/components/loading-page/loading-page.component';
+import ErrorPageComponent from 'src/components/error-page/error-page.component';
+import HeaderComponent from 'src/components/header/header.component';
+import GraphHeaderComponent from 'src/pages/graph-page/graph-header/graph-header.component';
 import { InfoBackgroundComponent } from 'src/components/info-background/info-background.component';
 import { CircularPercentageComponent } from 'src/components/circular-percentage/circular-percentage.component';
 import MoreDetails from 'src/components/more-details/more-details.component';
-import { RunSelector } from 'src/pages/graph-page/graph-caption/run-selector/run-selector.component';
-import { Carousel } from 'src/components/carousel/carousel.component';
+import { RunSelectorComponent } from 'src/pages/graph-page/graph-caption/run-selector/run-selector.component';
+import { CarouselComponent } from 'src/components/carousel/carousel.component';
 import { ButtonComponent } from 'src/components/argos-button/argos-button.component';
-import GraphInfo from 'src/pages/graph-page/graph-caption/graph-caption.component';
+import GraphInfoComponent from 'src/pages/graph-page/graph-caption/graph-caption.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import Graph from 'src/pages/graph-page/graph/graph.component';
-import GraphSidebarMobile from 'src/pages/graph-page/graph-sidebar/graph-sidebar-mobile/graph-sidebar-mobile.component';
-import GraphSidebarDesktop from 'src/pages/graph-page/graph-sidebar/graph-sidebar-desktop/graph-sidebar-desktop.component';
-import Map from 'src/pages/map/map.component';
-import Thermometer from 'src/components/thermometer/thermometer.component';
+import CustomGraphComponent from 'src/pages/graph-page/graph/graph.component';
+import GraphSidebarMobileComponent from 'src/pages/graph-page/graph-sidebar/graph-sidebar-mobile/graph-sidebar-mobile.component';
+import GraphSidebarDesktopComponent from 'src/pages/graph-page/graph-sidebar/graph-sidebar-desktop/graph-sidebar-desktop.component';
+import MapComponent from 'src/pages/map/map.component';
+import ThermometerComponent from 'src/components/thermometer/thermometer.component';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import HStack from 'src/components/hstack/hstack.component';
-import VStack from 'src/components/vstack/vstack.component';
+import HStackComponent from 'src/components/hstack/hstack.component';
+import VStackComponent from 'src/components/vstack/vstack.component';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -40,31 +40,31 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ButtonModule } from 'primeng/button';
 import { MessageService } from 'primeng/api';
 import { GraphComponent } from 'src/components/graph/graph.component';
-import { InfoGraph } from 'src/components/info-graph/info-graph.component';
-import { GraphDialog } from 'src/components/graph-dialog/graph-dialog.component';
-import { SteeringAngleDisplay } from 'src/components/steering-angle-display/steering-angle-display.component';
+import { InfoGraphComponent } from 'src/components/info-graph/info-graph.component';
+import { GraphDialogComponent } from 'src/components/graph-dialog/graph-dialog.component';
+import { SteeringAngleDisplayComponent } from 'src/components/steering-angle-display/steering-angle-display.component';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import HalfGauge from 'src/components/half-gauge/half-gauge.component';
-import { Divider } from 'src/components/divider/divider';
+import HalfGaugeComponent from 'src/components/half-gauge/half-gauge.component';
+import { DividerComponent } from 'src/components/divider/divider';
 import { DriverComponent } from 'src/components/driver-component/driver-component';
-import PieChart from 'src/components/pie-chart/pie-chart.component';
-import RasberryPi from 'src/components/raspberry-pi/raspberry-pi.component';
-import { AccelerationGraphs } from 'src/components/acceleration-graphs/acceleration-graphs.component';
-import SpeedDisplay from 'src/components/speed-display/speed-display.component';
-import SpeedOverTimeDisplay from 'src/components/speed-over-time-display/speed-over-time-display.component';
-import TorqueDisplay from 'src/components/torque-display/torque-display.component';
-import AccelerationOverTimeDisplay from 'src/components/acceleration-over-time-display/acceleration-over-time-display.component';
-import BrakePressureDisplay from 'src/components/brake-pressure-display/brake-pressure-display.component';
+import PieChartComponent from 'src/components/pie-chart/pie-chart.component';
+import RasberryPiComponent from 'src/components/raspberry-pi/raspberry-pi.component';
+import { AccelerationGraphsComponent } from 'src/components/acceleration-graphs/acceleration-graphs.component';
+import SpeedDisplayComponent from 'src/components/speed-display/speed-display.component';
+import SpeedOverTimeDisplayComponent from 'src/components/speed-over-time-display/speed-over-time-display.component';
+import TorqueDisplayComponent from 'src/components/torque-display/torque-display.component';
+import AccelerationOverTimeDisplayComponent from 'src/components/acceleration-over-time-display/acceleration-over-time-display.component';
+import BrakePressureDisplayComponent from 'src/components/brake-pressure-display/brake-pressure-display.component';
 import { SidebarModule } from 'primeng/sidebar';
-import AppSidebar from './app-sidebar/app-sidebar.component';
-import SidebarChip from 'src/components/sidebar-chip/sidebar-chip.component';
-import SidebarToggle from 'src/components/sidebar-toggle/sidebar-toggle.component';
-import MotorInfo from 'src/components/motor-info/motor-info.component';
-import LandingPageMobile from 'src/pages/landing-page/landing-page-mobile/landing-page-mobile.component';
-import RaspberryPiDesktop from 'src/components/raspberry-pi/raspberry-pi-desktop-content/raspberry-pi-desktop.component';
-import RaspberryPiMobile from 'src/components/raspberry-pi/raspberry-pi-mobile-content/raspberry-pi-mobile.component';
+import AppSidebarComponent from './app-sidebar/app-sidebar.component';
+import SidebarChipComponent from 'src/components/sidebar-chip/sidebar-chip.component';
+import SidebarToggleComponent from 'src/components/sidebar-toggle/sidebar-toggle.component';
+import MotorInfoComponent from 'src/components/motor-info/motor-info.component';
+import LandingPageMobileComponent from 'src/pages/landing-page/landing-page-mobile/landing-page-mobile.component';
+import RaspberryPiDesktopComponent from 'src/components/raspberry-pi/raspberry-pi-desktop-content/raspberry-pi-desktop.component';
+import RaspberryPiMobileComponent from 'src/components/raspberry-pi/raspberry-pi-mobile-content/raspberry-pi-mobile.component';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
@@ -73,130 +73,130 @@ import { NodeFilterPipe } from 'src/utils/pipes/node-filter.pipe';
 import { DataTypeFilterPipe } from 'src/utils/pipes/data-type-filter.pipe';
 import { SwitchComponent } from 'src/components/switch/switch.component';
 import { DoubleLineGraphComponent } from 'src/components/double-line-graph/double-line-graph.component';
-import BatteryInfoDesktop from 'src/pages/charging-page/components/battery-info-display/battery-info-desktop/battery-info-desktop.component';
-import BatteryInfoMobile from 'src/pages/charging-page/components/battery-info-display/battery-info-mobile/battery-info-mobile.component';
-import StateOfChargeDisplay from 'src/pages/charging-page/components/state-of-charge/state-of-charge-display/state-of-charge-display.component';
-import PackTemp from 'src/pages/charging-page/components/pack-temp/pack-temp.component';
-import CellTempDisplay from 'src/pages/charging-page/components/cell-temp/cell-temp-display/cell-temp-display.component';
-import CellTempGraph from 'src/pages/charging-page/components/cell-temp/cell-temp-graph/cell-temp-graph.component';
-import CurrentDisplay from 'src/pages/charging-page/components/battery-current/current-display/current-display.component';
-import FaultDisplay from 'src/pages/charging-page/components/fault-display/fault-display.component';
-import BMSModeDisplay from 'src/pages/charging-page/components/BMS-mode/BMS-mode-display.component';
-import HighLowCellDisplay from 'src/pages/charging-page/components/high-low-cell/high-low-cell-display/high-low-cell-display.component';
-import HighLowCellGraph from 'src/pages/charging-page/components/high-low-cell/high-low-cell-graph/high-low-cell-graph.component';
-import PackVoltageGraph from 'src/pages/charging-page/components/pack-voltage/pack-voltage-graph/pack-voltage-graph.component';
-import PackVoltageDisplay from 'src/pages/charging-page/components/pack-voltage/pack-voltage-display/pack-voltage-display.component';
+import BatteryInfoDesktopComponent from 'src/pages/charging-page/components/battery-info-display/battery-info-desktop/battery-info-desktop.component';
+import BatteryInfoMobileComponent from 'src/pages/charging-page/components/battery-info-display/battery-info-mobile/battery-info-mobile.component';
+import StateOfChargeDisplayComponent from 'src/pages/charging-page/components/state-of-charge/state-of-charge-display/state-of-charge-display.component';
+import PackTempComponent from 'src/pages/charging-page/components/pack-temp/pack-temp.component';
+import CellTempDisplayComponent from 'src/pages/charging-page/components/cell-temp/cell-temp-display/cell-temp-display.component';
+import CellTempGraphComponent from 'src/pages/charging-page/components/cell-temp/cell-temp-graph/cell-temp-graph.component';
+import CurrentDisplayComponent from 'src/pages/charging-page/components/battery-current/current-display/current-display.component';
+import FaultDisplayComponent from 'src/pages/charging-page/components/fault-display/fault-display.component';
+import BMSModeDisplayComponent from 'src/pages/charging-page/components/BMS-mode/BMS-mode-display.component';
+import HighLowCellDisplayComponent from 'src/pages/charging-page/components/high-low-cell/high-low-cell-display/high-low-cell-display.component';
+import HighLowCellGraphComponent from 'src/pages/charging-page/components/high-low-cell/high-low-cell-graph/high-low-cell-graph.component';
+import PackVoltageGraphComponent from 'src/pages/charging-page/components/pack-voltage/pack-voltage-graph/pack-voltage-graph.component';
+import PackVoltageDisplayComponent from 'src/pages/charging-page/components/pack-voltage/pack-voltage-display/pack-voltage-display.component';
 import ChargingStatusComponent from 'src/pages/charging-page/components/charging-state/charging-status.component';
 import { BatteryPercentageComponent } from 'src/pages/charging-page/components/battery-percentage/battery-percentage.component';
-import { BatteryInfoDisplay } from 'src/pages/charging-page/components/battery-info-display/battery-info-display';
+import { BatteryInfoDisplayComponent } from 'src/pages/charging-page/components/battery-info-display/battery-info-display';
 import { ToastButtonComponent } from 'src/components/toast-button/toast-button.component';
-import StartingSocTimer from 'src/pages/charging-page/components/starting-soc/starting-soc-timer.component';
-import CurrentTotalTimer from 'src/components/current-total-timer/current-total-timer.component';
-import BalancingStatus from 'src/pages/charging-page/components/balancing-status/balancing-status.component';
-import FaultedStatus from 'src/pages/charging-page/components/faulted-status/faulted-status.component';
-import ActiveStatus from 'src/pages/charging-page/components/active-status/active-status.component';
-import CombinedStatusDisplay from 'src/pages/charging-page/components/combined-status-display/combined-status-display.component';
-import CombinedStatusMobile from 'src/pages/charging-page/components/combined-status-display/mobile-view/combined-status-mobile.component';
-import PackVoltageMobileDisplay from 'src/pages/charging-page/components/pack-voltage/pack-voltage-display/pack-voltage-mobile/pack-voltage-mobile.component';
-import HighLowCellMobile from 'src/pages/charging-page/components/high-low-cell/high-low-cell-display/high-low-cell-mobile/high-low-cell-mobile.component';
-import CellTempMobile from 'src/pages/charging-page/components/cell-temp/cell-temp-display/cell-temp-mobile/cell-temp-mobile.component';
-import ConnectionDisplay from 'src/pages/landing-page/components/connection-display/connection-display.component';
-import { CurrentRunDisplay } from 'src/pages/landing-page/components/current-run-display/current-run-display.component';
-import LatencyDisplay from 'src/components/latency-display/latency-display';
-import { DateLocation } from 'src/pages/landing-page/components/date-location-display/date-location.component';
-import { ViewerDisplay } from 'src/pages/landing-page/components/viewer-display/viewer-display.component';
+import StartingSocTimerComponent from 'src/pages/charging-page/components/starting-soc/starting-soc-timer.component';
+import CurrentTotalTimerComponent from 'src/components/current-total-timer/current-total-timer.component';
+import BalancingStatusComponent from 'src/pages/charging-page/components/balancing-status/balancing-status.component';
+import FaultedStatusComponent from 'src/pages/charging-page/components/faulted-status/faulted-status.component';
+import ActiveStatusComponent from 'src/pages/charging-page/components/active-status/active-status.component';
+import CombinedStatusDisplayComponent from 'src/pages/charging-page/components/combined-status-display/combined-status-display.component';
+import CombinedStatusMobileComponent from 'src/pages/charging-page/components/combined-status-display/mobile-view/combined-status-mobile.component';
+import PackVoltageMobileDisplayComponent from 'src/pages/charging-page/components/pack-voltage/pack-voltage-display/pack-voltage-mobile/pack-voltage-mobile.component';
+import HighLowCellMobileComponent from 'src/pages/charging-page/components/high-low-cell/high-low-cell-display/high-low-cell-mobile/high-low-cell-mobile.component';
+import CellTempMobileComponent from 'src/pages/charging-page/components/cell-temp/cell-temp-display/cell-temp-mobile/cell-temp-mobile.component';
+import ConnectionDisplayComponent from 'src/pages/landing-page/components/connection-display/connection-display.component';
+import { CurrentRunDisplayComponent } from 'src/pages/landing-page/components/current-run-display/current-run-display.component';
+import LatencyDisplayComponent from 'src/components/latency-display/latency-display';
+import { DateLocationComponent } from 'src/pages/landing-page/components/date-location-display/date-location.component';
+import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer-display/viewer-display.component';
 
 @NgModule({
   declarations: [
-    AppContext,
-    LandingPage,
-    ChargingPage,
-    ChargingPageMobile,
-    GraphPage,
-    GraphSidebar,
-    GraphSidebarMobile,
-    GraphSidebarDesktop,
-    SidebarCard,
-    Typography,
-    LoadingPage,
-    ErrorPage,
-    Header,
-    GraphHeader,
+    AppContextComponent,
+    LandingPageComponent,
+    ChargingPageComponent,
+    ChargingPageMobileComponent,
+    GraphPageComponent,
+    GraphSidebarComponent,
+    GraphSidebarMobileComponent,
+    GraphSidebarDesktopComponent,
+    SidebarCardComponent,
+    TypographyComponent,
+    LoadingPageComponent,
+    ErrorPageComponent,
+    HeaderComponent,
+    GraphHeaderComponent,
     BatteryPercentageComponent,
     MoreDetails,
-    RunSelector,
-    Carousel,
+    RunSelectorComponent,
+    CarouselComponent,
     ButtonComponent,
-    GraphInfo,
-    Graph,
-    Map,
+    GraphInfoComponent,
+    CustomGraphComponent,
+    MapComponent,
     InfoBackgroundComponent,
     CircularPercentageComponent,
-    Thermometer,
-    VStack,
-    HStack,
-    BatteryInfoDisplay,
+    ThermometerComponent,
+    VStackComponent,
+    HStackComponent,
+    BatteryInfoDisplayComponent,
     GraphComponent,
-    InfoGraph,
-    GraphDialog,
-    Divider,
+    InfoGraphComponent,
+    GraphDialogComponent,
+    DividerComponent,
     DriverComponent,
-    SteeringAngleDisplay,
-    HalfGauge,
-    Divider,
-    PieChart,
-    AccelerationGraphs,
-    ViewerDisplay,
-    SpeedDisplay,
-    SpeedOverTimeDisplay,
-    TorqueDisplay,
-    AccelerationOverTimeDisplay,
-    BrakePressureDisplay,
-    RasberryPi,
-    AccelerationGraphs,
-    AppSidebar,
-    SidebarChip,
-    SidebarToggle,
-    MotorInfo,
-    LandingPageMobile,
-    RaspberryPiDesktop,
-    RaspberryPiMobile,
-    BatteryInfoDesktop,
-    BatteryInfoMobile,
+    SteeringAngleDisplayComponent,
+    HalfGaugeComponent,
+    DividerComponent,
+    PieChartComponent,
+    AccelerationGraphsComponent,
+    ViewerDisplayComponent,
+    SpeedDisplayComponent,
+    SpeedOverTimeDisplayComponent,
+    TorqueDisplayComponent,
+    AccelerationOverTimeDisplayComponent,
+    BrakePressureDisplayComponent,
+    RasberryPiComponent,
+    AccelerationGraphsComponent,
+    AppSidebarComponent,
+    SidebarChipComponent,
+    SidebarToggleComponent,
+    MotorInfoComponent,
+    LandingPageMobileComponent,
+    RaspberryPiDesktopComponent,
+    RaspberryPiMobileComponent,
+    BatteryInfoDesktopComponent,
+    BatteryInfoMobileComponent,
     NodeFilterPipe,
     DataTypeFilterPipe,
-    CombinedStatusDisplay,
-    StateOfChargeDisplay,
-    PackTemp,
-    CellTempDisplay,
-    CellTempGraph,
-    CurrentDisplay,
-    FaultDisplay,
+    CombinedStatusDisplayComponent,
+    StateOfChargeDisplayComponent,
+    PackTempComponent,
+    CellTempDisplayComponent,
+    CellTempGraphComponent,
+    CurrentDisplayComponent,
+    FaultDisplayComponent,
     SwitchComponent,
-    BMSModeDisplay,
+    BMSModeDisplayComponent,
     DoubleLineGraphComponent,
-    HighLowCellDisplay,
-    HighLowCellGraph,
-    PackVoltageGraph,
-    PackVoltageDisplay,
+    HighLowCellDisplayComponent,
+    HighLowCellGraphComponent,
+    PackVoltageGraphComponent,
+    PackVoltageDisplayComponent,
     ToastButtonComponent,
     ChargingStatusComponent,
-    StartingSocTimer,
-    CurrentTotalTimer,
-    BalancingStatus,
-    FaultedStatus,
-    ActiveStatus,
-    CombinedStatusMobile,
-    PackVoltageMobileDisplay,
-    HighLowCellMobile,
-    CellTempMobile,
-    ConnectionDisplay,
-    LatencyDisplay,
-    DateLocation,
-    CurrentRunDisplay,
-    ViewerDisplay
+    StartingSocTimerComponent,
+    CurrentTotalTimerComponent,
+    BalancingStatusComponent,
+    FaultedStatusComponent,
+    ActiveStatusComponent,
+    CombinedStatusMobileComponent,
+    PackVoltageMobileDisplayComponent,
+    HighLowCellMobileComponent,
+    CellTempMobileComponent,
+    ConnectionDisplayComponent,
+    LatencyDisplayComponent,
+    DateLocationComponent,
+    CurrentRunDisplayComponent,
+    ViewerDisplayComponent
   ],
-  bootstrap: [AppContext],
+  bootstrap: [AppContextComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,

@@ -10,4 +10,4 @@ import { Component } from '@angular/core';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
-export default class Header {}
+export default class HeaderComponent {}

@@ -8,7 +8,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './state-of-charge-display.component.html',
   styleUrls: ['./state-of-charge-display.component.css']
 })
-export default class StateOfChargeDisplay implements OnInit {
+export default class StateOfChargeDisplayComponent implements OnInit {
   stateOfCharge: number = 0;
   constructor(private storage: Storage) {}
 

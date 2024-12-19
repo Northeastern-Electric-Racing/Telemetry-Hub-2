@@ -7,7 +7,7 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   templateUrl: './charging-page-mobile.component.html',
   styleUrls: ['./charging-page-mobile.component.css']
 })
-export default class ChargingPageMobile implements OnInit {
+export default class ChargingPageMobileComponent implements OnInit {
   @Input() time = new Date();
   location: string = 'No Location Set';
   constructor(private storage: Storage) {}

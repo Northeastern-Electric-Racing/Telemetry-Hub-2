@@ -7,7 +7,7 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   templateUrl: './viewer-display.component.html',
   styleUrl: './viewer-display.component.css'
 })
-export class ViewerDisplay implements OnInit {
+export class ViewerDisplayComponent implements OnInit {
   numViewers: number = 0;
   constructor(private storage: Storage) {}
 

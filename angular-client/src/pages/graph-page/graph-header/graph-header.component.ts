@@ -9,7 +9,7 @@ import { Component, Input, OnInit } from '@angular/core';
   templateUrl: './graph-header.component.html',
   styleUrls: ['./graph-header.component.css']
 })
-export default class GraphHeader implements OnInit {
+export default class GraphHeaderComponent implements OnInit {
   @Input() runId?: number;
 
   time = new Date();

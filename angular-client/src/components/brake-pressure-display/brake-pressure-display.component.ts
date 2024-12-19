@@ -7,7 +7,7 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   templateUrl: './brake-pressure-display.component.html',
   styleUrls: ['./brake-pressure-display.component.css']
 })
-export default class BrakePressureDisplay implements OnInit {
+export default class BrakePressureDisplayComponent implements OnInit {
   brakePressure: number = 0;
   constructor(private storage: Storage) {}
 

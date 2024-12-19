@@ -7,7 +7,7 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   templateUrl: './torque-display.component.html',
   styleUrls: ['./torque-display.component.css']
 })
-export default class TorqueDisplay implements OnInit {
+export default class TorqueDisplayComponent implements OnInit {
   torque: number = 0;
 
   constructor(private storage: Storage) {}

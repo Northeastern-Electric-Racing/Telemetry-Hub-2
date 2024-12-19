@@ -12,7 +12,7 @@ import { Run } from 'src/utils/types.utils';
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.css']
 })
-export default class Map implements OnInit {
+export default class MapComponent implements OnInit {
   isLoading: boolean = false;
   isError: boolean = false;
   error?: Error;

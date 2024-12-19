@@ -9,7 +9,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './active-status.component.html',
   styleUrls: ['./active-status.component.css']
 })
-export default class ActiveStatus implements OnInit {
+export default class ActiveStatusComponent implements OnInit {
   isActive: boolean = false;
   currentSeconds: number = 0;
   totalSeconds: number = Number(sessionStorage.getItem('active-total-seconds')) || 0;

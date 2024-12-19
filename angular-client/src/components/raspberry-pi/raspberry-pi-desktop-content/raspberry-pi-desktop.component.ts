@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
   templateUrl: './raspberry-pi-desktop.component.html',
   styleUrls: ['./raspberry-pi-desktop.component.css']
 })
-export default class RaspberryPiDesktop {
+export default class RaspberryPiDesktopComponent {
   @Input() cpuUsage: number = 0;
   @Input() cpuTemp: number = 0;
   @Input() ramUsage: number = 0;

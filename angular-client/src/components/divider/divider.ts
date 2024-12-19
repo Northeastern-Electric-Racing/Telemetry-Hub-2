@@ -5,4 +5,4 @@ import { Component } from '@angular/core';
   templateUrl: './divider.html',
   styleUrls: ['./divider.css']
 })
-export class Divider {}
+export class DividerComponent {}

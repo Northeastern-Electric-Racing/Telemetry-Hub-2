@@ -10,7 +10,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './motor-info.component.html',
   styleUrls: ['./motor-info.component.css']
 })
-export default class MotorInfo implements OnInit {
+export default class MotorInfoComponent implements OnInit {
   motorUsage: number = 100;
   coolUsage: number = 0;
   motorTemp: number = 0;

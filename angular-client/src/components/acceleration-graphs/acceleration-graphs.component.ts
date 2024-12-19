@@ -15,7 +15,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './acceleration-graphs.component.html',
   styleUrls: ['./acceleration-graphs.component.css']
 })
-export class AccelerationGraphs implements OnInit {
+export class AccelerationGraphsComponent implements OnInit {
   xData: GraphData[] = [];
   yData: GraphData[] = [];
 

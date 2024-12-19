@@ -15,7 +15,7 @@ enum BMSMODE {
   templateUrl: './BMS-mode-display.component.html',
   styleUrls: ['./BMS-mode-display.component.css']
 })
-export default class BMSModeDisplay implements OnInit {
+export default class BMSModeDisplayComponent implements OnInit {
   bmsMode: BMSMODE = 1;
 
   // Mapping object for colors

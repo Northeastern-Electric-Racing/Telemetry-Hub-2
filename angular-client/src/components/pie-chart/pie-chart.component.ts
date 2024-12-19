@@ -16,7 +16,7 @@ export type ChartOptions = {
   templateUrl: 'pie-chart.component.html',
   styleUrls: ['pie-chart.component.css']
 })
-export default class PieChart implements OnInit {
+export default class PieChartComponent implements OnInit {
   public chartOptions!: Partial<ChartOptions> | any;
   @Input() data: { value: number; name: string }[] = [];
   @Input() backgroundColor: string = Theme.infoBackground;

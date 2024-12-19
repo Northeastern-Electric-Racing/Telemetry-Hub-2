@@ -7,7 +7,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './high-low-cell-graph.component.html',
   styleUrls: ['./high-low-cell-graph.component.css']
 })
-export default class HighLowCellGraph implements OnInit {
+export default class HighLowCellGraphComponent implements OnInit {
   @Input() highVoltsData: GraphData[] = [];
   @Input() lowVoltsData: GraphData[] = [];
 

@@ -16,7 +16,7 @@ import { StyleVariant } from 'src/utils/enumerations/style-variant';
   templateUrl: './typography.component.html',
   styleUrls: ['./typography.component.css']
 })
-export default class Typography implements OnInit {
+export default class TypographyComponent implements OnInit {
   @Input() variant!: StyleVariant;
   @Input() content?: string | string[] | null;
   @Input() additionalStyles?: string;

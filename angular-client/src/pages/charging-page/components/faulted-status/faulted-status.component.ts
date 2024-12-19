@@ -9,7 +9,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './faulted-status.component.html',
   styleUrls: ['./faulted-status.component.css']
 })
-export default class FaultedStatus implements OnInit {
+export default class FaultedStatusComponent implements OnInit {
   isFaulted: boolean = false;
   currentSeconds: number = 0;
   totalSeconds: number = Number(sessionStorage.getItem('faulted-total-seconds')) || 0;

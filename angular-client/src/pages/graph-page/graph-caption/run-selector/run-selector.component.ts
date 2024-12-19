@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Run } from 'src/utils/types.utils';
-import { Carousel } from '../../../../components/carousel/carousel.component';
+import { CarouselComponent } from '../../../../components/carousel/carousel.component';
 import { getAllRuns } from 'src/api/run.api';
 import APIService from 'src/services/api.service';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -10,7 +10,7 @@ import { MessageService } from 'primeng/api';
   selector: 'run-selector',
   templateUrl: './run-selector.component.html'
 })
-export class RunSelector implements OnInit {
+export class RunSelectorComponent implements OnInit {
   label!: string;
   runs!: Run[];
   runsIsLoading = true;
@@ -39,7 +39,7 @@ export class RunSelector implements OnInit {
   }
 
   openDialog = () => {
-    this.ref = this.dialogService.open(Carousel, {
+    this.ref = this.dialogService.open(CarouselComponent, {
       width: '550px',
       data: { runs: this.runs, selectRun: this.selectRun },
       header: 'Select a run to view'

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
-import { GraphDialog } from '../graph-dialog/graph-dialog.component';
+import { GraphDialogComponent } from '../graph-dialog/graph-dialog.component';
 import { GraphData } from 'src/utils/types.utils';
 
 @Component({
@@ -9,7 +9,7 @@ import { GraphData } from 'src/utils/types.utils';
   styleUrls: ['./info-graph.component.css'],
   providers: [DialogService]
 })
-export class InfoGraph {
+export class InfoGraphComponent {
   @Input() data!: GraphData[];
   @Input() icon!: string;
   @Input() title!: string;
@@ -20,7 +20,7 @@ export class InfoGraph {
   constructor(public dialogService: DialogService) {}
 
   openDialog = () => {
-    this.dialogService.open(GraphDialog, {
+    this.dialogService.open(GraphDialogComponent, {
       header: this.title,
       data: {
         data: this.data,

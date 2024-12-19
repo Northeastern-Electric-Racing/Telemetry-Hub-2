@@ -13,7 +13,7 @@ export interface DialogData {
   templateUrl: 'carousel.component.html',
   styleUrls: ['carousel.component.css']
 })
-export class Carousel {
+export class CarouselComponent {
   runs: Run[];
   currentIndex: number = 0;
   previousIndex: number = 0;

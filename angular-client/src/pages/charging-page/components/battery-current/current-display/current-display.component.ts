@@ -8,7 +8,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './current-display.component.html',
   styleUrls: ['./current-display.component.css']
 })
-export default class CurrentDisplay implements OnInit {
+export default class CurrentDisplayComponent implements OnInit {
   amps: number = 0;
   constructor(private storage: Storage) {}
 

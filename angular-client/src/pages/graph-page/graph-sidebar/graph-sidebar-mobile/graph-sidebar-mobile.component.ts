@@ -57,7 +57,7 @@ import { DataType, Node, NodeWithVisibilityToggle, Run } from 'src/utils/types.u
     ])
   ]
 })
-export default class GraphSidebarMobile implements OnInit {
+export default class GraphSidebarMobileComponent implements OnInit {
   @Input() nodes!: Node[];
   @Input() selectDataType!: (dataType: DataType) => void;
   @Input() onRunSelected!: (run: Run) => void;

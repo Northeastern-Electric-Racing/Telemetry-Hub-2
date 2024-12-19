@@ -7,7 +7,7 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   templateUrl: './latency-display.html',
   styleUrls: ['./latency-display.css']
 })
-export default class LatencyDisplay implements OnInit {
+export default class LatencyDisplayComponent implements OnInit {
   @Input() lowVal: number = 0;
   @Input() medVal: number = 50;
   @Input() highVal: number = 100;

@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core';
   templateUrl: './thermometer.component.html',
   styleUrls: ['./thermometer.component.css']
 })
-export default class Thermometer {
+export default class ThermometerComponent {
   @Input() temperature: number = 0;
   @Input() min: number = 0;
   @Input() max: number = 100;

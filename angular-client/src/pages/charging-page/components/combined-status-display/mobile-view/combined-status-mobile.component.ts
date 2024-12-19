@@ -5,4 +5,4 @@ import { Component } from '@angular/core';
   templateUrl: './combined-status-mobile.component.html',
   styleUrls: ['./combined-status-mobile.component.css']
 })
-export default class CombinedStatusMobile {}
+export default class CombinedStatusMobileComponent {}
