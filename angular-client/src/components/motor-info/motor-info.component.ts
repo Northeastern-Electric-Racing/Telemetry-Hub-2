@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { floatPipe } from 'src/utils/pipes.utils';
@@ -8,9 +8,9 @@ import { floatPipe } from 'src/utils/pipes.utils';
 @Component({
   selector: 'motor-info',
   templateUrl: './motor-info.component.html',
-  styleUrls: ['./motor-info.component.css'],
+  styleUrls: ['./motor-info.component.css']
 })
-export default class MotorInfo {
+export default class MotorInfoComponent implements OnInit {
   motorUsage: number = 100;
   coolUsage: number = 0;
   motorTemp: number = 0;
@@ -30,7 +30,7 @@ export default class MotorInfo {
     });
     this.piechartData = [
       { value: this.motorUsage, name: 'Motor' },
-      { value: this.coolUsage, name: 'Cooling' },
+      { value: this.coolUsage, name: 'Cooling' }
     ];
   }
 

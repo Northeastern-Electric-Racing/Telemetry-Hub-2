@@ -10,7 +10,7 @@ import { Component, Input, OnInit } from '@angular/core';
   templateUrl: './sidebar-card.component.html',
   styleUrls: ['./sidebar-card.component.css']
 })
-export default class SidebarCard implements OnInit {
+export default class SidebarCardComponent implements OnInit {
   @Input() title!: string;
   @Input() dropDown?: boolean;
   @Input() open?: boolean;

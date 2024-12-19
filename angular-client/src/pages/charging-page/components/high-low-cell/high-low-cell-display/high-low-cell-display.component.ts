@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { decimalPipe } from 'src/utils/pipes.utils';
@@ -9,7 +9,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './high-low-cell-display.component.html',
   styleUrls: ['./high-low-cell-display.component.css']
 })
-export default class HighLowCellDisplay {
+export default class HighLowCellDisplayComponent implements OnInit {
   delta: number = 0;
   lowCellVoltage: number = 0;
   highCellVoltage: number = 0;

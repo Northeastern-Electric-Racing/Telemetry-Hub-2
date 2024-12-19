@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import Theme from 'src/services/theme.service';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 
@@ -30,7 +30,7 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
     ])
   ]
 })
-export class BatteryPercentageComponent {
+export class BatteryPercentageComponent implements OnInit {
   @Input() percentage!: number;
   @Input() height!: number;
   @Input() width!: number;

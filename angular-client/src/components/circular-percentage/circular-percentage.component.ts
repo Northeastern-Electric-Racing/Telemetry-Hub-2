@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import Theme from 'src/services/theme.service';
 
 /**
@@ -11,7 +11,7 @@ import Theme from 'src/services/theme.service';
   templateUrl: './circular-percentage.component.html',
   styleUrls: ['./circular-percentage.component.css']
 })
-export class CircularPercentageComponent {
+export class CircularPercentageComponent implements OnInit {
   @Input() dimension!: number;
   @Input() ringColor!: string;
   @Input() percentage!: number;

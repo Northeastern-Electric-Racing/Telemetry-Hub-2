@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { floatPipe } from 'src/utils/pipes.utils';
@@ -8,7 +8,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './state-of-charge-display.component.html',
   styleUrls: ['./state-of-charge-display.component.css']
 })
-export default class StateOfChargeDisplay {
+export default class StateOfChargeDisplayComponent implements OnInit {
   stateOfCharge: number = 0;
   constructor(private storage: Storage) {}
 

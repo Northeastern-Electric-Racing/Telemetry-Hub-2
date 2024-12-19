@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { floatPipe } from 'src/utils/pipes.utils';
@@ -8,7 +8,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './current-display.component.html',
   styleUrls: ['./current-display.component.css']
 })
-export default class CurrentDisplay {
+export default class CurrentDisplayComponent implements OnInit {
   amps: number = 0;
   constructor(private storage: Storage) {}
 

@@ -1,5 +1,5 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { DataType, Node, NodeWithVisibilityToggle, Run } from 'src/utils/types.utils';
 
 @Component({
@@ -57,7 +57,7 @@ import { DataType, Node, NodeWithVisibilityToggle, Run } from 'src/utils/types.u
     ])
   ]
 })
-export default class GraphSidebarMobile {
+export default class GraphSidebarMobileComponent implements OnInit {
   @Input() nodes!: Node[];
   @Input() selectDataType!: (dataType: DataType) => void;
   @Input() onRunSelected!: (run: Run) => void;

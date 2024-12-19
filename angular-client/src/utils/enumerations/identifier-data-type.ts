@@ -57,5 +57,5 @@ export enum IdentifierDataType {
   CHARGING = 'Charging/Control',
   PACK_VOLTAGE = 'Pack/Voltage',
   CELL_TEMP_HIGH = 'Cells/Temp_High_Value',
-  CELL_TEMP_AVG = 'Cells/Temp_Avg_Value',
+  CELL_TEMP_AVG = 'Cells/Temp_Avg_Value'
 }

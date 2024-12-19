@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { GraphData } from 'src/utils/types.utils';
 
@@ -7,9 +7,8 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './pack-voltage-graph.component.html',
   styleUrls: ['./pack-voltage-graph.component.css']
 })
-export default class PackVoltageGraph implements OnInit {
+export default class PackVoltageGraphComponent {
   @Input() packVoltData: GraphData[] = [];
 
   constructor(private storage: Storage) {}
-  ngOnInit() {}
 }

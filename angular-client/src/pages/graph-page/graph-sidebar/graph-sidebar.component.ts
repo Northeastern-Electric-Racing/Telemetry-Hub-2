@@ -11,7 +11,7 @@ import { DataType, Node, Run } from 'src/utils/types.utils';
   templateUrl: './graph-sidebar.component.html',
   styleUrls: ['./graph-sidebar.component.css']
 })
-export default class GraphSidebar implements OnInit {
+export default class GraphSidebarComponent implements OnInit {
   @Input() nodes!: Node[];
   @Input() selectDataType!: (dataType: DataType) => void;
   @Input() onRunSelected!: (run: Run) => void;

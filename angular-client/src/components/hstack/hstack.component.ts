@@ -9,7 +9,7 @@ type AlignItems = 'center' | 'start' | 'end' | 'stretch';
   templateUrl: './hstack.component.html',
   styleUrls: ['./hstack.component.css']
 })
-export default class HStack implements OnInit {
+export default class HStackComponent implements OnInit {
   @Input() spacing: string = '20px';
   @Input() justifyContent: JusitfyContent = 'center';
   @Input() alignItems: AlignItems = 'center';

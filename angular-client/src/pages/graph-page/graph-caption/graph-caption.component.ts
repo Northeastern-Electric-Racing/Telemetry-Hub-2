@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import { DataValue } from 'src/utils/socket.utils';
 import { DataType, Run } from 'src/utils/types.utils';
@@ -8,7 +8,7 @@ import { DataType, Run } from 'src/utils/types.utils';
   styleUrls: ['./graph-caption.component.css'],
   templateUrl: './graph-caption.component.html'
 })
-export default class GraphInfo {
+export default class GraphInfoComponent implements OnInit {
   @Input() dataType!: Subject<DataType>;
   @Input() currentValue!: Subject<DataValue | undefined>;
   @Input() onRunSelected!: (run: Run) => void;

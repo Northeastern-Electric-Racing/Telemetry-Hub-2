@@ -7,7 +7,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './graph-dialog.component.html',
   providers: [DialogService]
 })
-export class GraphDialog {
+export class GraphDialogComponent {
   @Input() data!: GraphData[];
   @Input() color!: string;
   @Input() title!: string;

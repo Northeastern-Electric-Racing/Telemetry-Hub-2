@@ -6,7 +6,7 @@ import SidebarService from 'src/services/sidebar.service';
   templateUrl: './sidebar-toggle.component.html',
   styleUrls: ['./sidebar-toggle.component.css']
 })
-export default class SidebarToggle {
+export default class SidebarToggleComponent {
   constructor(private sidebarService: SidebarService) {}
 
   toggleSidebar() {

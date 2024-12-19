@@ -8,7 +8,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './speed-over-time-display.component.html',
   styleUrls: ['./speed-over-time-display.component.css']
 })
-export default class SpeedOverTimeDisplay implements OnInit {
+export default class SpeedOverTimeDisplayComponent implements OnInit {
   data: GraphData[] = [];
 
   constructor(private storage: Storage) {}

@@ -7,7 +7,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './high-low-cell-mobile.component.html',
   styleUrls: ['./high-low-cell-mobile.component.css']
 })
-export default class HighLowCellMobile {
+export default class HighLowCellMobileComponent {
   @Input() delta: number = 0;
   @Input() lowCellVoltage: number = 0;
   @Input() highCellVoltage: number = 0;
@@ -24,6 +24,4 @@ export default class HighLowCellMobile {
   };
 
   constructor(private storage: Storage) {}
-
-  ngOnInit() {}
 }

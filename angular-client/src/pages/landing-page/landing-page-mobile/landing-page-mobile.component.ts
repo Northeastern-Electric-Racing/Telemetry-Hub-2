@@ -5,6 +5,6 @@ import { Component, Input } from '@angular/core';
   templateUrl: './landing-page-mobile.component.html',
   styleUrls: ['./landing-page-mobile.component.css']
 })
-export default class LandingPageMobile {
+export default class LandingPageMobileComponent {
   @Input() time!: Date;
 }

@@ -1,16 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import ApexCharts from 'apexcharts';
-import {
-  ApexXAxis,
-  ApexDataLabels,
-  ApexChart,
-  ApexMarkers,
-  ApexGrid,
-  ApexTooltip,
-  ApexFill,
-} from 'ng-apexcharts';
+import { ApexXAxis, ApexDataLabels, ApexChart, ApexMarkers, ApexGrid, ApexTooltip, ApexFill } from 'ng-apexcharts';
 import { DialogService } from 'primeng/dynamicdialog';
-import { GraphDialog } from '../graph-dialog/graph-dialog.component';
+import { GraphDialogComponent } from '../graph-dialog/graph-dialog.component';
 import { GraphData } from 'src/utils/types.utils';
 
 type ChartOptions = {
@@ -29,7 +21,7 @@ type ChartOptions = {
   selector: 'graph-component',
   templateUrl: './graph.component.html',
   styleUrls: ['./graph.component.css'],
-  providers: [DialogService],
+  providers: [DialogService]
 })
 export class GraphComponent implements OnInit {
   @Input() data!: GraphData[];
@@ -46,13 +38,13 @@ export class GraphComponent implements OnInit {
   constructor(public dialogService: DialogService) {}
 
   openDialog = () => {
-    this.dialogService.open(GraphDialog, {
+    this.dialogService.open(GraphDialogComponent, {
       header: this.title,
       data: {
         data: this.data,
         color: this.color,
-        title: this.title,
-      },
+        title: this.title
+      }
     });
   };
 
@@ -60,8 +52,8 @@ export class GraphComponent implements OnInit {
     this.chart.updateSeries([
       {
         name: this.title,
-        data: Array.from(this.data),
-      },
+        data: Array.from(this.data)
+      }
     ]);
 
     if (!this.isSliding && this.data.length > 2) {
@@ -74,8 +66,8 @@ export class GraphComponent implements OnInit {
         ...this.options,
         xaxis: {
           ...this.options.xaxis,
-          range: this.timeRangeMs,
-        },
+          range: this.timeRangeMs
+        }
       });
     }
 
@@ -93,29 +85,29 @@ export class GraphComponent implements OnInit {
         type: 'line',
         height: '100%',
         zoom: {
-          autoScaleYaxis: true,
+          autoScaleYaxis: true
         },
         animations: {
           enabled: true,
           easing: 'linear',
           dynamicAnimation: {
-            speed: 1000,
-          },
+            speed: 1000
+          }
         },
         toolbar: {
-          show: false,
-        },
+          show: false
+        }
         // background: '#5A5A5A'
       },
       dataLabels: {
-        enabled: false,
+        enabled: false
       },
       stroke: {
         curve: 'straight',
-        colors: [this.color],
+        colors: [this.color]
       },
       markers: {
-        size: 0,
+        size: 0
       },
       xaxis: {
         type: 'category',
@@ -123,42 +115,40 @@ export class GraphComponent implements OnInit {
         labels: {
           show: true,
           style: {
-            colors: '#FFFFFF',
+            colors: '#FFFFFF'
           },
           formatter: (value) => {
             return (
               '' +
               new Date(value).getHours() +
               ':' +
-              ((new Date(value).getMinutes() < 10 ? '0' : '') +
-                new Date(value).getMinutes()) +
+              ((new Date(value).getMinutes() < 10 ? '0' : '') + new Date(value).getMinutes()) +
               ':' +
-              ((new Date(value).getSeconds() < 10 ? '0' : '') +
-                new Date(value).getSeconds())
+              ((new Date(value).getSeconds() < 10 ? '0' : '') + new Date(value).getSeconds())
             );
-          },
+          }
         },
         axisBorder: {
-          show: false,
+          show: false
         },
         axisTicks: {
-          show: false,
-        },
+          show: false
+        }
       },
       yaxis: {
         tickAmount: 2,
         labels: {
           style: {
-            colors: '#FFFFFF',
-          },
-        },
+            colors: '#FFFFFF'
+          }
+        }
       },
       tooltip: {
         theme: 'dark',
         x: {
           //format by hours and minutes and seconds
-          format: 'M/d/yy, h:mm:ss',
-        },
+          format: 'M/d/yy, h:mm:ss'
+        }
       },
       fill: {
         type: 'linear',
@@ -166,27 +156,25 @@ export class GraphComponent implements OnInit {
           shadeIntensity: 1,
           opacityFrom: 0.7,
           opacityTo: 0.9,
-          stops: [0, 100],
-        },
+          stops: [0, 100]
+        }
       },
       grid: {
-        show: false,
-      },
+        show: false
+      }
     };
 
     //Weird rendering stuff with apex charts, view link to see why https://github.com/apexcharts/react-apexcharts/issues/187
     setTimeout(() => {
       const chartContainer = document.getElementById(this.graphContainerId);
       if (!chartContainer) {
-        console.log(
-          'Container with id ' + this.graphContainerId + ' not found',
-        );
+        console.log('Container with id ' + this.graphContainerId + ' not found');
         return;
       }
 
       this.chart = new ApexCharts(chartContainer, {
         series: [{ data: [] }],
-        ...this.options,
+        ...this.options
       });
 
       this.chart.render();

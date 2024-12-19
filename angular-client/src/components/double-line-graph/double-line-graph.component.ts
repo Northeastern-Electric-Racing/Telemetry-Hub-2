@@ -11,10 +11,10 @@ import {
   ApexTooltip,
   ApexFill,
   ApexStroke,
-  ApexLegend,
+  ApexLegend
 } from 'ng-apexcharts';
 import { DialogService } from 'primeng/dynamicdialog';
-import { GraphDialog } from '../graph-dialog/graph-dialog.component';
+import { GraphDialogComponent } from '../graph-dialog/graph-dialog.component';
 import { GraphData } from 'src/utils/types.utils';
 
 type ChartOptions = {
@@ -36,7 +36,7 @@ type ChartOptions = {
   selector: 'double-line-graph',
   templateUrl: './double-line-graph.component.html',
   styleUrls: ['./double-line-graph.component.css'],
-  providers: [DialogService],
+  providers: [DialogService]
 })
 export class DoubleLineGraphComponent implements OnInit {
   @Input() data1!: GraphData[];
@@ -58,13 +58,13 @@ export class DoubleLineGraphComponent implements OnInit {
   constructor(public dialogService: DialogService) {}
 
   openDialog = () => {
-    this.dialogService.open(GraphDialog, {
+    this.dialogService.open(GraphDialogComponent, {
       header: this.header,
       data: {
         data: this.data1,
         color: this.color1,
-        title: this.title1,
-      },
+        title: this.title1
+      }
     });
   };
 
@@ -72,12 +72,12 @@ export class DoubleLineGraphComponent implements OnInit {
     this.series = [
       {
         name: this.title1,
-        data: Array.from(this.data1),
+        data: Array.from(this.data1)
       },
       {
         name: this.title2,
-        data: Array.from(this.data2),
-      },
+        data: Array.from(this.data2)
+      }
     ];
     // temp fix, for now just basing change on data1 length...
     // even though probably should check data1 also
@@ -91,8 +91,8 @@ export class DoubleLineGraphComponent implements OnInit {
         ...this.options,
         xaxis: {
           ...this.options.xaxis,
-          range: this.timeRangeMs,
-        },
+          range: this.timeRangeMs
+        }
       });
     }
 
@@ -108,12 +108,12 @@ export class DoubleLineGraphComponent implements OnInit {
     this.series = [
       {
         name: this.title1,
-        data: this.data1,
+        data: this.data1
       },
       {
         name: this.title2,
-        data: this.data2,
-      },
+        data: this.data2
+      }
     ];
 
     this.options = {
@@ -123,30 +123,30 @@ export class DoubleLineGraphComponent implements OnInit {
         type: 'line',
         height: '100%',
         zoom: {
-          autoScaleYaxis: true,
+          autoScaleYaxis: true
         },
         animations: {
           enabled: true,
           easing: 'linear',
           dynamicAnimation: {
-            speed: 1000,
-          },
+            speed: 1000
+          }
         },
         toolbar: {
-          show: false,
-        },
+          show: false
+        }
         // background: '#5A5A5A'
       },
       colors: [this.color1, this.color2], // Set series colors here
       dataLabels: {
-        enabled: false,
+        enabled: false
       },
       stroke: {
         curve: 'straight',
-        width: 2,
+        width: 2
       },
       markers: {
-        size: 0,
+        size: 0
       },
       xaxis: {
         type: 'category',
@@ -154,40 +154,33 @@ export class DoubleLineGraphComponent implements OnInit {
         labels: {
           show: true,
           style: {
-            colors: '#FFFFFF',
+            colors: '#FFFFFF'
           },
           formatter: (value) => {
-            return (
-              '' +
-              new Date(value).getHours() +
-              ':' +
-              new Date(value).getMinutes() +
-              ':' +
-              new Date(value).getSeconds()
-            );
-          },
+            return '' + new Date(value).getHours() + ':' + new Date(value).getMinutes() + ':' + new Date(value).getSeconds();
+          }
         },
         axisBorder: {
-          show: false,
+          show: false
         },
         axisTicks: {
-          show: false,
-        },
+          show: false
+        }
       },
       yaxis: {
         tickAmount: 2,
         labels: {
           style: {
-            colors: '#FFFFFF',
-          },
-        },
+            colors: '#FFFFFF'
+          }
+        }
       },
       tooltip: {
         theme: 'dark',
         x: {
           // format by hours and minutes and seconds
-          format: 'M/d/yy, h:mm:ss',
-        },
+          format: 'M/d/yy, h:mm:ss'
+        }
       },
       fill: {
         type: 'linear',
@@ -195,26 +188,24 @@ export class DoubleLineGraphComponent implements OnInit {
           shadeIntensity: 1,
           opacityFrom: 1,
           opacityTo: 1,
-          stops: [0, 100, 0, 100],
-        },
+          stops: [0, 100, 0, 100]
+        }
       },
       grid: {
-        show: false,
+        show: false
       },
       legend: {
         labels: {
-          colors: '#fffff4', // Set legend label color to black
-        },
-      },
+          colors: '#fffff4' // Set legend label color to black
+        }
+      }
     };
 
     // Delay rendering to ensure the container is available
     setTimeout(() => {
       const chartContainer = document.getElementById(this.graphContainerId);
       if (!chartContainer) {
-        console.log(
-          'Container with id ' + this.graphContainerId + ' not found',
-        );
+        console.log('Container with id ' + this.graphContainerId + ' not found');
         return;
       }
 

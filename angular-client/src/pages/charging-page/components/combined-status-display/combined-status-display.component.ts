@@ -5,7 +5,7 @@ import { Component, HostListener } from '@angular/core';
   templateUrl: './combined-status-display.component.html',
   styleUrls: ['./combined-status-display.component.css']
 })
-export default class CombinedStatusDisplay {
+export default class CombinedStatusDisplayComponent {
   mobileThreshold = 1070;
   isMobile = window.innerWidth < this.mobileThreshold;
 

@@ -12,7 +12,7 @@ import Storage from 'src/services/storage.service';
   styleUrls: ['./landing-page.component.css'],
   templateUrl: './landing-page.component.html'
 })
-export default class LandingPage implements OnInit {
+export default class LandingPageComponent implements OnInit {
   time = new Date();
   newRunIsLoading = false;
   mobileThreshold = 1070;

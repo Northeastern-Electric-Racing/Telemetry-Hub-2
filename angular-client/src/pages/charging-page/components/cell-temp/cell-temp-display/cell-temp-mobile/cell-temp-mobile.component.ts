@@ -8,7 +8,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './cell-temp-mobile.component.html',
   styleUrls: ['./cell-temp-mobile.component.css']
 })
-export default class CellTempMobile {
+export default class CellTempMobileComponent {
   @Input() avgTemp: number = 0;
   @Input() maxTemp: number = 0;
   @Input() resetGraphButton = {
@@ -19,6 +19,4 @@ export default class CellTempMobile {
   };
   @Input() cellTempData: GraphData[] = [];
   constructor(private storage: Storage) {}
-
-  ngOnInit() {}
 }

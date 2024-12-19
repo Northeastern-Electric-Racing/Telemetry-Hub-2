@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { floatPipe } from 'src/utils/pipes.utils';
@@ -8,7 +8,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './raspberry-pi.component.html',
   styleUrls: ['./raspberry-pi.component.css']
 })
-export default class RasberryPi {
+export default class RasberryPiComponent implements OnInit {
   cpuUsage: number = 0;
   cpuTemp: number = 0;
   ramUsage: number = 0;

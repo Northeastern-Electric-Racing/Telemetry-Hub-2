@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 
@@ -7,7 +7,7 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   templateUrl: './driver-component.html',
   styleUrls: ['./driver-component.css']
 })
-export class DriverComponent {
+export class DriverComponent implements OnInit {
   driver: string = 'No Driver';
 
   constructor(private storage: Storage) {}

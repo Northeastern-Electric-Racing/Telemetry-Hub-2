@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { CarouselPageEvent } from 'primeng/carousel';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Run } from 'src/utils/types.utils';
 
@@ -13,15 +14,13 @@ export interface DialogData {
   templateUrl: 'carousel.component.html',
   styleUrls: ['carousel.component.css']
 })
-export class Carousel {
+export class CarouselComponent {
   runs: Run[];
   currentIndex: number = 0;
   previousIndex: number = 0;
   selectRun: (run: Run) => void = () => {
     this.dialogRef.close();
   };
-
-  responsiveOptions: any[] | undefined;
 
   constructor(
     public dialogRef: DynamicDialogRef,
@@ -43,18 +42,19 @@ export class Carousel {
     this.dialogRef.close();
   }
 
-  handlePageChange(event: any): void {
+  handlePageChange(event: CarouselPageEvent): void {
     const newIndex = event.page;
+    if (newIndex) {
+      if (newIndex === this.runs.length) {
+        this.currentIndex = 0;
+      } else if (newIndex === -1) {
+        this.currentIndex = this.runs.length - 1;
+      } else {
+        this.currentIndex = newIndex;
+      }
 
-    if (newIndex === this.runs.length) {
-      this.currentIndex = 0;
-    } else if (newIndex === -1) {
-      this.currentIndex = this.runs.length - 1;
-    } else {
-      this.currentIndex = newIndex;
+      this.previousIndex = newIndex;
     }
-
-    this.previousIndex = newIndex;
   }
 
   datePipe = (date: Date) => {

@@ -1,5 +1,6 @@
 import { environment } from 'src/environment/environment';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const baseURL = (environment as any).url || 'http://localhost:8000';
 
 /* Nodes */

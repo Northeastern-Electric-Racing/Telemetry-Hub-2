@@ -10,7 +10,7 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   styleUrls: ['./charging-page.component.css'],
   templateUrl: './charging-page.component.html'
 })
-export default class ChargingPage implements OnInit {
+export default class ChargingPageComponent implements OnInit {
   time = new Date();
   location: string = 'No Location Set';
   constructor(private storage: Storage) {}

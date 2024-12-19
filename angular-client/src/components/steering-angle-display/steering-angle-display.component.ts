@@ -13,7 +13,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   templateUrl: './steering-angle-display.component.html',
   styleUrls: ['./steering-angle-display.component.css']
 })
-export class SteeringAngleDisplay implements OnInit {
+export class SteeringAngleDisplayComponent implements OnInit {
   steeringAngle: number = 0;
 
   constructor(private storage: Storage) {}

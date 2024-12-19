@@ -8,4 +8,4 @@ import { Component } from '@angular/core';
   templateUrl: './loading-page.component.html',
   styleUrls: ['./loading-page.component.css']
 })
-export default class LoadingPage {}
+export default class LoadingPageComponent {}

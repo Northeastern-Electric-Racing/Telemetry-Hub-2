@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 
@@ -7,7 +7,7 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   templateUrl: './date-location.component.html',
   styleUrl: './date-location.component.css'
 })
-export class DateLocation {
+export class DateLocationComponent implements OnInit {
   time = new Date();
   location: string = 'Boston, MA';
   mobileThreshold = 1070;

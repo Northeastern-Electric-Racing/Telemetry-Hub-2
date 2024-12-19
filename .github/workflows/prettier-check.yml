@@ -8,8 +8,7 @@ on:
     branches:
       - main
       - develop
-      - 'feature/**'
-
+      - "feature/**"
 
 jobs:
   run-prettier-check:
@@ -22,8 +21,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.17.1
-          cache: 'npm'
+          cache: "npm"
+          cache-dependency-path: ./angular-client/package-lock.json
       - name: Install modules
+        working-directory: ./angular-client
         run: npm install
       - name: Run prettier check
+        working-directory: ./angular-client
         run: npm run prettier-check

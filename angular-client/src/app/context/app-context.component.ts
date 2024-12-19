@@ -11,7 +11,8 @@ import Storage from 'src/services/storage.service';
   selector: 'app-context',
   templateUrl: './app-context.component.html'
 })
-export default class AppContext implements OnInit {
+export default class AppContextComponent implements OnInit {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   socket = io((environment as any).url || 'http://localhost:8000');
   socketService = new SocketService(this.socket);
 

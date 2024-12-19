@@ -1,11 +1,7 @@
 <info-background>
   <div class="connection-display">
     <div class="connection-display-title">
-      <typography
-        variant="header"
-        content="Connection"
-        additionalStyles="margin: 0px;"
-      />
+      <typography variant="header" content="Connection" additionalStyles="margin: 0px;" />
     </div>
 
     <div class="connection-display-data">
@@ -14,10 +10,7 @@
         [style.background-color]="getConnectedColor(connected)"
         additionalStyles="height: 15px;"
       ></div>
-      <typography
-        variant="info-subtitle"
-        [content]="getConnectedStatus(connected)"
-      />
+      <typography variant="info-subtitle" [content]="getConnectedStatus(connected)" />
     </div>
   </div>
 </info-background>
