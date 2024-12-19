@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { GraphData } from 'src/utils/types.utils';
@@ -9,9 +9,9 @@ import { GraphData } from 'src/utils/types.utils';
   styleUrls: ['./speed-over-time-display.component.css']
 })
 export default class SpeedOverTimeDisplayComponent implements OnInit {
+  private storage = inject(Storage);
   data: GraphData[] = [];
 
-  constructor(private storage: Storage) {}
   ngOnInit() {
     this.storage.get(IdentifierDataType.SPEED).subscribe((value) => {
       this.data.push({ x: new Date().getTime(), y: parseInt(value.values[0]) });

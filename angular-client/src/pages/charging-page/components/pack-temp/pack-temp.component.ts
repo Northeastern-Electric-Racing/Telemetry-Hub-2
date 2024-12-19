@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { floatPipe } from 'src/utils/pipes.utils';
@@ -9,8 +9,8 @@ import { floatPipe } from 'src/utils/pipes.utils';
   styleUrls: ['./pack-temp.component.css']
 })
 export default class PackTempComponent implements OnInit {
+  private storage = inject(Storage);
   packTemp: number = 0;
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
     this.storage.get(IdentifierDataType.PACK_TEMP).subscribe((value) => {

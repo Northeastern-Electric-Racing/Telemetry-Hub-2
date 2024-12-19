@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { decimalPipe } from 'src/utils/pipes.utils';
@@ -10,6 +10,7 @@ import { GraphData } from 'src/utils/types.utils';
   styleUrls: ['./high-low-cell-display.component.css']
 })
 export default class HighLowCellDisplayComponent implements OnInit {
+  private storage = inject(Storage);
   delta: number = 0;
   lowCellVoltage: number = 0;
   highCellVoltage: number = 0;
@@ -24,8 +25,6 @@ export default class HighLowCellDisplayComponent implements OnInit {
     },
     icon: 'restart_alt'
   };
-
-  constructor(private storage: Storage) {}
 
   @HostListener('window:resize', ['$event'])
   onResize() {

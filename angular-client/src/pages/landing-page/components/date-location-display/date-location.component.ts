@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 
@@ -8,12 +8,11 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   styleUrl: './date-location.component.css'
 })
 export class DateLocationComponent implements OnInit {
+  private storage = inject(Storage);
   time = new Date();
   location: string = 'Boston, MA';
   mobileThreshold = 1070;
   isMobile = window.innerWidth < this.mobileThreshold;
-
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
     setInterval(() => {

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 
 import { GraphData } from 'src/utils/types.utils';
@@ -9,6 +9,7 @@ import { GraphData } from 'src/utils/types.utils';
   styleUrls: ['./cell-temp-mobile.component.css']
 })
 export default class CellTempMobileComponent {
+  private storage = inject(Storage);
   @Input() avgTemp: number = 0;
   @Input() maxTemp: number = 0;
   @Input() resetGraphButton = {
@@ -18,5 +19,4 @@ export default class CellTempMobileComponent {
     icon: 'restart_alt'
   };
   @Input() cellTempData: GraphData[] = [];
-  constructor(private storage: Storage) {}
 }

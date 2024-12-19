@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 
@@ -13,6 +13,7 @@ enum FaultType {
   styleUrls: ['./fault-display.component.css']
 })
 export default class FaultDisplayComponent implements OnInit {
+  private storage = inject(Storage);
   faults: { type: string; name: string; time: string }[] = [];
   faultsShifted: boolean = false;
   resetButton = {
@@ -21,8 +22,6 @@ export default class FaultDisplayComponent implements OnInit {
     },
     icon: 'restart_alt'
   };
-
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
     const chargerFaultAndDisplayNames = [
@@ -130,7 +129,7 @@ export default class FaultDisplayComponent implements OnInit {
   }
 
   /**
-   * Subscribes to the the {@link faultIdentifier} as key in {@link storage} given and
+   * Subscribes to the the {@link faultIdentifier} as key in {@link this.storage} given and
    * checks each message to see if it is a fault using {@link addFault}.
    *
    * @param displayName the name of the fault to be displayed.

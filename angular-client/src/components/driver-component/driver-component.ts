@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 
@@ -8,9 +8,9 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   styleUrls: ['./driver-component.css']
 })
 export class DriverComponent implements OnInit {
+  private storage = inject(Storage);
   driver: string = 'No Driver';
 
-  constructor(private storage: Storage) {}
   ngOnInit() {
     this.storage.get(IdentifierDataType.DRIVER).subscribe((value) => {
       [this.driver] = value.values || ['No Driver'];

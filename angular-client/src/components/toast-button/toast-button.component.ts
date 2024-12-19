@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { MessageService } from 'primeng/api';
 
 @Component({
@@ -7,6 +7,7 @@ import { MessageService } from 'primeng/api';
   styleUrls: ['./toast-button.component.css']
 })
 export class ToastButtonComponent implements OnInit {
+  private messageService = inject(MessageService);
   @Input() label!: string;
   @Input() onClick!: () => void;
   @Input() additionalStyles?: string;
@@ -19,8 +20,6 @@ export class ToastButtonComponent implements OnInit {
       this.style += this.additionalStyles;
     }
   }
-
-  constructor(private messageService: MessageService) {}
 
   handleClick() {
     this.onClick();

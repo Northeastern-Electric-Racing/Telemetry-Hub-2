@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import SidebarService from 'src/services/sidebar.service';
 
 @Component({
@@ -7,7 +7,7 @@ import SidebarService from 'src/services/sidebar.service';
   styleUrls: ['./sidebar-toggle.component.css']
 })
 export default class SidebarToggleComponent {
-  constructor(private sidebarService: SidebarService) {}
+  private sidebarService = inject(SidebarService);
 
   toggleSidebar() {
     this.sidebarService.openSidebar();

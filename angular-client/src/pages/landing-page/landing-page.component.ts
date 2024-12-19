@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { startNewRun } from 'src/api/run.api';
 import APIService from 'src/services/api.service';
@@ -13,16 +13,13 @@ import Storage from 'src/services/storage.service';
   templateUrl: './landing-page.component.html'
 })
 export default class LandingPageComponent implements OnInit {
+  private storage = inject(Storage);
+  private serverService = inject(APIService);
+  private messageService = inject(MessageService);
   time = new Date();
   newRunIsLoading = false;
   mobileThreshold = 1070;
   isMobile = window.innerWidth < this.mobileThreshold;
-
-  constructor(
-    private storage: Storage,
-    private serverService: APIService,
-    private messageService: MessageService
-  ) {}
 
   ngOnInit() {
     this.onStartNewRun = () => {

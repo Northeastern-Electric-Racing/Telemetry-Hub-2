@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { Run } from 'src/utils/types.utils';
 import { CarouselComponent } from '../../../../components/carousel/carousel.component';
 import { getAllRuns } from 'src/api/run.api';
@@ -11,17 +11,14 @@ import { MessageService } from 'primeng/api';
   templateUrl: './run-selector.component.html'
 })
 export class RunSelectorComponent implements OnInit {
+  public dialogService = inject(DialogService);
+  private serverService = inject(APIService);
+  private messageService = inject(MessageService);
   label!: string;
   runs!: Run[];
   runsIsLoading = true;
   ref?: DynamicDialogRef;
   @Input() selectRun: (run: Run) => void = () => {};
-
-  constructor(
-    public dialogService: DialogService,
-    private serverService: APIService,
-    private messageService: MessageService
-  ) {}
 
   ngOnInit() {
     const runsQueryResponse = this.serverService.query<Run[]>(() => getAllRuns());

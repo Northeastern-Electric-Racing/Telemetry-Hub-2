@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { MapService } from '../../services/map.service';
 import { DataValue } from 'src/utils/socket.utils';
 import APIService from 'src/services/api.service';
@@ -13,15 +13,12 @@ import { Run } from 'src/utils/types.utils';
   styleUrls: ['./map.component.css']
 })
 export default class MapComponent implements OnInit {
+  private map = inject(MapService);
+  private storage = inject(Storage);
+  private apiService = inject(APIService);
   isLoading: boolean = false;
   isError: boolean = false;
   error?: Error;
-
-  constructor(
-    private map: MapService,
-    private storage: Storage,
-    private apiService: APIService
-  ) {}
 
   ngOnInit() {
     setTimeout(() => {
