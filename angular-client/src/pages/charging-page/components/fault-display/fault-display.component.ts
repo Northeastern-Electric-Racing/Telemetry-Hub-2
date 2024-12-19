@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { last } from 'rxjs';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 

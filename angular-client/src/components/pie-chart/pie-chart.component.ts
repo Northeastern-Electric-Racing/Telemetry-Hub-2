@@ -17,6 +17,7 @@ export type ChartOptions = {
   styleUrls: ['pie-chart.component.css']
 })
 export default class PieChartComponent implements OnInit {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public chartOptions!: Partial<ChartOptions> | any;
   @Input() data: { value: number; name: string }[] = [];
   @Input() backgroundColor: string = Theme.infoBackground;

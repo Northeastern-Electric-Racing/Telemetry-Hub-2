@@ -16,6 +16,7 @@ export type ChartOptions = {
   styleUrls: ['half-gauge.component.css']
 })
 export default class HalfGaugeComponent implements OnInit {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public chartOptions!: Partial<ChartOptions> | any;
   @Input() current: number = 50;
   @Input() min: number = 0;

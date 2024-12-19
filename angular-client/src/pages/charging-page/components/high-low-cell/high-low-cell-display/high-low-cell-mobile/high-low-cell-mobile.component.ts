@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { GraphData } from 'src/utils/types.utils';
 
@@ -7,7 +7,7 @@ import { GraphData } from 'src/utils/types.utils';
   templateUrl: './high-low-cell-mobile.component.html',
   styleUrls: ['./high-low-cell-mobile.component.css']
 })
-export default class HighLowCellMobileComponent implements OnInit {
+export default class HighLowCellMobileComponent {
   @Input() delta: number = 0;
   @Input() lowCellVoltage: number = 0;
   @Input() highCellVoltage: number = 0;
@@ -24,6 +24,4 @@ export default class HighLowCellMobileComponent implements OnInit {
   };
 
   constructor(private storage: Storage) {}
-
-  ngOnInit() {}
 }

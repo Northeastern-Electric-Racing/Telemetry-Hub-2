@@ -10,7 +10,7 @@ export class SwitchComponent implements OnInit {
   @Input() offString: string = 'PAUSED';
   @Input() onString: string = 'ALLOWED';
   chargingString: string = this.offString;
-  @Output() toggle = new EventEmitter<boolean>();
+  @Output() toggleEmitter = new EventEmitter<boolean>();
 
   ngOnInit(): void {
     // Set the initial value of chargingString based on isOn
@@ -24,6 +24,6 @@ export class SwitchComponent implements OnInit {
     } else {
       this.chargingString = this.offString;
     }
-    this.toggle.emit(this.isOn); // Emit the new state
+    this.toggleEmitter.emit(this.isOn); // Emit the new state
   }
 }

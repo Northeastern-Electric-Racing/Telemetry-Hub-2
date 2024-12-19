@@ -5,6 +5,7 @@ import { NodeWithVisibilityToggle } from '../types.utils';
   name: 'nodeFilter'
 })
 export class NodeFilterPipe implements PipeTransform {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transform(data: NodeWithVisibilityToggle[] | null, filterProperty: string, filter: string): any[] {
     const filterValue = filter.toLowerCase();
 
