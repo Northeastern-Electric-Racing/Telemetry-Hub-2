@@ -66,38 +66,28 @@ pub async fn insert_file(
             }
         }
 
+        let size_before_filter = insertable_data.len();
         debug!("Mapping data to ClientData type, with inferred run IDs!");
-        let new_data: Vec<ClientData> = insertable_data
+        let insertable_data: Vec<ClientData> = insertable_data
             .into_iter()
-            .map(|f| match run_rng.get(&f.time_us) {
-                Some(a) => ClientData {
+            .filter_map(|f| match run_rng.get(&f.time_us) {
+                Some(a) => Some(ClientData {
                     run_id: *a,
                     name: f.topic.clone(),
                     unit: f.unit,
                     values: f.values,
                     timestamp: DateTime::from_timestamp_micros(f.time_us as i64).unwrap(),
                     node: f.topic.split_once('/').unwrap_or_default().0.to_owned(),
-                },
-                None => ClientData {
-                    run_id: -1,
-                    name: f.topic.clone(),
-                    unit: f.unit,
-                    values: f.values,
-                    timestamp: DateTime::from_timestamp_micros(f.time_us as i64).unwrap(),
-                    node: f.topic.split_once('/').unwrap_or_default().0.to_owned(),
-                },
+                }),
+                None => None,
             })
             .collect();
         info!(
-            "Inserting {} points, {} of which have no run ID (-1).",
-            new_data.len(),
-            new_data
-                .iter()
-                .filter(|x| x.run_id == -1)
-                .collect::<Vec<_>>()
-                .len()
+            "Inserting {} points. {} points could not be assigned IDs.",
+            insertable_data.len(),
+            size_before_filter - insertable_data.len()
         );
-        if let Err(err) = batcher.send(new_data).await {
+        if let Err(err) = batcher.send(insertable_data).await {
             warn!("Error sending file insert data to batcher! {}", err);
         };
     }

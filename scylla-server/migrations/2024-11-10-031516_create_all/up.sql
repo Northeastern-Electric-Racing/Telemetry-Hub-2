@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
+
 -- CreateTable
 CREATE TABLE "run" (
     "id" SERIAL NOT NULL,
@@ -5,7 +7,7 @@ CREATE TABLE "run" (
     "latitude" DOUBLE PRECISION,
     "longitude" DOUBLE PRECISION,
     "driverName" TEXT,
-    "notes" TEXT DEFAULT '',
+    "notes" TEXT NOT NULL DEFAULT '',
     "time" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "run_pkey" PRIMARY KEY ("id")
@@ -13,14 +15,16 @@ CREATE TABLE "run" (
 
 -- CreateTable
 CREATE TABLE "data" (
-    "id" SERIAL NOT NULL,
     "values" DOUBLE PRECISION[],
     "dataTypeName" TEXT NOT NULL,
     "time" TIMESTAMPTZ NOT NULL,
     "runId" INTEGER NOT NULL,
 
-    CONSTRAINT "data_pkey" PRIMARY KEY ("id")
+    PRIMARY KEY("time", "dataTypeName")
 );
+-- SELECT * FROM create_hypertable("data", by_range("time"));
+-- SELECT * FROM add_dimension("data", by_hash("dataTypeNmae", 4));
+
 
 -- CreateTable
 CREATE TABLE "dataType" (
@@ -33,9 +37,6 @@ CREATE TABLE "dataType" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "run_id_key" ON "run"("id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "data_id_time_key" ON "data"("id", "time");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "dataType_name_key" ON "dataType"("name");
