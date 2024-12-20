@@ -7,7 +7,6 @@ use chrono::DateTime;
 use protobuf::CodedInputStream;
 use rangemap::RangeInclusiveMap;
 use tokio::sync::mpsc;
-use tokio_util::bytes::Buf;
 use tracing::{debug, info, trace, warn};
 
 use crate::{error::ScyllaError, playback_data, services::run_service, ClientData, PoolHandle};
@@ -45,51 +44,52 @@ pub async fn insert_file(
     }
 
     // iterate through all files
+    debug!("Converting file data to insertable data!");
     while let Some(field) = multipart.next_field().await.unwrap() {
         // round up all of the protobuf segments as a giant list
-        let mut data = field.bytes().await.unwrap().reader();
-        let mut insertable_data: Vec<playback_data::PlaybackData> = vec![];
+        let data = field.bytes().await.unwrap();
+        let mut count_bad_run = 0usize;
+        let mut insertable_data: Vec<ClientData> = Vec::new();
         {
             // this cannot be used across an await, hence scoped
-            let mut stream = CodedInputStream::new(&mut data);
+            let mut stream = CodedInputStream::from_tokio_bytes(&data);
             loop {
                 match stream.read_message::<playback_data::PlaybackData>() {
-                    Ok(a) => {
-                        trace!("Decoded file msg: {}", a);
-                        insertable_data.push(a);
+                    Ok(f) => {
+                        trace!("Decoded file msg: {}", f);
+                        let f = match run_rng.get(&f.time_us) {
+                            Some(a) => ClientData {
+                                run_id: *a,
+                                name: f.topic.clone(),
+                                unit: f.unit,
+                                values: f.values,
+                                timestamp: DateTime::from_timestamp_micros(f.time_us as i64)
+                                    .unwrap(),
+                                node: f.topic.split_once('/').unwrap_or_default().0.to_owned(),
+                            },
+                            None => {
+                                count_bad_run += 1;
+                                continue;
+                            }
+                        };
+                        insertable_data.push(f);
                     }
                     Err(e) => {
-                        trace!("Exiting from read loop {}", e);
+                        info!("Exiting from read loop {}", e);
                         break;
                     }
                 }
             }
         }
-
-        let size_before_filter = insertable_data.len();
-        debug!("Mapping data to ClientData type, with inferred run IDs!");
-        let insertable_data: Vec<ClientData> = insertable_data
-            .into_iter()
-            .filter_map(|f| match run_rng.get(&f.time_us) {
-                Some(a) => Some(ClientData {
-                    run_id: *a,
-                    name: f.topic.clone(),
-                    unit: f.unit,
-                    values: f.values,
-                    timestamp: DateTime::from_timestamp_micros(f.time_us as i64).unwrap(),
-                    node: f.topic.split_once('/').unwrap_or_default().0.to_owned(),
-                }),
-                None => None,
-            })
-            .collect();
         info!(
             "Inserting {} points. {} points could not be assigned IDs.",
             insertable_data.len(),
-            size_before_filter - insertable_data.len()
+            count_bad_run
         );
         if let Err(err) = batcher.send(insertable_data).await {
             warn!("Error sending file insert data to batcher! {}", err);
         };
     }
+    info!("Finished file insert request!");
     Ok("Successfully sent all to batcher!".to_string())
 }

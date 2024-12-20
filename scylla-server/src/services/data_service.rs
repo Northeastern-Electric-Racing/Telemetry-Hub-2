@@ -44,7 +44,7 @@ pub async fn add_data(
 /// * `db` - The database connection to use
 /// * `client_data` - A list of data to batch insert
 ///   returns: A result containing the number of rows inserted or the QueryError propogated by the db
-pub async fn add_many(
+pub fn add_many(
     db: &mut Database,
     client_data: Vec<ClientData>,
 ) -> Result<usize, diesel::result::Error> {

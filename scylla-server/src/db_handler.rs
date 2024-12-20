@@ -63,10 +63,14 @@ impl DbHandler {
                         info!("{} batches remaining!", batch_queue.len()+1);
                         // do not spawn new tasks in this mode, see below comment for chunk_size math
                         let chunk_size = final_msgs.len() / ((final_msgs.len() / 16380) + 1);
+                        if chunk_size == 0 {
+                            warn!("Could not insert {} messages, chunk size zero!", final_msgs.len());
+                            continue;
+                        }
                         for chunk in final_msgs.chunks(chunk_size).collect::<Vec<_>>() {
                             info!(
-                                "A cleanup batch uploaded: {:?}",
-                                data_service::add_many(&mut database, chunk.to_vec()).await
+                                "A cleanup chunk uploaded: {:?}",
+                                data_service::add_many(&mut database, chunk.to_vec())
                         );
                         }
                     }
@@ -84,7 +88,10 @@ impl DbHandler {
                     }
                     debug!("Batch uploading {} chunks in parrallel", msgs.len() / chunk_size);
                     for chunk in msgs.chunks(chunk_size).collect::<Vec<_>>() {
-                        tokio::spawn(DbHandler::batch_upload(chunk.to_vec(), pool.clone()));
+                        let owned = chunk.to_vec();
+                        let pool = pool.clone();
+                       tokio::task::spawn_blocking(move || {
+                            DbHandler::batch_upload(owned, pool)});
                     }
                     debug!(
                         "DB send: {} of {}",
@@ -114,13 +121,13 @@ impl DbHandler {
         }
     }
 
-    #[instrument(level = Level::DEBUG, skip(msg, pool))]
-    async fn batch_upload(msg: Vec<ClientData>, pool: PoolHandle) {
+    //#[instrument(level = Level::DEBUG, skip(msg, pool))]
+    fn batch_upload(msg: Vec<ClientData>, pool: PoolHandle) {
         let Ok(mut database) = pool.get() else {
             warn!("Could not get connection for batch upload!");
             return;
         };
-        match data_service::add_many(&mut database, msg).await {
+        match data_service::add_many(&mut database, msg) {
             Ok(count) => info!("Batch uploaded: {:?}", count),
             Err(err) => warn!("Error in batch upload: {:?}", err),
         }
