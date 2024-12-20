@@ -2,12 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { getDataByDataTypeNameAndRunId } from 'src/api/data.api';
-import { getAllNodes } from 'src/api/node.api';
+import { getAllDatatypes } from 'src/api/node.api';
 import { getAllRuns } from 'src/api/run.api';
 import APIService from 'src/services/api.service';
 import Storage from 'src/services/storage.service';
 import { DataValue } from 'src/utils/socket.utils';
-import { DataType, GraphData, Node, Run } from 'src/utils/types.utils';
+import { DataType, GraphData, Run } from 'src/utils/types.utils';
 
 @Component({
   selector: 'graph-page',
@@ -20,10 +20,10 @@ export default class GraphPageComponent implements OnInit {
   private toastService = inject(MessageService);
   realTime: boolean = true;
 
-  nodes?: Node[];
-  nodesIsLoading = true;
-  nodesIsError = false;
-  nodesError?: Error;
+  dataTypes?: DataType[];
+  dataTypesIsLoading = true;
+  dataTypesIsError = false;
+  dataTypesError?: Error;
 
   run?: Run;
 
@@ -133,16 +133,17 @@ export default class GraphPageComponent implements OnInit {
    * Queries the nodes from the server.
    */
   private queryNodes() {
-    const nodeQueryResponse = this.serverService.query<Node[]>(getAllNodes);
-    nodeQueryResponse.isLoading.subscribe((isLoading: boolean) => {
-      this.nodesIsLoading = isLoading;
+    const dataTypesQueryResponse = this.serverService.query<DataType[]>(getAllDatatypes);
+    dataTypesQueryResponse.isLoading.subscribe((isLoading: boolean) => {
+      this.dataTypesIsLoading = isLoading;
     });
-    nodeQueryResponse.error.subscribe((error: Error) => {
-      this.nodesIsError = true;
-      this.nodesError = error;
+    dataTypesQueryResponse.error.subscribe((error: Error) => {
+      this.dataTypesIsError = true;
+      this.dataTypesError = error;
     });
-    nodeQueryResponse.data.subscribe((data: Node[]) => {
-      this.nodes = data;
+    dataTypesQueryResponse.data.subscribe((data: DataType[]) => {
+      console.log(data);
+      this.dataTypes = data;
     });
   }
 

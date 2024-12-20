@@ -18,7 +18,7 @@
           @if (node.dataTypesAreVisible) {
             <div class="subcontainer" @toggleCardExpand>
               @for (dataType of node.dataTypes; track dataType) {
-                <sidebar-card [title]="dataType.name" (click)="selectDataType(dataType)" />
+                <sidebar-card [title]="transformDataTypeName(dataType.name)" (click)="selectDataType(dataType)" />
               }
             </div>
           }
