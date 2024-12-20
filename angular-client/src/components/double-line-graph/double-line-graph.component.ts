@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import ApexCharts from 'apexcharts';
 import {
   ApexAxisChartSeries,
@@ -39,6 +39,7 @@ type ChartOptions = {
   providers: [DialogService]
 })
 export class DoubleLineGraphComponent implements OnInit {
+  public dialogService = inject(DialogService);
   @Input() data1!: GraphData[];
   @Input() color1!: string; // Must be hex
   @Input() title1?: string;
@@ -54,9 +55,6 @@ export class DoubleLineGraphComponent implements OnInit {
   timeDiffMs: number = 0;
   isSliding: boolean = false;
   timeRangeMs: number = 120000; // 2 minutes in ms
-
-  constructor(public dialogService: DialogService) {}
-
   openDialog = () => {
     this.dialogService.open(GraphDialogComponent, {
       header: this.header,

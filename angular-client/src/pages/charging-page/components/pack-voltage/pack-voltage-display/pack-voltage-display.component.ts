@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { floatPipe } from 'src/utils/pipes.utils';
@@ -10,6 +10,7 @@ import { GraphData } from 'src/utils/types.utils';
   styleUrls: ['./pack-voltage-display.component.css']
 })
 export default class PackVoltageDisplayComponent implements OnInit {
+  private storage = inject(Storage);
   voltage: number = 0;
   packVoltData: GraphData[] = [];
   resetGraphButton = {
@@ -25,8 +26,6 @@ export default class PackVoltageDisplayComponent implements OnInit {
   onResize() {
     this.isDesktop = window.innerWidth >= this.mobileThreshold;
   }
-
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
     this.storage.get(IdentifierDataType.PACK_VOLTAGE).subscribe((value) => {

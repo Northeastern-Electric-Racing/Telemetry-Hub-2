@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { floatPipe } from 'src/utils/pipes.utils';
@@ -10,6 +10,7 @@ import { GraphData } from 'src/utils/types.utils';
   styleUrls: ['./cell-temp-display.component.css']
 })
 export default class CellTempDisplayComponent implements OnInit {
+  private storage = inject(Storage);
   avgTemp: number = 0;
   maxTemp: number = 0;
   resetGraphButton = {
@@ -26,8 +27,6 @@ export default class CellTempDisplayComponent implements OnInit {
   onResize() {
     this.isDesktop = window.innerWidth >= this.mobileThreshold;
   }
-
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
     this.storage.get(IdentifierDataType.CELL_TEMP_HIGH).subscribe((value) => {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { decimalPipe } from 'src/utils/pipes.utils';
@@ -16,6 +16,7 @@ import { GraphData } from 'src/utils/types.utils';
   styleUrls: ['./acceleration-graphs.component.css']
 })
 export class AccelerationGraphsComponent implements OnInit {
+  private storage = inject(Storage);
   xData: GraphData[] = [];
   yData: GraphData[] = [];
 
@@ -23,8 +24,6 @@ export class AccelerationGraphsComponent implements OnInit {
   yMax: number = 0;
 
   maxDataPoints = 400;
-
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
     this.storage.get(IdentifierDataType.XYZAccel).subscribe((value) => {

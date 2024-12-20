@@ -1,5 +1,5 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
 import { DataType, Node, NodeWithVisibilityToggle, NodeWithVisibilityToggleObservable } from 'src/utils/types.utils';
 import Storage from 'src/services/storage.service';
 import { decimalPipe } from 'src/utils/pipes.utils';
@@ -47,6 +47,7 @@ import { debounceTime, Observable, of, Subscription } from 'rxjs';
   ]
 })
 export default class GraphSidebarDesktopComponent implements OnInit, OnDestroy {
+  private storage = inject(Storage);
   @Input() nodes!: Node[];
   @Input() selectDataType!: (dataType: DataType) => void;
   nodesWithVisibilityToggle!: Observable<NodeWithVisibilityToggleObservable[]>;
@@ -59,7 +60,6 @@ export default class GraphSidebarDesktopComponent implements OnInit, OnDestroy {
 
   dataValuesMap: Map<string, string> = new Map();
 
-  constructor(private storage: Storage) {}
   /**
    * Initializes the nodes with the visibility toggle.
    */

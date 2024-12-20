@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 
@@ -8,9 +8,8 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   styleUrls: ['./torque-display.component.css']
 })
 export default class TorqueDisplayComponent implements OnInit {
+  private storage = inject(Storage);
   torque: number = 0;
-
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
     this.storage.get(IdentifierDataType.TORQUE).subscribe((value) => {

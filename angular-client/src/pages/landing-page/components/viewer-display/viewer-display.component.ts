@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 
@@ -8,8 +8,8 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   styleUrl: './viewer-display.component.css'
 })
 export class ViewerDisplayComponent implements OnInit {
+  private storage = inject(Storage);
   numViewers: number = 0;
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
     this.storage.get(IdentifierDataType.VIEWERS).subscribe((value) => {

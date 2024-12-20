@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { getDataByDataTypeNameAndRunId } from 'src/api/data.api';
@@ -15,6 +15,9 @@ import { DataType, GraphData, Node, Run } from 'src/utils/types.utils';
   styleUrls: ['./graph-page.component.css']
 })
 export default class GraphPageComponent implements OnInit {
+  private serverService = inject(APIService);
+  private storage = inject(Storage);
+  private toastService = inject(MessageService);
   realTime: boolean = true;
 
   nodes?: Node[];
@@ -36,12 +39,6 @@ export default class GraphPageComponent implements OnInit {
   selectedDataTypeValuesIsError = false;
   selectedDataTypeValuesError?: Error;
   subscription?: Subscription;
-
-  constructor(
-    private serverService: APIService,
-    private storage: Storage,
-    private toastService: MessageService
-  ) {}
 
   ngOnInit(): void {
     this.queryNodes();

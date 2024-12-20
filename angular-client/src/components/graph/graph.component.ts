@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import ApexCharts from 'apexcharts';
 import { ApexXAxis, ApexDataLabels, ApexChart, ApexMarkers, ApexGrid, ApexTooltip, ApexFill } from 'ng-apexcharts';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -24,6 +24,7 @@ type ChartOptions = {
   providers: [DialogService]
 })
 export class GraphComponent implements OnInit {
+  public dialogService = inject(DialogService);
   @Input() data!: GraphData[];
   @Input() color!: string; // Must be hex
   @Input() title?: string;
@@ -34,9 +35,6 @@ export class GraphComponent implements OnInit {
   timeDiffMs: number = 0;
   isSliding: boolean = false;
   timeRangeMs: number = 120000; // 2 minutes in ms
-
-  constructor(public dialogService: DialogService) {}
-
   openDialog = () => {
     this.dialogService.open(GraphDialogComponent, {
       header: this.title,

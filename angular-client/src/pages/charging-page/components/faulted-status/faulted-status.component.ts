@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import Theme from 'src/services/theme.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
@@ -10,11 +10,11 @@ import { floatPipe } from 'src/utils/pipes.utils';
   styleUrls: ['./faulted-status.component.css']
 })
 export default class FaultedStatusComponent implements OnInit {
+  private storage = inject(Storage);
   isFaulted: boolean = false;
   currentSeconds: number = 0;
   totalSeconds: number = Number(sessionStorage.getItem('faulted-total-seconds')) || 0;
   intervalId!: NodeJS.Timeout;
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
     this.storage.get(IdentifierDataType.BMS_MODE).subscribe((value) => {

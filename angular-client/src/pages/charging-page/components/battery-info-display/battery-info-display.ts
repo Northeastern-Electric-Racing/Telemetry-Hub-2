@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { floatPipe } from 'src/utils/pipes.utils';
 import Storage from 'src/services/storage.service';
@@ -9,6 +9,7 @@ import Storage from 'src/services/storage.service';
   styleUrls: ['./battery-info-display.css']
 })
 export class BatteryInfoDisplayComponent implements OnInit {
+  private storage = inject(Storage);
   voltage: number = 0;
   packTemp: number = 0;
   stateOfCharge: number = 0;
@@ -16,8 +17,6 @@ export class BatteryInfoDisplayComponent implements OnInit {
   dischargeCurrentLimit: number = 0;
   mobileThreshold = 768;
   isMobile = window.innerWidth < this.mobileThreshold;
-
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
     this.storage.get(IdentifierDataType.PACK_TEMP).subscribe((value) => {

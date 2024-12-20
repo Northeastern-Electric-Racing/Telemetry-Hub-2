@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
 import { floatPipe } from 'src/utils/pipes.utils';
@@ -9,6 +9,7 @@ import { floatPipe } from 'src/utils/pipes.utils';
   styleUrls: ['./raspberry-pi.component.css']
 })
 export default class RasberryPiComponent implements OnInit {
+  private storage = inject(Storage);
   cpuUsage: number = 0;
   cpuTemp: number = 0;
   ramUsage: number = 0;
@@ -17,8 +18,6 @@ export default class RasberryPiComponent implements OnInit {
 
   mobileThreshold = 768;
   isMobile = window.innerWidth < this.mobileThreshold;
-
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
     this.storage.get(IdentifierDataType.CPUUsage).subscribe((value) => {
