@@ -6,8 +6,8 @@ use serde::Serialize;
 #[diesel(table_name = crate::schema::data)]
 #[diesel(belongs_to(DataType, foreign_key = dataTypeName))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+#[diesel(primary_key(dataTypeName, time))]
 pub struct Data {
-    pub id: i32,
     pub values: Option<Vec<Option<f64>>>,
     pub dataTypeName: String,
     pub time: DateTime<Utc>,
@@ -26,6 +26,7 @@ pub struct DataType {
 
 #[derive(Queryable, Debug, Identifiable, Insertable, Selectable, Serialize, AsChangeset)]
 #[diesel(table_name = crate::schema::run)]
+#[diesel(primary_key(id))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Run {
     pub id: i32,

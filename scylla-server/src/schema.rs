@@ -1,8 +1,7 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    data (id) {
-        id -> Int4,
+    data (time, dataTypeName) {
         values -> Nullable<Array<Nullable<Float8>>>,
         dataTypeName -> Text,
         time -> Timestamptz,

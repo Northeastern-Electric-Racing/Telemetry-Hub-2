@@ -4,6 +4,7 @@ use std::{
 };
 
 use axum::{
+    extract::DefaultBodyLimit,
     http::Method,
     routing::{get, post},
     Extension, Router,
@@ -20,7 +21,7 @@ use scylla_server::{
     controllers::{
         self,
         car_command_controller::{self},
-        data_type_controller, run_controller,
+        data_type_controller, file_insertion_controller, run_controller,
     },
     services::run_service::{self},
     PoolHandle, RateLimitMode,
@@ -175,7 +176,7 @@ async fn main() {
     // spawn the database handler
     task_tracker.spawn(
         db_handler::DbHandler::new(mqtt_receive, db.clone(), cli.batch_upsert_time * 1000)
-            .handling_loop(db_send, token.clone()),
+            .handling_loop(db_send.clone(), token.clone()),
     );
     // spawn the database inserter, if we have it enabled
     if !cli.disable_data_upload {
@@ -233,6 +234,10 @@ async fn main() {
             "/config/set/:configKey",
             post(car_command_controller::send_config_command).layer(Extension(client_sharable)),
         )
+        // FILE INSERT
+        .route("/insert/file", post(file_insertion_controller::insert_file))
+        .layer(Extension(db_send))
+        .layer(DefaultBodyLimit::disable())
         // for CORS handling
         .layer(
             CorsLayer::new()
