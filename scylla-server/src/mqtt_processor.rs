@@ -144,8 +144,8 @@ impl MqttProcessor {
                             None => continue
                         };
                         latency_ringbuffer.push(chrono::offset::Utc::now() - msg.timestamp);
-                        self.send_db_msg(msg.clone()).await;
-                        self.send_socket_msg(msg, &mut upload_counter);
+                        self.send_socket_msg(&msg, &mut upload_counter);
+                        self.send_db_msg(msg).await;
                     },
                     Err(msg) => trace!("Received mqtt error: {:?}", msg),
                     _ => trace!("Received misc mqtt: {:?}", msg),
@@ -165,7 +165,7 @@ impl MqttProcessor {
                         timestamp: chrono::offset::Utc::now(),
                         values: vec![sockets_cnt]
                     };
-                    self.send_socket_msg(client_data, &mut upload_counter);
+                    self.send_socket_msg(&client_data, &mut upload_counter);
                 }
                 _ = latency_interval.tick() => {
                     // set latency to 0 if no messages are in buffer
@@ -184,7 +184,7 @@ impl MqttProcessor {
                         values: vec![avg_latency as f32]
                     };
                     trace!("Latency update sending: {}", client_data.values.first().unwrap_or(&0.0f32));
-                    self.send_socket_msg(client_data, &mut upload_counter);
+                    self.send_socket_msg(&client_data, &mut upload_counter);
                 }
             }
         }
@@ -310,14 +310,14 @@ impl MqttProcessor {
     /// Send a message to the channel, printing and IGNORING any error that may occur
     /// * `client_data` - The client data to send over the broadcast
     async fn send_db_msg(&self, client_data: ClientData) {
-        if let Err(err) = self.channel.send(client_data.clone()).await {
+        if let Err(err) = self.channel.send(client_data).await {
             warn!("Error sending through channel: {:?}", err);
         }
     }
 
     /// Sends a message to the socket, printing and IGNORING any error that may occur
     /// * `client_data` - The client data to send over the broadcast
-    fn send_socket_msg(&self, client_data: ClientData, upload_counter: &mut u8) {
+    fn send_socket_msg(&self, client_data: &ClientData, upload_counter: &mut u8) {
         *upload_counter = upload_counter.wrapping_add(1);
         if *upload_counter >= self.upload_ratio {
             match self.io.emit(

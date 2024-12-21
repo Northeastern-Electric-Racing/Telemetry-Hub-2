@@ -1,4 +1,8 @@
-use crate::{models::Data, schema::data::dsl::*, ClientData, Database};
+use crate::{
+    models::{Data, DataInsert},
+    schema::data::dsl::*,
+    ClientData, Database,
+};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 
@@ -13,7 +17,8 @@ pub async fn get_data(
     run_id: i32,
 ) -> Result<Vec<Data>, diesel::result::Error> {
     data.filter(runId.eq(run_id).and(dataTypeName.eq(data_type_name)))
-        .load(db).await
+        .load(db)
+        .await
 }
 
 /// Adds a datapoint
@@ -28,23 +33,11 @@ pub async fn add_data(
     client_data: ClientData,
 ) -> Result<Data, diesel::result::Error> {
     diesel::insert_into(data)
-        .values((
-            dataTypeName.eq(client_data.name),
-            time.eq(client_data.timestamp),
-            runId.eq(client_data.run_id),
-            values.eq(client_data
-                .values
-                .iter()
-                .map(|v| Some(*v as f64))
-                .collect::<Vec<_>>()),
-        ))
-        .get_result(db).await
+        .values(Into::<DataInsert>::into(client_data))
+        .get_result(db)
+        .await
 }
 
-/// Adds many datapoints via a batch insert, skips any data which conflicts with existing data
-/// * `db` - The database connection to use
-/// * `client_data` - A list of data to batch insert
-///   returns: A result containing the number of rows inserted or the QueryError propogated by the db
 pub async fn add_many(
     db: &mut Database<'_>,
     client_data: Vec<ClientData>,
@@ -52,21 +45,11 @@ pub async fn add_many(
     diesel::insert_into(data)
         .values(
             client_data
-                .iter()
-                .map(|single_client_data| {
-                    (
-                        dataTypeName.eq(single_client_data.name.clone()),
-                        time.eq(single_client_data.timestamp),
-                        runId.eq(single_client_data.run_id),
-                        values.eq(single_client_data
-                            .values
-                            .iter()
-                            .map(|v| Some(*v as f64))
-                            .collect::<Vec<_>>()),
-                    )
-                })
-                .collect::<Vec<_>>(),
+                .into_iter()
+                .map(|single_client_data| Into::<DataInsert>::into(single_client_data))
+                .collect::<Vec<DataInsert>>(),
         )
         .on_conflict_do_nothing()
-        .execute(db).await
+        .execute(db)
+        .await
 }

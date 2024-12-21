@@ -2,7 +2,7 @@
 
 diesel::table! {
     data (time, dataTypeName) {
-        values -> Nullable<Array<Nullable<Float8>>>,
+        values -> Array<Nullable<Float4>>,
         dataTypeName -> Text,
         time -> Timestamptz,
         runId -> Int4,
@@ -32,4 +32,8 @@ diesel::table! {
 diesel::joinable!(data -> dataType (dataTypeName));
 diesel::joinable!(data -> run (runId));
 
-diesel::allow_tables_to_appear_in_same_query!(data, dataType, run,);
+diesel::allow_tables_to_appear_in_same_query!(
+    data,
+    dataType,
+    run,
+);

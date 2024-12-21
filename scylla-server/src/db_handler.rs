@@ -126,7 +126,6 @@ impl DbHandler {
             warn!("Could not get connection for batch upload!");
             return;
         };
-        warn!("MSG LEN {}", msg.len());
         match data_service::add_many(&mut database, msg).await {
             Ok(count) => info!("Batch uploaded: {:?}", count),
             Err(err) => warn!("Error in batch upload: {:?}", err),
@@ -147,8 +146,8 @@ impl DbHandler {
             tokio::select! {
                 _ = cancel_token.cancelled() => {
                     debug!("Pushing final messages to queue");
-                    data_channel.send(self.data_queue.clone()).await.expect("Could not comm data to db thread, shutdown");
-                    self.data_queue.clear();
+                    data_channel.send(self.data_queue).await.expect("Could not comm data to db thread, shutdown");
+                    self.data_queue = vec![];
                     break;
                 },
                 Some(msg) = self.receiver.recv() => {
@@ -171,11 +170,11 @@ impl DbHandler {
             > Duration::from_millis(self.upload_interval)
             && !self.data_queue.is_empty()
         {
+            // mem::take allows us to assign the value of data queue vec::new() while maintaining the memory for data_channel ownership
             data_channel
-                .send(self.data_queue.clone())
+                .send(std::mem::take(&mut self.data_queue))
                 .await
                 .expect("Could not comm data to db thread");
-            self.data_queue.clear();
             self.last_time = tokio::time::Instant::now();
         }
 

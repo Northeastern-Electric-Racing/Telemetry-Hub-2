@@ -71,7 +71,7 @@ async fn test_data_add() -> Result<(), diesel::result::Error> {
         PublicData::from(data),
         PublicData {
             time_ms: 1000,
-            values: vec![0f64]
+            values: vec![0f32]
         }
     );
 

@@ -19,7 +19,8 @@ pub mod serverdata;
 pub mod transformers;
 
 /// The type descriptor of the database passed to the middlelayer through axum state
-pub type Database<'a> = diesel_async::pooled_connection::bb8::PooledConnection<'a, diesel_async::AsyncPgConnection>;
+pub type Database<'a> =
+    diesel_async::pooled_connection::bb8::PooledConnection<'a, diesel_async::AsyncPgConnection>;
 
 pub type PoolHandle = diesel_async::pooled_connection::bb8::Pool<diesel_async::AsyncPgConnection>;
 
@@ -55,4 +56,18 @@ pub struct ClientData {
     /// client doesnt parse node
     #[serde(skip_serializing)]
     pub node: String,
+}
+
+/// this is the main conversion code to insert data.
+/// 
+/// it is essential this conversion does no re-allocate
+impl Into<models::DataInsert> for ClientData {
+    fn into(self) -> models::DataInsert {
+        models::DataInsert {
+            values: self.values,
+            dataTypeName: self.name,
+            time: self.timestamp,
+            runId: self.run_id,
+        }
+    }
 }
