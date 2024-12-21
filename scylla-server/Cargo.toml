@@ -31,6 +31,8 @@ diesel_migrations = { version = "2.2.0", features = ["postgres"] }
 rangemap = "1.5.1"
 axum-macros = "0.4.2"
 diesel-async = { version = "0.5.2", features = ["postgres", "bb8", "async-connection-wrapper", "sync-connection-wrapper"] }
+[target.'cfg(not(target_env = "msvc"))'.dependencies]
+tikv-jemallocator = "0.6"
 
 [features]
 top = ["dep:console-subscriber"]
@@ -47,3 +49,4 @@ strip = true  # Automatically strip symbols from the binary.
 [[bin]]
 name = "scylla-server"
 path = "src/main.rs"
+
