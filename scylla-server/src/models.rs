@@ -16,9 +16,9 @@ pub struct Data {
 }
 
 /// Use this struct when inserting data.
-/// 
+///
 /// This struct is required because Diesel must infer Arrays as Array<Nullable<T>>,
-/// and to query such types our signature for values must be Vec<Option<f32>>, 
+/// and to query such types our signature for values must be Vec<Option<f32>>,
 /// but the overhead of mapping Vec<f32> to Vec<Option<f32>> is non-negligible.
 #[derive(Insertable)]
 #[diesel(table_name = crate::schema::data)]

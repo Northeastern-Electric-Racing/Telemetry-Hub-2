@@ -59,15 +59,15 @@ pub struct ClientData {
 }
 
 /// this is the main conversion code to insert data.
-/// 
+///
 /// it is essential this conversion does no re-allocate
-impl Into<models::DataInsert> for ClientData {
-    fn into(self) -> models::DataInsert {
+impl From<ClientData> for models::DataInsert {
+    fn from(val: ClientData) -> Self {
         models::DataInsert {
-            values: self.values,
-            dataTypeName: self.name,
-            time: self.timestamp,
-            runId: self.run_id,
+            values: val.values,
+            dataTypeName: val.name,
+            time: val.timestamp,
+            runId: val.run_id,
         }
     }
 }

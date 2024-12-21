@@ -5,7 +5,9 @@ use diesel_async::RunQueryDsl;
 /// Gets all datatypes
 /// * `d ` - The connection to the database
 ///   returns: A result containing the data or the QueryError propogated by the db
-pub async fn get_all_data_types(db: &mut Database<'_>) -> Result<Vec<DataType>, diesel::result::Error> {
+pub async fn get_all_data_types(
+    db: &mut Database<'_>,
+) -> Result<Vec<DataType>, diesel::result::Error> {
     dataType.load(db).await
 }
 
@@ -32,5 +34,6 @@ pub async fn upsert_data_type(
         .do_update() // actually allows for the upsert ability
         .set(&val)
         .returning(DataType::as_returning())
-        .get_result(db).await
+        .get_result(db)
+        .await
 }

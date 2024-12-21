@@ -25,6 +25,35 @@ pub struct DbHandler {
     upload_interval: u64,
 }
 
+/// Chunks a vec into roughly equal vectors all under size `max_chunk_size`
+/// This precomputes vec capacity but does however call to_vec(), reallocating the slices
+fn chunk_vec<T: Clone>(input: Vec<T>, max_chunk_size: usize) -> Vec<Vec<T>> {
+    if max_chunk_size == 0 {
+        panic!("Maximum chunk size must be greater than zero");
+    }
+
+    let len = input.len();
+    if len == 0 {
+        return Vec::new();
+    }
+
+    // Calculate the number of chunks
+    let num_chunks = (len + max_chunk_size - 1) / max_chunk_size;
+
+    // Recompute a balanced chunk size
+    let chunk_size = usize::max(1, (len + num_chunks - 1) / num_chunks);
+
+    let mut result = Vec::with_capacity(num_chunks);
+    let mut start = 0;
+
+    while start < len {
+        let end = usize::min(start + chunk_size, len);
+        result.push(input[start..end].to_vec());
+        start = end;
+    }
+    result
+}
+
 impl DbHandler {
     /// Make a new db handler
     /// * `recv` - the broadcast reciver of which clientdata will be sent
@@ -62,15 +91,17 @@ impl DbHandler {
                     while let Some(final_msgs) = batch_queue.recv().await {
                         info!("{} batches remaining!", batch_queue.len()+1);
                         // do not spawn new tasks in this mode, see below comment for chunk_size math
-                        let chunk_size = final_msgs.len() / ((final_msgs.len() / 8190) + 1);
-                        if chunk_size == 0 {
-                            warn!("Could not insert {} messages, chunk size zero!", final_msgs.len());
+                        if final_msgs.is_empty() {
+                            debug!("A batch of zero messages was sent!");
                             continue;
                         }
-                        for chunk in final_msgs.chunks(chunk_size).collect::<Vec<_>>() {
+                        let chunk_size = final_msgs.len() / ((final_msgs.len() / 8190) + 1);
+                        let chunks = chunk_vec(final_msgs, chunk_size);
+                        debug!("Batch uploading {} chunks in sequence", chunks.len());
+                        for chunk in chunks {
                             info!(
                                 "A cleanup chunk uploaded: {:?}",
-                                data_service::add_many(&mut database, chunk.to_vec()).await
+                                data_service::add_many(&mut database, chunk).await
                         );
                         }
                     }
@@ -81,16 +112,15 @@ impl DbHandler {
                     // libpq has max 65535 params, therefore batch
                     // max for batch is 65535/4 params per message, hence the below, rounded down with a margin for safety
                     // TODO avoid this code batch uploading the remainder messages as a new batch, combine it with another safely
-                    let chunk_size = msgs.len() / ((msgs.len() / 8190) + 1);
-                    if chunk_size == 0 {
-                        warn!("Could not insert {} messages, chunk size zero!", msgs.len());
+                    if msgs.is_empty() {
+                        debug!("A batch of zero messages was sent!");
                         continue;
                     }
-                    debug!("Batch uploading {} chunks in parrallel", msgs.len() / chunk_size);
-                    for chunk in msgs.chunks(chunk_size).collect::<Vec<_>>() {
-                        let owned = chunk.to_vec();
-                        let pool = pool.clone();
-                       tokio::spawn(DbHandler::batch_upload(owned, pool));
+                    let chunk_size = msgs.len() / ((msgs.len() / 8190) + 1);
+                    let chunks = chunk_vec(msgs, chunk_size);
+                    debug!("Batch uploading {} chunks in parrallel", chunks.len());
+                    for chunk in chunks {
+                       tokio::spawn(DbHandler::batch_upload(chunk, pool.clone()));
                     }
                     debug!(
                         "DB send: {} of {}",

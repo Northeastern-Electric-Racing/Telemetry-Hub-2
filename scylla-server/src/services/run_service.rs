@@ -31,7 +31,8 @@ pub async fn create_run(
 ) -> Result<Run, diesel::result::Error> {
     diesel::insert_into(run)
         .values(time.eq(timestamp))
-        .get_result(db).await
+        .get_result(db)
+        .await
 }
 
 /// Creates a run with a given id
@@ -46,7 +47,8 @@ pub async fn create_run_with_id(
 ) -> Result<Run, diesel::result::Error> {
     diesel::insert_into(run)
         .values((time.eq(timestamp), id.eq(run_id)))
-        .get_result(db).await
+        .get_result(db)
+        .await
 }
 
 /// Updates a run with GPS points
@@ -62,5 +64,6 @@ pub async fn update_run_with_coords(
 ) -> Result<Run, diesel::result::Error> {
     diesel::update(run.filter(id.eq(run_id)))
         .set((latitude.eq(lat), longitude.eq(long)))
-        .get_result(db).await
+        .get_result(db)
+        .await
 }

@@ -19,7 +19,7 @@ async fn test_get_all_runs() -> Result<(), diesel::result::Error> {
 async fn test_get_run_by_id() -> Result<(), diesel::result::Error> {
     let pool = cleanup_and_prepare().await.unwrap();
     let mut db = pool.get().await.unwrap();
-    
+
     // add a run
     let run_c =
         run_service::create_run(&mut db, chrono::DateTime::from_timestamp_millis(1).unwrap())

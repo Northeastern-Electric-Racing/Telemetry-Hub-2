@@ -1,9 +1,11 @@
 use std::time::Duration;
 
+use diesel_async::{
+    pooled_connection::{bb8::Pool, AsyncDieselConnectionManager},
+    AsyncPgConnection, RunQueryDsl,
+};
 use dotenvy::dotenv;
 use scylla_server::schema::{data, dataType, run};
-use diesel_async::{pooled_connection::{bb8::Pool, AsyncDieselConnectionManager}, AsyncPgConnection, RunQueryDsl};
-
 
 pub async fn cleanup_and_prepare() -> Result<Pool<AsyncPgConnection>, diesel::result::Error> {
     dotenv().ok();
@@ -17,7 +19,8 @@ pub async fn cleanup_and_prepare() -> Result<Pool<AsyncPgConnection>, diesel::re
         .max_lifetime(Some(Duration::from_secs(60 * 60 * 24)))
         .idle_timeout(Some(Duration::from_secs(60 * 2)))
         .build(manager)
-        .await.unwrap();
+        .await
+        .unwrap();
     let mut client = pool.get().await.unwrap();
 
     diesel::delete(data::table).execute(&mut client).await?;

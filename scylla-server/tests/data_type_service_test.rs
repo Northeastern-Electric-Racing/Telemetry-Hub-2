@@ -44,7 +44,8 @@ async fn test_datatype_create() -> Result<(), diesel::result::Error> {
     let data = dataType::table
         .filter(dataType::name.eq(data_type_name.clone()))
         .select(DataType::as_select())
-        .get_result(&mut db).await?;
+        .get_result(&mut db)
+        .await?;
 
     assert_eq!(
         PublicDataType::from(data),

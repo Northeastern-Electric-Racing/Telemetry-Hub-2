@@ -46,7 +46,7 @@ pub async fn add_many(
         .values(
             client_data
                 .into_iter()
-                .map(|single_client_data| Into::<DataInsert>::into(single_client_data))
+                .map(Into::<DataInsert>::into)
                 .collect::<Vec<DataInsert>>(),
         )
         .on_conflict_do_nothing()
