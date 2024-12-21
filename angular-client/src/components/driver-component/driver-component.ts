@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 
 @Component({
   selector: 'driver-component',
@@ -12,7 +12,7 @@ export class DriverComponent implements OnInit {
   driver: string = 'No Driver';
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.DRIVER).subscribe((value) => {
+    this.storage.get(DataTypeEnum.DRIVER).subscribe((value) => {
       [this.driver] = value.values || ['No Driver'];
     });
     console.log(this.driver);

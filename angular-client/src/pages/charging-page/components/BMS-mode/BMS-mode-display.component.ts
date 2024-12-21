@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { floatPipe } from 'src/utils/pipes.utils';
 
 enum BMSMODE {
@@ -28,7 +28,7 @@ export default class BMSModeDisplayComponent implements OnInit {
   };
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.BMS_MODE).subscribe((value) => {
+    this.storage.get(DataTypeEnum.BMS_MODE).subscribe((value) => {
       this.bmsMode = floatPipe(value.values[0]) as BMSMODE;
     });
   }

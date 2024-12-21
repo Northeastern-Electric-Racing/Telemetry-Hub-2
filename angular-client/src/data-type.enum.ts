@@ -1,4 +1,4 @@
-export enum IdentifierDataType {
+export enum DataTypeEnum {
   DRIVER = 'Driver',
   LOCATION = 'location',
   POINTS = 'GPS/Location',

@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { take } from 'rxjs';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { floatPipe } from 'src/utils/pipes.utils';
 
 @Component({
@@ -14,7 +14,7 @@ export default class StartingSocTimerComponent {
   startingSoc: number = 0;
   constructor() {
     this.storage
-      .get(IdentifierDataType.STATE_OF_CHARGE)
+      .get(DataTypeEnum.STATE_OF_CHARGE)
       .pipe(take(1))
       .subscribe((value) => {
         this.startingSoc = floatPipe(value.values[0]);

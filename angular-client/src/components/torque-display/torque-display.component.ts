@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 
 @Component({
   selector: 'torque-display',
@@ -12,7 +12,7 @@ export default class TorqueDisplayComponent implements OnInit {
   torque: number = 0;
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.TORQUE).subscribe((value) => {
+    this.storage.get(DataTypeEnum.TORQUE).subscribe((value) => {
       this.torque = parseInt(value.values[0]);
     });
   }

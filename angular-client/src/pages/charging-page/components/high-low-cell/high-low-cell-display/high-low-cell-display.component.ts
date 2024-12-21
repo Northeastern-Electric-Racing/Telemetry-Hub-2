@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { decimalPipe } from 'src/utils/pipes.utils';
 import { GraphData } from 'src/utils/types.utils';
 
@@ -32,12 +32,12 @@ export default class HighLowCellDisplayComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.VOLTS_LOW).subscribe((value) => {
+    this.storage.get(DataTypeEnum.VOLTS_LOW).subscribe((value) => {
       this.lowCellVoltage = decimalPipe(value.values[0], 3);
       this.delta = decimalPipe((this.highCellVoltage - this.lowCellVoltage).toFixed(3), 3);
       this.lowVoltsData.push({ x: +value.time, y: this.lowCellVoltage });
     });
-    this.storage.get(IdentifierDataType.VOLTS_HIGH).subscribe((value) => {
+    this.storage.get(DataTypeEnum.VOLTS_HIGH).subscribe((value) => {
       this.highCellVoltage = decimalPipe(value.values[0], 3);
       this.delta = decimalPipe((this.highCellVoltage - this.lowCellVoltage).toFixed(3), 3);
       this.highVoltsData.push({ x: +value.time, y: this.highCellVoltage });

@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 
 /**
  * Container for the Charging page, obtains data from the storage service.
@@ -22,7 +22,7 @@ export default class ChargingPageComponent implements OnInit {
       this.time = new Date();
     }, 1000);
 
-    this.storage.get(IdentifierDataType.LOCATION).subscribe((value) => {
+    this.storage.get(DataTypeEnum.LOCATION).subscribe((value) => {
       [this.location] = value.values || ['No Location Set'];
     });
   }

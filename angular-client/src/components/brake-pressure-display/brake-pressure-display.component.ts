@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 
 @Component({
   selector: 'brake-pressure-display',
@@ -12,7 +12,7 @@ export default class BrakePressureDisplayComponent implements OnInit {
   brakePressure: number = 0;
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.BRAKE_PRESSURE).subscribe((value) => {
+    this.storage.get(DataTypeEnum.BRAKE_PRESSURE).subscribe((value) => {
       this.brakePressure = parseInt(value.values[0]);
     });
   }

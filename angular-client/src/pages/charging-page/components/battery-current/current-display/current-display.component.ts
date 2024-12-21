@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { floatPipe } from 'src/utils/pipes.utils';
 
 @Component({
@@ -13,7 +13,7 @@ export default class CurrentDisplayComponent implements OnInit {
   amps: number = 0;
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.CURRENT).subscribe((value) => {
+    this.storage.get(DataTypeEnum.CURRENT).subscribe((value) => {
       this.amps = floatPipe(value.values[0]);
     });
   }
