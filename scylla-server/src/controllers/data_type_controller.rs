@@ -9,7 +9,7 @@ use crate::{
 pub async fn get_all_data_types(
     State(pool): State<PoolHandle>,
 ) -> Result<Json<Vec<PublicDataType>>, ScyllaError> {
-    let mut db = pool.get()?;
+    let mut db = pool.get().await?;
     let data_types = data_type_service::get_all_data_types(&mut db).await?;
 
     let transformed_data_types: Vec<PublicDataType> =

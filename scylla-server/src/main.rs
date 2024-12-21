@@ -10,9 +10,10 @@ use axum::{
     Extension, Router,
 };
 use clap::Parser;
-use diesel::{
-    r2d2::{ConnectionManager, Pool},
-    PgConnection,
+use diesel_async::async_connection_wrapper::AsyncConnectionWrapper;
+use diesel_async::{
+    pooled_connection::{bb8::Pool, AsyncDieselConnectionManager},
+    AsyncConnection, AsyncPgConnection,
 };
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use dotenvy::dotenv;
@@ -24,7 +25,7 @@ use scylla_server::{
         data_type_controller, file_insertion_controller, run_controller,
     },
     services::run_service::{self},
-    PoolHandle, RateLimitMode,
+    RateLimitMode,
 };
 use scylla_server::{
     db_handler,
@@ -103,7 +104,7 @@ struct ScyllaArgs {
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = ScyllaArgs::parse();
 
     println!("Initializing scylla server...");
@@ -134,21 +135,30 @@ async fn main() {
         tracing::subscriber::set_global_default(subscriber).expect("Could not init tracing");
     }
 
-    // create the database stuff
-    info!("Initializing database connections...");
     dotenv().ok();
-    let manager = ConnectionManager::<PgConnection>::new(std::env::var("DATABASE_URL").unwrap());
-    // Refer to the `r2d2` documentation for more methods to use
-    // when building a connection pool
-    let db: PoolHandle = Pool::builder()
-        .test_on_check_out(true)
-        .build(manager)
-        .expect("Could not build connection pool");
+    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be specified");
 
-    let mut conn = db.get().unwrap();
-    conn.run_pending_migrations(MIGRATIONS)
-        .expect("Could not run migrations!");
+    info!("Beginning DB migration w/ temporary connection...");
+    // it is best to create a temporary unmanaged connection to run the migrations
+    // a completely new set of connections is created by the pool manager because it cannot understand an already established connection
+    let conn: AsyncPgConnection = AsyncPgConnection::establish(&db_url).await?;
+    let mut async_wrapper: AsyncConnectionWrapper<AsyncPgConnection> =
+        AsyncConnectionWrapper::from(conn);
+    tokio::task::spawn_blocking(move || {
+        async_wrapper.run_pending_migrations(MIGRATIONS).unwrap();
+    })
+    .await?;
     info!("Successfully migrated DB!");
+
+    info!("Initializing database connections...");
+    let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(db_url);
+    let pool: Pool<AsyncPgConnection> = Pool::builder()
+        .max_size(10)
+        .min_idle(Some(2))
+        .max_lifetime(Some(Duration::from_secs(60 * 60 * 24)))
+        .idle_timeout(Some(Duration::from_secs(60 * 2)))
+        .build(manager)
+        .await?;
 
     // create the socket stuff
     let (socket_layer, io) = SocketIo::builder()
@@ -175,14 +185,14 @@ async fn main() {
     let token = CancellationToken::new();
     // spawn the database handler
     task_tracker.spawn(
-        db_handler::DbHandler::new(mqtt_receive, db.clone(), cli.batch_upsert_time * 1000)
+        db_handler::DbHandler::new(mqtt_receive, pool.clone(), cli.batch_upsert_time * 1000)
             .handling_loop(db_send.clone(), token.clone()),
     );
     // spawn the database inserter, if we have it enabled
     if !cli.disable_data_upload {
         task_tracker.spawn(db_handler::DbHandler::batching_loop(
             db_receive,
-            db.clone(),
+            pool.clone(),
             token.clone(),
         ));
     } else {
@@ -193,9 +203,10 @@ async fn main() {
     }
 
     // creates the initial run
-    let curr_run = run_service::create_run(&mut db.get().unwrap(), chrono::offset::Utc::now())
-        .await
-        .expect("Could not create initial run!");
+    let curr_run =
+        run_service::create_run(&mut pool.get().await.unwrap(), chrono::offset::Utc::now())
+            .await
+            .expect("Could not create initial run!");
     debug!("Configuring current run: {:?}", curr_run);
 
     RUN_ID.store(curr_run.id, Ordering::Relaxed);
@@ -253,7 +264,7 @@ async fn main() {
                 .layer(socket_layer),
         )
         .layer(TraceLayer::new_for_http())
-        .with_state(db.clone());
+        .with_state(pool.clone());
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8000")
         .await
@@ -280,4 +291,5 @@ async fn main() {
     info!("Received exit signal, shutting down!");
     token.cancel();
     task_tracker.wait().await;
+    Ok(())
 }

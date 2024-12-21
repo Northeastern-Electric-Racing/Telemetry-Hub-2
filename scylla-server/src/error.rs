@@ -8,7 +8,7 @@ pub enum ScyllaError {
     /// Deseil error
     DbError(diesel::result::Error),
     /// Diesel db connection error,
-    ConnError(diesel::r2d2::PoolError),
+    ConnError(diesel_async::pooled_connection::bb8::RunError),
     /// An instruction was not encodable
     InvalidEncoding(String),
     /// Could not communicate to car
@@ -23,8 +23,8 @@ impl From<diesel::result::Error> for ScyllaError {
     }
 }
 
-impl From<diesel::r2d2::PoolError> for ScyllaError {
-    fn from(error: diesel::r2d2::PoolError) -> Self {
+impl From<diesel_async::pooled_connection::bb8::RunError> for ScyllaError {
+    fn from(error: diesel_async::pooled_connection::bb8::RunError) -> Self {
         ScyllaError::ConnError(error)
     }
 }

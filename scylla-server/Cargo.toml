@@ -5,7 +5,7 @@ edition = "2021"
 default-run = "scylla-server"
 
 [dependencies]
-diesel = { version = "2.2.4", features = ["postgres", "r2d2", "chrono"] }
+diesel = { version = "2.2.4", features = ["postgres", "chrono"] }
 pq-sys = { version = "0.6", features = ["bundled"] }
 dotenvy = "0.15"
 serde = "1.0.203"
@@ -30,6 +30,7 @@ serde_json = "1.0.128"
 diesel_migrations = { version = "2.2.0", features = ["postgres"] }
 rangemap = "1.5.1"
 axum-macros = "0.4.2"
+diesel-async = { version = "0.5.2", features = ["postgres", "bb8", "async-connection-wrapper", "sync-connection-wrapper"] }
 
 [features]
 top = ["dep:console-subscriber"]

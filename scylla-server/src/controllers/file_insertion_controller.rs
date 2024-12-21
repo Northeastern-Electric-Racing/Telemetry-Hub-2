@@ -21,7 +21,7 @@ pub async fn insert_file(
     mut multipart: Multipart,
 ) -> Result<String, ScyllaError> {
     // create a run ID cache
-    let mut db = pool.get()?;
+    let mut db = pool.get().await?;
     debug!("Warming up run ID map!");
     let mut run_iter = run_service::get_all_runs(&mut db)
         .await?

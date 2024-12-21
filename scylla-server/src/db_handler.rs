@@ -54,7 +54,7 @@ impl DbHandler {
         loop {
             tokio::select! {
                 _ = cancel_token.cancelled() => {
-                    let Ok(mut database) = pool.get() else {
+                    let Ok(mut database) = pool.get().await else {
                         warn!("Could not get connection for cleanup");
                         break;
                     };
@@ -62,7 +62,7 @@ impl DbHandler {
                     while let Some(final_msgs) = batch_queue.recv().await {
                         info!("{} batches remaining!", batch_queue.len()+1);
                         // do not spawn new tasks in this mode, see below comment for chunk_size math
-                        let chunk_size = final_msgs.len() / ((final_msgs.len() / 16380) + 1);
+                        let chunk_size = final_msgs.len() / ((final_msgs.len() / 8190) + 1);
                         if chunk_size == 0 {
                             warn!("Could not insert {} messages, chunk size zero!", final_msgs.len());
                             continue;
@@ -70,7 +70,7 @@ impl DbHandler {
                         for chunk in final_msgs.chunks(chunk_size).collect::<Vec<_>>() {
                             info!(
                                 "A cleanup chunk uploaded: {:?}",
-                                data_service::add_many(&mut database, chunk.to_vec())
+                                data_service::add_many(&mut database, chunk.to_vec()).await
                         );
                         }
                     }
@@ -81,7 +81,7 @@ impl DbHandler {
                     // libpq has max 65535 params, therefore batch
                     // max for batch is 65535/4 params per message, hence the below, rounded down with a margin for safety
                     // TODO avoid this code batch uploading the remainder messages as a new batch, combine it with another safely
-                    let chunk_size = msgs.len() / ((msgs.len() / 16380) + 1);
+                    let chunk_size = msgs.len() / ((msgs.len() / 8190) + 1);
                     if chunk_size == 0 {
                         warn!("Could not insert {} messages, chunk size zero!", msgs.len());
                         continue;
@@ -90,8 +90,7 @@ impl DbHandler {
                     for chunk in msgs.chunks(chunk_size).collect::<Vec<_>>() {
                         let owned = chunk.to_vec();
                         let pool = pool.clone();
-                       tokio::task::spawn_blocking(move || {
-                            DbHandler::batch_upload(owned, pool)});
+                       tokio::spawn(DbHandler::batch_upload(owned, pool));
                     }
                     debug!(
                         "DB send: {} of {}",
@@ -121,13 +120,14 @@ impl DbHandler {
         }
     }
 
-    //#[instrument(level = Level::DEBUG, skip(msg, pool))]
-    fn batch_upload(msg: Vec<ClientData>, pool: PoolHandle) {
-        let Ok(mut database) = pool.get() else {
+    #[instrument(level = Level::DEBUG, skip(msg, pool))]
+    async fn batch_upload(msg: Vec<ClientData>, pool: PoolHandle) {
+        let Ok(mut database) = pool.get().await else {
             warn!("Could not get connection for batch upload!");
             return;
         };
-        match data_service::add_many(&mut database, msg) {
+        warn!("MSG LEN {}", msg.len());
+        match data_service::add_many(&mut database, msg).await {
             Ok(count) => info!("Batch uploaded: {:?}", count),
             Err(err) => warn!("Error in batch upload: {:?}", err),
         }
@@ -180,7 +180,7 @@ impl DbHandler {
         }
 
         if !self.datatype_list.contains(&msg.name) {
-            let Ok(mut database) = self.pool.get() else {
+            let Ok(mut database) = self.pool.get().await else {
                 warn!("Could not get connection for dataType upsert");
                 return;
             };
@@ -201,7 +201,7 @@ impl DbHandler {
         // Check for GPS points, insert them into current run if available
         if msg.name == "TPU/GPS/Location" {
             debug!("Upserting run with location points!");
-            let Ok(mut database) = self.pool.get() else {
+            let Ok(mut database) = self.pool.get().await else {
                 warn!("Could not get connection for db points update");
                 return;
             };
