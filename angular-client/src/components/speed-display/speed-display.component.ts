@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 
 @Component({
   selector: 'speed-display',
@@ -12,7 +12,7 @@ export default class SpeedDisplayComponent implements OnInit {
   speed: number = 0;
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.SPEED).subscribe((value) => {
+    this.storage.get(DataTypeEnum.SPEED).subscribe((value) => {
       this.speed = parseInt(value.values[0]);
     });
   }

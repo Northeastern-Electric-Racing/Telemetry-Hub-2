@@ -1,5 +1,6 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, Input, OnInit } from '@angular/core';
+import { dataTypeNamePipe, dataTypesToNodes } from 'src/utils/dataTypes.utils';
 import { DataType, Node, NodeWithVisibilityToggle, Run } from 'src/utils/types.utils';
 
 @Component({
@@ -58,16 +59,18 @@ import { DataType, Node, NodeWithVisibilityToggle, Run } from 'src/utils/types.u
   ]
 })
 export default class GraphSidebarMobileComponent implements OnInit {
-  @Input() nodes!: Node[];
+  @Input() dataTypes!: DataType[];
   @Input() selectDataType!: (dataType: DataType) => void;
   @Input() onRunSelected!: (run: Run) => void;
   nodesWithVisibilityToggle!: NodeWithVisibilityToggle[];
   showSelection = false;
+  nodes!: Node[];
 
   /**
    * Initializes the nodes with the visibility toggle.
    */
   ngOnInit(): void {
+    this.nodes = dataTypesToNodes(this.dataTypes);
     this.nodesWithVisibilityToggle = this.nodes.map((node: Node) => {
       return {
         ...node,
@@ -90,4 +93,8 @@ export default class GraphSidebarMobileComponent implements OnInit {
   toggleSidebar = () => {
     this.showSelection = !this.showSelection;
   };
+
+  transformDataTypeName(dataTypeName: string) {
+    return dataTypeNamePipe(dataTypeName);
+  }
 }

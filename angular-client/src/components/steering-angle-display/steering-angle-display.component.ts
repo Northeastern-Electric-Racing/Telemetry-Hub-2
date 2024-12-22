@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { floatPipe } from 'src/utils/pipes.utils';
 
 /**
@@ -18,7 +18,7 @@ export class SteeringAngleDisplayComponent implements OnInit {
   steeringAngle: number = 0;
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.STEERING_ANGLE).subscribe((value) => {
+    this.storage.get(DataTypeEnum.STEERING_ANGLE).subscribe((value) => {
       this.steeringAngle = floatPipe(value.values[0]);
     });
   }

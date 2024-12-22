@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { GraphData } from 'src/utils/types.utils';
 
 @Component({
@@ -13,7 +13,7 @@ export default class SpeedOverTimeDisplayComponent implements OnInit {
   data: GraphData[] = [];
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.SPEED).subscribe((value) => {
+    this.storage.get(DataTypeEnum.SPEED).subscribe((value) => {
       this.data.push({ x: new Date().getTime(), y: parseInt(value.values[0]) });
     });
   }
