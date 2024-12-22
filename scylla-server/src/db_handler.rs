@@ -1,5 +1,4 @@
-use std::collections::HashSet;
-
+use rustc_hash::FxHashSet;
 use tokio::sync::mpsc::Receiver;
 
 use tokio::{sync::mpsc::Sender, time::Duration};
@@ -14,7 +13,7 @@ use crate::{ClientData, PoolHandle, RUN_ID};
 /// upserting of metadata for data, and batch uploading the database
 pub struct DbHandler {
     /// The list of data types seen by this instance, used for when to upsert
-    datatype_list: HashSet<String>,
+    datatype_list: FxHashSet<String>,
     /// The broadcast channel which provides serial datapoints for processing
     receiver: Receiver<ClientData>,
     /// The database pool handle
@@ -63,7 +62,7 @@ impl DbHandler {
         upload_interval: u64,
     ) -> DbHandler {
         DbHandler {
-            datatype_list: HashSet::new(),
+            datatype_list: FxHashSet::default(),
             receiver,
             pool,
             data_queue: vec![],

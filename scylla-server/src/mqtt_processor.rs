@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     sync::{atomic::Ordering, Arc},
     time::{Duration, SystemTime},
 };
@@ -11,6 +10,7 @@ use rumqttc::v5::{
     mqttbytes::v5::{Packet, Publish},
     AsyncClient, Event, EventLoop, MqttOptions,
 };
+use rustc_hash::FxHashMap;
 use socketioxide::SocketIo;
 use tokio::{sync::mpsc::Sender, time::Instant};
 use tokio_util::sync::CancellationToken;
@@ -37,7 +37,7 @@ pub struct MqttProcessor {
     /// Upload ratio, below is not socket sent above is socket sent
     upload_ratio: u8,
     /// static rate limiter
-    rate_limiter: HashMap<String, Instant>,
+    rate_limiter: FxHashMap<String, Instant>,
     /// time to rate limit
     rate_limit_time: Duration,
     /// rate limit mode
@@ -95,7 +95,6 @@ impl MqttProcessor {
             .set_session_expiry_interval(Some(u32::MAX))
             .set_topic_alias_max(Some(600));
 
-        let rate_map: HashMap<String, Instant> = HashMap::new();
 
         (
             MqttProcessor {
@@ -103,7 +102,7 @@ impl MqttProcessor {
                 io,
                 cancel_token,
                 upload_ratio: opts.upload_ratio,
-                rate_limiter: rate_map,
+                rate_limiter: FxHashMap::default(),
                 rate_limit_time: Duration::from_millis(opts.static_rate_limit_time),
                 rate_limit_mode: opts.rate_limit_mode,
             },
@@ -322,7 +321,7 @@ impl MqttProcessor {
         if *upload_counter >= self.upload_ratio {
             match self.io.emit(
                 "message",
-                serde_json::to_string(&client_data).expect("Could not serialize ClientData"),
+                &serde_json::to_string(&client_data).expect("Could not serialize ClientData"),
             ) {
                 Ok(_) => (),
                 Err(err) => match err {
