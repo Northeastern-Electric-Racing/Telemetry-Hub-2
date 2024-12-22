@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use tokio::sync::mpsc::Receiver;
 
 use tokio::{sync::mpsc::Sender, time::Duration};
@@ -12,15 +14,13 @@ use crate::{ClientData, PoolHandle, RUN_ID};
 /// upserting of metadata for data, and batch uploading the database
 pub struct DbHandler {
     /// The list of data types seen by this instance, used for when to upsert
-    datatype_list: Vec<String>,
+    datatype_list: HashSet<String>,
     /// The broadcast channel which provides serial datapoints for processing
     receiver: Receiver<ClientData>,
     /// The database pool handle
     pool: PoolHandle,
     /// the queue of data
     data_queue: Vec<ClientData>,
-    /// the time since last batch
-    last_time: tokio::time::Instant,
     /// upload interval
     upload_interval: u64,
 }
@@ -63,11 +63,10 @@ impl DbHandler {
         upload_interval: u64,
     ) -> DbHandler {
         DbHandler {
-            datatype_list: vec![],
+            datatype_list: HashSet::new(),
             receiver,
             pool,
             data_queue: vec![],
-            last_time: tokio::time::Instant::now(),
             upload_interval,
         }
     }
@@ -172,6 +171,7 @@ impl DbHandler {
         data_channel: Sender<Vec<ClientData>>,
         cancel_token: CancellationToken,
     ) {
+        let mut batch_interval = tokio::time::interval(Duration::from_millis(self.upload_interval));
         loop {
             tokio::select! {
                 _ = cancel_token.cancelled() => {
@@ -182,6 +182,15 @@ impl DbHandler {
                 },
                 Some(msg) = self.receiver.recv() => {
                     self.handle_msg(msg, &data_channel).await;
+                }
+                _ = batch_interval.tick() => {
+                    if !self.data_queue.is_empty() {
+                        // mem::take allows us to assign the value of data queue vec::new() while maintaining the memory for data_channel ownership
+                        data_channel
+                            .send(std::mem::take(&mut self.data_queue))
+                            .await
+                            .expect("Could not comm data to db thread");
+                    }
                 }
             }
         }
@@ -194,19 +203,6 @@ impl DbHandler {
             self.receiver.len(),
             self.receiver.max_capacity()
         );
-
-        // If the time is greater than upload interval, push to batch upload thread and clear queue
-        if tokio::time::Instant::now().duration_since(self.last_time)
-            > Duration::from_millis(self.upload_interval)
-            && !self.data_queue.is_empty()
-        {
-            // mem::take allows us to assign the value of data queue vec::new() while maintaining the memory for data_channel ownership
-            data_channel
-                .send(std::mem::take(&mut self.data_queue))
-                .await
-                .expect("Could not comm data to db thread");
-            self.last_time = tokio::time::Instant::now();
-        }
 
         if !self.datatype_list.contains(&msg.name) {
             let Ok(mut database) = self.pool.get().await else {
@@ -224,7 +220,7 @@ impl DbHandler {
             {
                 warn!("DB error datatype upsert: {:?}", msg);
             }
-            self.datatype_list.push(msg.name.clone());
+            self.datatype_list.insert(msg.name.clone());
         }
 
         // Check for GPS points, insert them into current run if available

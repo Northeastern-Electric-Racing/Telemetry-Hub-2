@@ -46,6 +46,11 @@ codegen-units = 1
 panic = "abort"
 strip = true  # Automatically strip symbols from the binary.
 
+[profile.profiling]
+inherits = "release"
+debug = true
+strip = false
+
 [[bin]]
 name = "scylla-server"
 path = "src/main.rs"
