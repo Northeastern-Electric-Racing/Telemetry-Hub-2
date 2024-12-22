@@ -1,7 +1,6 @@
 export enum DataTypeEnum {
   DRIVER = 'Driver',
   LOCATION = 'location',
-  POINTS = 'GPS/Location',
   VIEWERS = 'Viewers',
 
   // Special Latency info sent by Scylla
@@ -29,6 +28,7 @@ export enum DataTypeEnum {
   RAMUsage = 'TPU/OnBoard/MemAvailable',
   WIFIRSSI = 'TPU/HaLow/RSSI',
   MCS = 'TPU/HaLow/ApMCS',
+  POINTS = 'TPU/GPS/Location',
 
   // BMS
   PACK_TEMP = 'BMS/Status/Temp_Average',
