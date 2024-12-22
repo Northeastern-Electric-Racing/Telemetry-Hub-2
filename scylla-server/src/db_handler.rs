@@ -115,9 +115,10 @@ impl DbHandler {
                         debug!("A batch of zero messages was sent!");
                         continue;
                     }
-                    let chunk_size = msgs.len() / ((msgs.len() / 8190) + 1);
+                    let msg_len = msgs.len();
+                    let chunk_size = msg_len / ((msg_len / 8190) + 1);
                     let chunks = chunk_vec(msgs, chunk_size);
-                    debug!("Batch uploading {} chunks in parrallel", chunks.len());
+                    info!("Batch uploading {} chunks in parrallel, {} messages.", chunks.len(), msg_len);
                     for chunk in chunks {
                        tokio::spawn(DbHandler::batch_upload(chunk, pool.clone()));
                     }

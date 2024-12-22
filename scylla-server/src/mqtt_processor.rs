@@ -38,8 +38,8 @@ pub struct MqttProcessor {
     upload_ratio: u8,
     /// static rate limiter
     rate_limiter: HashMap<String, Instant>,
-    /// time to rate limit in ms
-    rate_limit_time: u64,
+    /// time to rate limit
+    rate_limit_time: Duration,
     /// rate limit mode
     rate_limit_mode: RateLimitMode,
 }
@@ -104,7 +104,7 @@ impl MqttProcessor {
                 cancel_token,
                 upload_ratio: opts.upload_ratio,
                 rate_limiter: rate_map,
-                rate_limit_time: opts.static_rate_limit_time,
+                rate_limit_time: Duration::from_millis(opts.static_rate_limit_time),
                 rate_limit_mode: opts.rate_limit_mode,
             },
             mqtt_opts,
@@ -211,7 +211,7 @@ impl MqttProcessor {
             // check if we have a previous time for a message based on its topic
             if let Some(old) = self.rate_limiter.get(topic) {
                 // if the message is less than the rate limit, skip it and do not update the map
-                if old.elapsed() < Duration::from_millis(self.rate_limit_time) {
+                if old.elapsed() < self.rate_limit_time {
                     trace!("Static rate limit skipping message with topic {}", topic);
                     return None;
                 } else {
