@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import Theme from 'src/services/theme.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { floatPipe } from 'src/utils/pipes.utils';
 
 @Component({
@@ -17,7 +17,7 @@ export default class ChargingStatusComponent implements OnInit {
   intervalId!: NodeJS.Timeout;
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.CHARGING).subscribe((value) => {
+    this.storage.get(DataTypeEnum.CHARGING).subscribe((value) => {
       const chargingControlValue = floatPipe(value.values[0]);
       if (this.isCharging) {
         if (chargingControlValue === 1) {

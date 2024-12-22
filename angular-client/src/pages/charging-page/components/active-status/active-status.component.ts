@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import Theme from 'src/services/theme.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { floatPipe } from 'src/utils/pipes.utils';
 
 @Component({
@@ -17,7 +17,7 @@ export default class ActiveStatusComponent implements OnInit {
   intervalId!: NodeJS.Timeout;
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.BMS_MODE).subscribe((value) => {
+    this.storage.get(DataTypeEnum.BMS_MODE).subscribe((value) => {
       const statusStateValue = floatPipe(value.values[0]);
       if (this.isActive) {
         if (!(statusStateValue === 2)) {

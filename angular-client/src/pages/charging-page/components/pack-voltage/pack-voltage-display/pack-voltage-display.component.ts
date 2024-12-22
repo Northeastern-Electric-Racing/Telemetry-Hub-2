@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { floatPipe } from 'src/utils/pipes.utils';
 import { GraphData } from 'src/utils/types.utils';
 
@@ -28,7 +28,7 @@ export default class PackVoltageDisplayComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.PACK_VOLTAGE).subscribe((value) => {
+    this.storage.get(DataTypeEnum.PACK_VOLTAGE).subscribe((value) => {
       this.voltage = floatPipe(value.values[0]);
       this.packVoltData.push({ x: +value.time, y: this.voltage });
     });

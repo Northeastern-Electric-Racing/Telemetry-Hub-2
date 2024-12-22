@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { floatPipe } from 'src/utils/pipes.utils';
 
 @Component({
@@ -20,19 +20,19 @@ export default class RasberryPiComponent implements OnInit {
   isMobile = window.innerWidth < this.mobileThreshold;
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.CPUUsage).subscribe((value) => {
+    this.storage.get(DataTypeEnum.CPUUsage).subscribe((value) => {
       this.cpuUsage = floatPipe(value.values[0]);
     });
-    this.storage.get(IdentifierDataType.CPUTemp).subscribe((value) => {
+    this.storage.get(DataTypeEnum.CPUTemp).subscribe((value) => {
       this.cpuTemp = floatPipe(value.values[0]);
     });
-    this.storage.get(IdentifierDataType.RAMUsage).subscribe((value) => {
+    this.storage.get(DataTypeEnum.RAMUsage).subscribe((value) => {
       this.ramUsage = Math.round((1 - floatPipe(value.values[0]) / 8000) * 100);
     });
-    this.storage.get(IdentifierDataType.WIFIRSSI).subscribe((value) => {
+    this.storage.get(DataTypeEnum.WIFIRSSI).subscribe((value) => {
       this.wifiRSSI = floatPipe(value.values[0]);
     });
-    this.storage.get(IdentifierDataType.MCS).subscribe((value) => {
+    this.storage.get(DataTypeEnum.MCS).subscribe((value) => {
       this.mcs = floatPipe(value.values[0]);
     });
   }

@@ -3,7 +3,7 @@ import { MapService } from '../../services/map.service';
 import { DataValue } from 'src/utils/socket.utils';
 import APIService from 'src/services/api.service';
 import { getDataByDataTypeNameAndRunId } from 'src/api/data.api';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import Storage from 'src/services/storage.service';
 import { Run } from 'src/utils/types.utils';
 
@@ -33,14 +33,14 @@ export default class MapComponent implements OnInit {
       setTimeout(() => {
         this.map.buildMap('map');
         this.map.addPolyline([]);
-        this.storage.get(IdentifierDataType.POINTS).subscribe((value) => {
+        this.storage.get(DataTypeEnum.POINTS).subscribe((value) => {
           this.map.addCoordinateToPolyline(this.map.transformDataToCoordinate(value));
         });
       }, 100);
     } else {
       this.isLoading = true;
       const queryResponse = this.apiService.query<DataValue[]>(() =>
-        getDataByDataTypeNameAndRunId(IdentifierDataType.POINTS, run.id)
+        getDataByDataTypeNameAndRunId(DataTypeEnum.POINTS, run.id)
       );
       queryResponse.data.subscribe((points) => {
         this.isLoading = false;

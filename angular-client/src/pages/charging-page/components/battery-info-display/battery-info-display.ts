@@ -1,5 +1,5 @@
 import { Component, HostListener, OnInit, inject } from '@angular/core';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { floatPipe } from 'src/utils/pipes.utils';
 import Storage from 'src/services/storage.service';
 
@@ -19,19 +19,19 @@ export class BatteryInfoDisplayComponent implements OnInit {
   isMobile = window.innerWidth < this.mobileThreshold;
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.PACK_TEMP).subscribe((value) => {
+    this.storage.get(DataTypeEnum.PACK_TEMP).subscribe((value) => {
       this.packTemp = floatPipe(value.values[0]);
     });
-    this.storage.get(IdentifierDataType.PACK_VOLTAGE).subscribe((value) => {
+    this.storage.get(DataTypeEnum.PACK_VOLTAGE).subscribe((value) => {
       this.voltage = floatPipe(value.values[0]);
     });
-    this.storage.get(IdentifierDataType.STATE_OF_CHARGE).subscribe((value) => {
+    this.storage.get(DataTypeEnum.STATE_OF_CHARGE).subscribe((value) => {
       this.stateOfCharge = floatPipe(value.values[0]);
     });
-    this.storage.get(IdentifierDataType.CHARGE_CURRENT_LIMIT).subscribe((value) => {
+    this.storage.get(DataTypeEnum.CHARGE_CURRENT_LIMIT).subscribe((value) => {
       this.chargeCurrentLimit = floatPipe(value.values[0]);
     });
-    this.storage.get(IdentifierDataType.DISCHARGE_CURRENT_LIMIT).subscribe((value) => {
+    this.storage.get(DataTypeEnum.DISCHARGE_CURRENT_LIMIT).subscribe((value) => {
       this.dischargeCurrentLimit = floatPipe(value.values[0]);
     });
   }

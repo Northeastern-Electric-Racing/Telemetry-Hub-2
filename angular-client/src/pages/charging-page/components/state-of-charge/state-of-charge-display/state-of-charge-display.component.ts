@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { floatPipe } from 'src/utils/pipes.utils';
 
 @Component({
@@ -13,7 +13,7 @@ export default class StateOfChargeDisplayComponent implements OnInit {
   stateOfCharge: number = 0;
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.STATE_OF_CHARGE).subscribe((value) => {
+    this.storage.get(DataTypeEnum.STATE_OF_CHARGE).subscribe((value) => {
       this.stateOfCharge = floatPipe(value.values[0]);
     });
   }

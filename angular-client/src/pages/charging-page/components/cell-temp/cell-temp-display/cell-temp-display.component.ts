@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { floatPipe } from 'src/utils/pipes.utils';
 import { GraphData } from 'src/utils/types.utils';
 
@@ -29,11 +29,11 @@ export default class CellTempDisplayComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.CELL_TEMP_HIGH).subscribe((value) => {
+    this.storage.get(DataTypeEnum.CELL_TEMP_HIGH).subscribe((value) => {
       this.maxTemp = floatPipe(value.values[0]);
       this.cellTempData.push({ x: +value.time, y: this.maxTemp });
     });
-    this.storage.get(IdentifierDataType.CELL_TEMP_AVG).subscribe((value) => {
+    this.storage.get(DataTypeEnum.CELL_TEMP_AVG).subscribe((value) => {
       this.avgTemp = floatPipe(value.values[0]);
     });
   }

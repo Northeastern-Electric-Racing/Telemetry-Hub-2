@@ -28,7 +28,7 @@
                 <div style="display: flex; justify-content: center">
                   <sidebar-card
                     style="width: 95%; margin-left: 30px"
-                    [title]="dataType.name"
+                    [title]="transformDataTypeName(dataType.name)"
                     [dataValue]="dataValuesMap.get(dataType.name)"
                     (click)="selectDataType(dataType)"
                   />

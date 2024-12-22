@@ -1,5 +1,5 @@
 import { Component, HostListener, Input, OnInit } from '@angular/core';
-import { DataType, Node, Run } from 'src/utils/types.utils';
+import { DataType, Run } from 'src/utils/types.utils';
 
 /**
  * Sidebar component wrapper that determines to display mobile or desktop sidebar.
@@ -12,7 +12,7 @@ import { DataType, Node, Run } from 'src/utils/types.utils';
   styleUrls: ['./graph-sidebar.component.css']
 })
 export default class GraphSidebarComponent implements OnInit {
-  @Input() nodes!: Node[];
+  @Input() dataTypes!: DataType[];
   @Input() selectDataType!: (dataType: DataType) => void;
   @Input() onRunSelected!: (run: Run) => void;
 
