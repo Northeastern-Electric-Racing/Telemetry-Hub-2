@@ -172,12 +172,13 @@ impl DbHandler {
         cancel_token: CancellationToken,
     ) {
         let mut batch_interval = tokio::time::interval(Duration::from_millis(self.upload_interval));
+        // the match batch size to reasonably expect
+        let mut max_batch_size = 2usize;
         loop {
             tokio::select! {
                 _ = cancel_token.cancelled() => {
                     debug!("Pushing final messages to queue");
                     data_channel.send(self.data_queue).await.expect("Could not comm data to db thread, shutdown");
-                    self.data_queue = vec![];
                     break;
                 },
                 Some(msg) = self.receiver.recv() => {
@@ -185,11 +186,14 @@ impl DbHandler {
                 }
                 _ = batch_interval.tick() => {
                     if !self.data_queue.is_empty() {
+                        // set a new max if this batch is larger
+                        max_batch_size = usize::max(max_batch_size, self.data_queue.len());
                         // mem::take allows us to assign the value of data queue vec::new() while maintaining the memory for data_channel ownership
                         data_channel
-                            .send(std::mem::take(&mut self.data_queue))
+                            .send(self.data_queue)
                             .await
                             .expect("Could not comm data to db thread");
+                        self.data_queue = Vec::with_capacity((max_batch_size as f32 * 1.05) as usize);
                     }
                 }
             }
