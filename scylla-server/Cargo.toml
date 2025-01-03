@@ -12,7 +12,7 @@ serde = "1.0.203"
 protobuf-codegen = "3.7.1"
 protobuf = { version = "3.7.1", features = ["with-bytes"] }
 tokio = { version = "1.38.0", features = ["full", "tracing"] }
-axum = { version = "0.7.5", features = ["multipart"] }
+axum = { version = "0.8.1", features = ["multipart"] }
 tower = { version = "0.5.2", features = ["timeout"] }
 tower-http = { version = "0.6.2", features = ["cors", "trace"] }
 socketioxide = { version = "0.15.1", features = ["tracing"] }
@@ -24,12 +24,12 @@ rand = "0.8.5"
 console-subscriber = { version = "0.4.1", optional = true }
 ringbuffer = "0.15.0"
 clap = { version = "4.5.11", features = ["derive", "env"] }
-axum-extra = { version = "0.9.3", features = ["query"] }
+axum-extra = { version = "0.10.0", features = ["query"] }
 chrono = { version = "0.4.38", features = ["serde"] }
 serde_json = "1.0.128"
 diesel_migrations = { version = "2.2.0", features = ["postgres"] }
 rangemap = "1.5.1"
-axum-macros = "0.4.2"
+axum-macros = "0.5.0"
 diesel-async = { version = "0.5.2", features = ["postgres", "bb8", "async-connection-wrapper", "sync-connection-wrapper"] }
 rustc-hash = "2.1.0"
 [target.'cfg(not(target_env = "msvc"))'.dependencies]

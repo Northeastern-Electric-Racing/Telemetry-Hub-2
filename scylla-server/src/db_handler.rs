@@ -37,10 +37,10 @@ fn chunk_vec<T: Clone>(input: Vec<T>, max_chunk_size: usize) -> Vec<Vec<T>> {
     }
 
     // Calculate the number of chunks
-    let num_chunks = (len + max_chunk_size - 1) / max_chunk_size;
+    let num_chunks = len.div_ceil(max_chunk_size);
 
     // Recompute a balanced chunk size
-    let chunk_size = usize::max(1, (len + num_chunks - 1) / num_chunks);
+    let chunk_size = usize::max(1, len.div_ceil(num_chunks));
 
     let mut result = Vec::with_capacity(num_chunks);
     let mut start = 0;

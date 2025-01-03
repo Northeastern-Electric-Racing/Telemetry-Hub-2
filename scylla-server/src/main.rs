@@ -239,17 +239,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         // DATA
         .route(
-            "/data/:dataTypeName/:runId",
+            "/data/{dataTypeName}/{runId}",
             get(controllers::data_controller::get_data),
         )
         // DATA TYPE
         .route("/datatypes", get(data_type_controller::get_all_data_types))
         .route("/runs", get(run_controller::get_all_runs))
-        .route("/runs/:id", get(run_controller::get_run_by_id))
+        .route("/runs/{id}", get(run_controller::get_run_by_id))
         .route("/runs/new", post(run_controller::new_run))
         // CONFIG
         .route(
-            "/config/set/:configKey",
+            "/config/set/{configKey}",
             post(car_command_controller::send_config_command).layer(Extension(client_sharable)),
         )
         // FILE INSERT
