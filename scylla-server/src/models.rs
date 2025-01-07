@@ -23,6 +23,7 @@ pub struct Data {
 #[derive(Insertable)]
 #[diesel(table_name = crate::schema::data)]
 #[diesel(belongs_to(DataType, foreign_key = dataTypeName))]
+#[diesel(treat_none_as_default_value = false)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[diesel(primary_key(dataTypeName, time))]
 pub struct DataInsert {

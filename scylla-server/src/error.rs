@@ -4,11 +4,13 @@ use axum::{
 };
 use tracing::warn;
 
+use crate::services;
+
 pub enum ScyllaError {
     /// Deseil error
-    DbError(diesel::result::Error),
+    DbError(services::DbError),
     /// Diesel db connection error,
-    ConnError(diesel_async::pooled_connection::bb8::RunError),
+    ConnError(deadpool_diesel::PoolError),
     /// An instruction was not encodable
     InvalidEncoding(String),
     /// Could not communicate to car
@@ -17,14 +19,14 @@ pub enum ScyllaError {
     EmptyResult,
 }
 
-impl From<diesel::result::Error> for ScyllaError {
-    fn from(error: diesel::result::Error) -> Self {
+impl From<services::DbError> for ScyllaError {
+    fn from(error: services::DbError) -> Self {
         ScyllaError::DbError(error)
     }
 }
 
-impl From<diesel_async::pooled_connection::bb8::RunError> for ScyllaError {
-    fn from(error: diesel_async::pooled_connection::bb8::RunError) -> Self {
+impl From<deadpool_diesel::PoolError> for ScyllaError {
+    fn from(error: deadpool_diesel::PoolError) -> Self {
         ScyllaError::ConnError(error)
     }
 }
@@ -39,7 +41,7 @@ impl IntoResponse for ScyllaError {
             ),
             ScyllaError::DbError(error) => (
                 StatusCode::BAD_REQUEST,
-                format!("Misc query error: {}", error),
+                format!("Misc query error: {:?}", error),
             ),
             ScyllaError::InvalidEncoding(reason) => (StatusCode::UNPROCESSABLE_ENTITY, reason),
             ScyllaError::CommFailure(reason) => (StatusCode::BAD_GATEWAY, reason),
