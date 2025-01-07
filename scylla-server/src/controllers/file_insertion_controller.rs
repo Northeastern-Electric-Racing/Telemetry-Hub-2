@@ -21,7 +21,7 @@ pub async fn insert_file(
     mut multipart: Multipart,
 ) -> Result<String, ScyllaError> {
     // create a run ID cache
-    let mut db = pool.get()?;
+    let mut db = pool.get().await?;
     debug!("Warming up run ID map!");
     let mut run_iter = run_service::get_all_runs(&mut db)
         .await?
@@ -45,9 +45,12 @@ pub async fn insert_file(
 
     // iterate through all files
     debug!("Converting file data to insertable data!");
-    while let Some(field) = multipart.next_field().await.unwrap() {
+    while let Ok(Some(field)) = multipart.next_field().await {
         // round up all of the protobuf segments as a giant list
-        let data = field.bytes().await.unwrap();
+        let Ok(data) = field.bytes().await else {
+            warn!("Could not decode file insert, perhaps it was interrupted!");
+            continue;
+        };
         let mut count_bad_run = 0usize;
         let mut insertable_data: Vec<ClientData> = Vec::new();
         {

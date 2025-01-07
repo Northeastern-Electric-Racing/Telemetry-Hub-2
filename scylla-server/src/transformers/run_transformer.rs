@@ -18,7 +18,7 @@ impl From<crate::models::Run> for PublicRun {
         PublicRun {
             id: value.id,
             location_name: value.locationName.unwrap_or_default(),
-            driver_name: value.driverName.clone().unwrap_or_default(),
+            driver_name: value.driverName.unwrap_or_default(),
             time_ms: value.time.timestamp_millis(),
             notes: value.notes,
         }

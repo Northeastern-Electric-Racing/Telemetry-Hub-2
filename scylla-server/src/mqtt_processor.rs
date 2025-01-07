@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     sync::{atomic::Ordering, Arc},
     time::{Duration, SystemTime},
 };
@@ -11,6 +10,7 @@ use rumqttc::v5::{
     mqttbytes::v5::{Packet, Publish},
     AsyncClient, Event, EventLoop, MqttOptions,
 };
+use rustc_hash::FxHashMap;
 use socketioxide::SocketIo;
 use tokio::{sync::mpsc::Sender, time::Instant};
 use tokio_util::sync::CancellationToken;
@@ -37,9 +37,9 @@ pub struct MqttProcessor {
     /// Upload ratio, below is not socket sent above is socket sent
     upload_ratio: u8,
     /// static rate limiter
-    rate_limiter: HashMap<String, Instant>,
-    /// time to rate limit in ms
-    rate_limit_time: u64,
+    rate_limiter: FxHashMap<String, Instant>,
+    /// time to rate limit
+    rate_limit_time: Duration,
     /// rate limit mode
     rate_limit_mode: RateLimitMode,
 }
@@ -95,16 +95,14 @@ impl MqttProcessor {
             .set_session_expiry_interval(Some(u32::MAX))
             .set_topic_alias_max(Some(600));
 
-        let rate_map: HashMap<String, Instant> = HashMap::new();
-
         (
             MqttProcessor {
                 channel,
                 io,
                 cancel_token,
                 upload_ratio: opts.upload_ratio,
-                rate_limiter: rate_map,
-                rate_limit_time: opts.static_rate_limit_time,
+                rate_limiter: FxHashMap::default(),
+                rate_limit_time: Duration::from_millis(opts.static_rate_limit_time),
                 rate_limit_mode: opts.rate_limit_mode,
             },
             mqtt_opts,
@@ -144,8 +142,8 @@ impl MqttProcessor {
                             None => continue
                         };
                         latency_ringbuffer.push(chrono::offset::Utc::now() - msg.timestamp);
-                        self.send_db_msg(msg.clone()).await;
-                        self.send_socket_msg(msg, &mut upload_counter);
+                        self.send_socket_msg(&msg, &mut upload_counter);
+                        self.send_db_msg(msg).await;
                     },
                     Err(msg) => trace!("Received mqtt error: {:?}", msg),
                     _ => trace!("Received misc mqtt: {:?}", msg),
@@ -165,7 +163,7 @@ impl MqttProcessor {
                         timestamp: chrono::offset::Utc::now(),
                         values: vec![sockets_cnt]
                     };
-                    self.send_socket_msg(client_data, &mut upload_counter);
+                    self.send_socket_msg(&client_data, &mut upload_counter);
                 }
                 _ = latency_interval.tick() => {
                     // set latency to 0 if no messages are in buffer
@@ -184,7 +182,7 @@ impl MqttProcessor {
                         values: vec![avg_latency as f32]
                     };
                     trace!("Latency update sending: {}", client_data.values.first().unwrap_or(&0.0f32));
-                    self.send_socket_msg(client_data, &mut upload_counter);
+                    self.send_socket_msg(&client_data, &mut upload_counter);
                 }
             }
         }
@@ -211,7 +209,7 @@ impl MqttProcessor {
             // check if we have a previous time for a message based on its topic
             if let Some(old) = self.rate_limiter.get(topic) {
                 // if the message is less than the rate limit, skip it and do not update the map
-                if old.elapsed() < Duration::from_millis(self.rate_limit_time) {
+                if old.elapsed() < self.rate_limit_time {
                     trace!("Static rate limit skipping message with topic {}", topic);
                     return None;
                 } else {
@@ -310,19 +308,19 @@ impl MqttProcessor {
     /// Send a message to the channel, printing and IGNORING any error that may occur
     /// * `client_data` - The client data to send over the broadcast
     async fn send_db_msg(&self, client_data: ClientData) {
-        if let Err(err) = self.channel.send(client_data.clone()).await {
+        if let Err(err) = self.channel.send(client_data).await {
             warn!("Error sending through channel: {:?}", err);
         }
     }
 
     /// Sends a message to the socket, printing and IGNORING any error that may occur
     /// * `client_data` - The client data to send over the broadcast
-    fn send_socket_msg(&self, client_data: ClientData, upload_counter: &mut u8) {
+    fn send_socket_msg(&self, client_data: &ClientData, upload_counter: &mut u8) {
         *upload_counter = upload_counter.wrapping_add(1);
         if *upload_counter >= self.upload_ratio {
             match self.io.emit(
                 "message",
-                serde_json::to_string(&client_data).expect("Could not serialize ClientData"),
+                &serde_json::to_string(&client_data).expect("Could not serialize ClientData"),
             ) {
                 Ok(_) => (),
                 Err(err) => match err {

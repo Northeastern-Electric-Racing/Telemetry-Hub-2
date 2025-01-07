@@ -9,7 +9,7 @@ use crate::ClientData;
 pub struct PublicData {
     #[serde(rename = "time")]
     pub time_ms: i64,
-    pub values: Vec<f64>,
+    pub values: Vec<f32>,
 }
 
 // custom impls to avoid comparing values fields
@@ -37,12 +37,7 @@ impl Eq for PublicData {}
 impl From<crate::models::Data> for PublicData {
     fn from(value: crate::models::Data) -> Self {
         PublicData {
-            values: value
-                .values
-                .unwrap_or_default()
-                .into_iter()
-                .flatten()
-                .collect(),
+            values: value.values.into_iter().flatten().collect(),
             time_ms: value.time.timestamp_millis(),
         }
     }
@@ -53,7 +48,7 @@ impl From<ClientData> for PublicData {
     fn from(value: ClientData) -> Self {
         PublicData {
             time_ms: value.timestamp.timestamp_millis(),
-            values: value.values.iter().map(|f| *f as f64).collect(),
+            values: value.values,
         }
     }
 }

@@ -15,7 +15,7 @@ CREATE TABLE "run" (
 
 -- CreateTable
 CREATE TABLE "data" (
-    "values" DOUBLE PRECISION[],
+    "values" REAL [] NOT NULL check ("values" <> '{}' AND array_position("values", NULL) IS NULL),
     "dataTypeName" TEXT NOT NULL,
     "time" TIMESTAMPTZ NOT NULL,
     "runId" INTEGER NOT NULL,

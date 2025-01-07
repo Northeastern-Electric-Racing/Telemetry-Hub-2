@@ -3,8 +3,9 @@ mod test_utils;
 
 use diesel::{
     query_dsl::methods::{FilterDsl, SelectDsl},
-    ExpressionMethods, RunQueryDsl, SelectableHelper,
+    ExpressionMethods, SelectableHelper,
 };
+use diesel_async::RunQueryDsl;
 use scylla_server::{
     models::DataType, schema::dataType, services::data_type_service,
     transformers::data_type_transformer::PublicDataType,
@@ -13,7 +14,8 @@ use test_utils::cleanup_and_prepare;
 
 #[tokio::test]
 async fn test_get_all_datatypes() -> Result<(), diesel::result::Error> {
-    let mut db = cleanup_and_prepare().await?;
+    let pool = cleanup_and_prepare().await.unwrap();
+    let mut db = pool.get().await.unwrap();
 
     // ensure datatypes is empty
     assert!(data_type_service::get_all_data_types(&mut db)
@@ -29,7 +31,8 @@ async fn test_datatype_create() -> Result<(), diesel::result::Error> {
     let unit: String = "testUnitCreation".to_owned();
     let node_name: String = "testNode".to_owned();
 
-    let mut db = cleanup_and_prepare().await?;
+    let pool = cleanup_and_prepare().await.unwrap();
+    let mut db = pool.get().await.unwrap();
 
     // make node
     // node_service::upsert_node(&mut db, node_name.clone()).await?;
@@ -41,7 +44,8 @@ async fn test_datatype_create() -> Result<(), diesel::result::Error> {
     let data = dataType::table
         .filter(dataType::name.eq(data_type_name.clone()))
         .select(DataType::as_select())
-        .get_result(&mut db)?;
+        .get_result(&mut db)
+        .await?;
 
     assert_eq!(
         PublicDataType::from(data),
