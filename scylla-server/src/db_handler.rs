@@ -172,7 +172,7 @@ impl DbHandler {
         cancel_token: CancellationToken,
     ) {
         let mut batch_interval = tokio::time::interval(Duration::from_millis(self.upload_interval));
-        // the match batch size to reasonably expect
+        // the max batch size to reasonably expect
         let mut max_batch_size = 2usize;
         loop {
             tokio::select! {
