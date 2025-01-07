@@ -1,10 +1,9 @@
-use diesel::prelude::*;
-
 use crate::{
     models::{Data, DataInsert},
-    schema::data::dsl::*,
     ClientData, Database,
 };
+use diesel::prelude::*;
+use tracing::debug;
 
 use super::DbError;
 
@@ -20,6 +19,7 @@ pub async fn get_data(
 ) -> Result<Vec<Data>, DbError> {
     Ok(db
         .interact(move |conn| {
+            use crate::schema::data::dsl::*;
             data.filter(runId.eq(run_id).and(dataTypeName.eq(data_type_name)))
                 .load::<Data>(conn)
         })
@@ -36,6 +36,7 @@ pub async fn get_data(
 pub async fn add_data(db: Database, client_data: ClientData) -> Result<Data, DbError> {
     Ok(db
         .interact(move |conn| {
+            use crate::schema::data::dsl::*;
             diesel::insert_into(data)
                 .values(Into::<DataInsert>::into(client_data))
                 .get_result(conn)
@@ -46,6 +47,7 @@ pub async fn add_data(db: Database, client_data: ClientData) -> Result<Data, DbE
 pub async fn add_many(db: Database, client_data: Vec<ClientData>) -> Result<usize, DbError> {
     Ok(db
         .interact(move |conn| {
+            use crate::schema::data::dsl::*;
             diesel::insert_into(data)
                 .values(
                     client_data
@@ -62,14 +64,36 @@ pub async fn add_many(db: Database, client_data: Vec<ClientData>) -> Result<usiz
 pub async fn copy_many(db: Database, client_data: Vec<ClientData>) -> Result<usize, DbError> {
     Ok(db
         .interact(move |conn| {
-            diesel::copy_from(data)
-                .from_insertable(
-                    client_data
-                        .into_iter()
-                        .map(Into::<DataInsert>::into)
-                        .collect::<Vec<DataInsert>>(),
-                )
-                .execute(conn)
+            let mut res;
+            let select;
+            {
+                use crate::schema::data_temp::dsl::*;
+                res = diesel::copy_from(data_temp)
+                    .from_insertable(
+                        client_data
+                            .into_iter()
+                            .map(Into::<DataInsert>::into)
+                            .collect::<Vec<DataInsert>>(),
+                    )
+                    .execute(conn)?;
+                select = data_temp.select(data_temp::all_columns());
+            }
+            debug!("Copied {} to temp table", res);
+            {
+                use crate::schema::data::dsl::*;
+                res = diesel::insert_into(data)
+                    .values(select)
+                    .on_conflict_do_nothing()
+                    .execute(conn)?;
+                debug!("Inserted {} to data table", res);
+            }
+            {
+                use crate::schema::data_temp::dsl::*;
+                diesel::delete(data_temp).execute(conn)?;
+                debug!("Cleared temporary table!");
+            }
+
+            Ok::<usize, diesel::result::Error>(res)
         })
         .await??)
 }

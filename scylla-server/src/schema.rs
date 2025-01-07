@@ -18,6 +18,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    data_temp (time, dataTypeName) {
+        values -> Array<Nullable<Float4>>,
+        dataTypeName -> Text,
+        time -> Timestamptz,
+        runId -> Int4,
+    }
+}
+
+diesel::table! {
     run (id) {
         id -> Int4,
         locationName -> Nullable<Text>,
@@ -32,4 +41,9 @@ diesel::table! {
 diesel::joinable!(data -> dataType (dataTypeName));
 diesel::joinable!(data -> run (runId));
 
-diesel::allow_tables_to_appear_in_same_query!(data, dataType, run,);
+diesel::allow_tables_to_appear_in_same_query!(
+    data,
+    dataType,
+    data_temp,
+    run,
+);
