@@ -19,10 +19,9 @@ pub mod serverdata;
 pub mod transformers;
 
 /// The type descriptor of the database passed to the middlelayer through axum state
-pub type Database<'a> =
-    diesel_async::pooled_connection::bb8::PooledConnection<'a, diesel_async::AsyncPgConnection>;
+pub type Database = deadpool_diesel::postgres::Connection;
 
-pub type PoolHandle = diesel_async::pooled_connection::bb8::Pool<diesel_async::AsyncPgConnection>;
+pub type PoolHandle = deadpool_diesel::Pool<deadpool_diesel::Manager<diesel::PgConnection>>;
 
 #[derive(clap::ValueEnum, Debug, PartialEq, Copy, Clone, Default)]
 #[clap(rename_all = "kebab_case")]

@@ -22,7 +22,9 @@ pub struct Data {
 /// but the overhead of mapping Vec<f32> to Vec<Option<f32>> is non-negligible.
 #[derive(Insertable)]
 #[diesel(table_name = crate::schema::data)]
+#[diesel(table_name = crate::schema::data_temp)]
 #[diesel(belongs_to(DataType, foreign_key = dataTypeName))]
+#[diesel(treat_none_as_default_value = false)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[diesel(primary_key(dataTypeName, time))]
 pub struct DataInsert {

@@ -24,35 +24,6 @@ pub struct DbHandler {
     upload_interval: u64,
 }
 
-/// Chunks a vec into roughly equal vectors all under size `max_chunk_size`
-/// This precomputes vec capacity but does however call to_vec(), reallocating the slices
-fn chunk_vec<T: Clone>(input: Vec<T>, max_chunk_size: usize) -> Vec<Vec<T>> {
-    if max_chunk_size == 0 {
-        panic!("Maximum chunk size must be greater than zero");
-    }
-
-    let len = input.len();
-    if len == 0 {
-        return Vec::new();
-    }
-
-    // Calculate the number of chunks
-    let num_chunks = len.div_ceil(max_chunk_size);
-
-    // Recompute a balanced chunk size
-    let chunk_size = usize::max(1, len.div_ceil(num_chunks));
-
-    let mut result = Vec::with_capacity(num_chunks);
-    let mut start = 0;
-
-    while start < len {
-        let end = usize::min(start + chunk_size, len);
-        result.push(input[start..end].to_vec());
-        start = end;
-    }
-    result
-}
-
 impl DbHandler {
     /// Make a new db handler
     /// * `recv` - the broadcast reciver of which clientdata will be sent
@@ -81,10 +52,6 @@ impl DbHandler {
         loop {
             tokio::select! {
                 _ = cancel_token.cancelled() => {
-                    let Ok(mut database) = pool.get().await else {
-                        warn!("Could not get connection for cleanup");
-                        break;
-                    };
                     // cleanup all remaining messages if batches start backing up
                     while let Some(final_msgs) = batch_queue.recv().await {
                         info!("{} batches remaining!", batch_queue.len()+1);
@@ -93,15 +60,14 @@ impl DbHandler {
                             debug!("A batch of zero messages was sent!");
                             continue;
                         }
-                        let chunk_size = final_msgs.len() / ((final_msgs.len() / 8190) + 1);
-                        let chunks = chunk_vec(final_msgs, chunk_size);
-                        debug!("Batch uploading {} chunks in sequence", chunks.len());
-                        for chunk in chunks {
+                            let Ok(database) = pool.get().await else {
+                                warn!("Could not get connection for cleanup");
+                                break;
+                            };
                             info!(
                                 "A cleanup chunk uploaded: {:?}",
-                                data_service::add_many(&mut database, chunk).await
+                                data_service::copy_many(database, final_msgs).await.map_err(|_| "Error!")
                         );
-                        }
                     }
                     info!("No more messages to cleanup.");
                     break;
@@ -115,12 +81,8 @@ impl DbHandler {
                         continue;
                     }
                     let msg_len = msgs.len();
-                    let chunk_size = msg_len / ((msg_len / 8190) + 1);
-                    let chunks = chunk_vec(msgs, chunk_size);
-                    info!("Batch uploading {} chunks in parrallel, {} messages.", chunks.len(), msg_len);
-                    for chunk in chunks {
-                       tokio::spawn(DbHandler::batch_upload(chunk, pool.clone()));
-                    }
+                    info!("Batch uploading {} messages.", msg_len);
+                       tokio::spawn(DbHandler::batch_upload(msgs, pool.clone()));
                     debug!(
                         "DB send: {} of {}",
                         batch_queue.len(),
@@ -151,11 +113,11 @@ impl DbHandler {
 
     #[instrument(level = Level::DEBUG, skip(msg, pool))]
     async fn batch_upload(msg: Vec<ClientData>, pool: PoolHandle) {
-        let Ok(mut database) = pool.get().await else {
+        let Ok(database) = pool.get().await else {
             warn!("Could not get connection for batch upload!");
             return;
         };
-        match data_service::add_many(&mut database, msg).await {
+        match data_service::copy_many(database, msg).await {
             Ok(count) => info!("Batch uploaded: {:?}", count),
             Err(err) => warn!("Error in batch upload: {:?}", err),
         }
@@ -209,13 +171,13 @@ impl DbHandler {
         );
 
         if !self.datatype_list.contains(&msg.name) {
-            let Ok(mut database) = self.pool.get().await else {
+            let Ok(database) = self.pool.get().await else {
                 warn!("Could not get connection for dataType upsert");
                 return;
             };
             info!("Upserting data type: {}", msg.name);
             if let Err(msg) = data_type_service::upsert_data_type(
-                &mut database,
+                database,
                 msg.name.clone(),
                 msg.unit.clone(),
                 msg.node.clone(),
@@ -230,7 +192,7 @@ impl DbHandler {
         // Check for GPS points, insert them into current run if available
         if msg.name == "TPU/GPS/Location" {
             debug!("Upserting run with location points!");
-            let Ok(mut database) = self.pool.get().await else {
+            let Ok(database) = self.pool.get().await else {
                 warn!("Could not get connection for db points update");
                 return;
             };
@@ -238,7 +200,7 @@ impl DbHandler {
             if msg.values.len() < 2 {
                 warn!("GPS message found without both lat and long!");
             } else if let Err(err) = run_service::update_run_with_coords(
-                &mut database,
+                database,
                 RUN_ID.load(std::sync::atomic::Ordering::Relaxed),
                 msg.values[0].into(),
                 msg.values[1].into(),

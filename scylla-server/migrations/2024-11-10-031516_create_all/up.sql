@@ -25,6 +25,15 @@ CREATE TABLE "data" (
 -- SELECT * FROM create_hypertable("data", by_range("time"));
 -- SELECT * FROM add_dimension("data", by_hash("dataTypeNmae", 4));
 
+-- CreateTable
+CREATE TABLE "data_temp" (
+    "values" REAL [] NOT NULL check ("values" <> '{}' AND array_position("values", NULL) IS NULL),
+    "dataTypeName" TEXT NOT NULL,
+    "time" TIMESTAMPTZ NOT NULL,
+    "runId" INTEGER NOT NULL,
+
+    PRIMARY KEY("time", "dataTypeName")
+);
 
 -- CreateTable
 CREATE TABLE "dataType" (

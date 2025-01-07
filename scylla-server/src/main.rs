@@ -10,11 +10,7 @@ use axum::{
     Extension, Router,
 };
 use clap::Parser;
-use diesel_async::async_connection_wrapper::AsyncConnectionWrapper;
-use diesel_async::{
-    pooled_connection::{bb8::Pool, AsyncDieselConnectionManager},
-    AsyncConnection, AsyncPgConnection,
-};
+use deadpool_diesel::postgres::{Manager, Pool};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use dotenvy::dotenv;
 use rumqttc::v5::AsyncClient;
@@ -30,7 +26,7 @@ use scylla_server::{
 use scylla_server::{
     db_handler,
     mqtt_processor::{MqttProcessor, MqttProcessorOptions},
-    ClientData, RUN_ID,
+    ClientData, PoolHandle, RUN_ID,
 };
 use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::{signal, sync::mpsc};
@@ -143,29 +139,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     dotenv().ok();
-    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be specified");
+    info!("Beginning DB migration...");
+    let manager: deadpool_diesel::Manager<diesel::PgConnection> = Manager::new(
+        std::env::var("DATABASE_URL").unwrap(),
+        deadpool_diesel::Runtime::Tokio1,
+    );
+    let pool: PoolHandle = Pool::builder(manager)
+        .build()
+        .expect("Could not build pool");
 
-    info!("Beginning DB migration w/ temporary connection...");
-    // it is best to create a temporary unmanaged connection to run the migrations
-    // a completely new set of connections is created by the pool manager because it cannot understand an already established connection
-    let conn: AsyncPgConnection = AsyncPgConnection::establish(&db_url).await?;
-    let mut async_wrapper: AsyncConnectionWrapper<AsyncPgConnection> =
-        AsyncConnectionWrapper::from(conn);
-    tokio::task::spawn_blocking(move || {
-        async_wrapper.run_pending_migrations(MIGRATIONS).unwrap();
-    })
-    .await?;
+    let conn = pool.get().await.unwrap();
+    let res = conn
+        .interact(|conn| conn.run_pending_migrations(MIGRATIONS).err())
+        .await
+        .expect("Could not migrate DB!");
+    if res.is_some() {
+        panic!("Could not migrate DB!")
+    }
     info!("Successfully migrated DB!");
-
-    info!("Initializing database connections...");
-    let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(db_url);
-    let pool: Pool<AsyncPgConnection> = Pool::builder()
-        .max_size(10)
-        .min_idle(Some(2))
-        .max_lifetime(Some(Duration::from_secs(60 * 60 * 24)))
-        .idle_timeout(Some(Duration::from_secs(60 * 2)))
-        .build(manager)
-        .await?;
 
     // create the socket stuff
     let (socket_layer, io) = SocketIo::builder()
@@ -210,10 +201,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // creates the initial run
-    let curr_run =
-        run_service::create_run(&mut pool.get().await.unwrap(), chrono::offset::Utc::now())
-            .await
-            .expect("Could not create initial run!");
+    let curr_run = run_service::create_run(pool.get().await.unwrap(), chrono::offset::Utc::now())
+        .await
+        .unwrap();
     debug!("Configuring current run: {:?}", curr_run);
 
     RUN_ID.store(curr_run.id, Ordering::Relaxed);
