@@ -188,11 +188,11 @@ impl DbHandler {
                     if !self.data_queue.is_empty() {
                         // set a new max if this batch is larger
                         max_batch_size = usize::max(max_batch_size, self.data_queue.len());
-                        // mem::take allows us to assign the value of data queue vec::new() while maintaining the memory for data_channel ownership
                         data_channel
                             .send(self.data_queue)
                             .await
                             .expect("Could not comm data to db thread");
+                        // give a vector a size that hopefully is big enough to fit the next batch
                         self.data_queue = Vec::with_capacity((max_batch_size as f32 * 1.05) as usize);
                     }
                 }
