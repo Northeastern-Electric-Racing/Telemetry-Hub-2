@@ -2,10 +2,10 @@
 
 diesel::table! {
     data (time, dataTypeName) {
-        values -> Nullable<Array<Nullable<Float8>>>,
+        values -> Array<Nullable<Float4>>,
         time -> Timestamptz,
         dataTypeName -> Text,
-        runId -> Text,
+        runId -> Int4,
     }
 }
 
@@ -18,10 +18,10 @@ diesel::table! {
 }
 
 diesel::table! {
-    run (id) {
-        id -> Text,
+    run (runId) {
         runId -> Int4,
         driverName -> Text,
+        locationName -> Text,
         notes -> Text,
         time -> Timestamptz,
     }

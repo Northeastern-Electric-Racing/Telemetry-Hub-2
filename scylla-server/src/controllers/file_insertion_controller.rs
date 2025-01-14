@@ -26,7 +26,7 @@ pub async fn insert_file(
     let mut run_iter = run_service::get_all_runs(&mut db)
         .await?
         .into_iter()
-        .map(|f| (f.id, f.time.timestamp_micros() as u64))
+        .map(|f| (f.runId, f.time.timestamp_micros() as u64))
         .peekable();
     let mut run_rng: RangeInclusiveMap<u64, i32> = RangeInclusiveMap::new();
     // this actual formulates the list, where keys are ranges of times (us) and the values are the run IDs

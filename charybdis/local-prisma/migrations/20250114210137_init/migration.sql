@@ -1,20 +1,20 @@
 -- CreateTable
 CREATE TABLE "run" (
-    "id" TEXT NOT NULL,
     "runId" SERIAL NOT NULL,
-    "driverName" TEXT NOT NULL,
-    "notes" TEXT NOT NULL,
+    "driverName" TEXT NOT NULL DEFAULT '',
+    "locationName" TEXT NOT NULL DEFAULT '',
+    "notes" TEXT NOT NULL DEFAULT '',
     "time" TIMESTAMPTZ NOT NULL,
 
-    CONSTRAINT "run_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "run_pkey" PRIMARY KEY ("runId")
 );
 
 -- CreateTable
 CREATE TABLE "data" (
-    "values" DOUBLE PRECISION[],
+    "values" REAL[] NOT NULL,
     "time" TIMESTAMPTZ NOT NULL,
     "dataTypeName" TEXT NOT NULL,
-    "runId" TEXT NOT NULL,
+    "runId" INTEGER NOT NULL,
 
     CONSTRAINT "data_pkey" PRIMARY KEY ("time","dataTypeName")
 );
@@ -32,4 +32,4 @@ CREATE TABLE "data_type" (
 ALTER TABLE "data" ADD CONSTRAINT "data_dataTypeName_fkey" FOREIGN KEY ("dataTypeName") REFERENCES "data_type"("name") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "data" ADD CONSTRAINT "data_runId_fkey" FOREIGN KEY ("runId") REFERENCES "run"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "data" ADD CONSTRAINT "data_runId_fkey" FOREIGN KEY ("runId") REFERENCES "run"("runId") ON DELETE RESTRICT ON UPDATE CASCADE;

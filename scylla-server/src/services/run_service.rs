@@ -7,7 +7,7 @@ use diesel_async::RunQueryDsl;
 /// * `db` - The prisma client to make the call to
 ///   returns: A result containing the data or the QueryError propogated by the db
 pub async fn get_all_runs(db: &mut Database<'_>) -> Result<Vec<Run>, diesel::result::Error> {
-    run.order(id.asc()).get_results(db).await
+    run.order(runId.asc()).get_results(db).await
 }
 
 /// Gets a single run by its id
@@ -46,24 +46,7 @@ pub async fn create_run_with_id(
     run_id: i32,
 ) -> Result<Run, diesel::result::Error> {
     diesel::insert_into(run)
-        .values((time.eq(timestamp), id.eq(run_id)))
-        .get_result(db)
-        .await
-}
-
-/// Updates a run with GPS points
-/// * `db` - The prisma client to make the call to
-/// * `run_id` - The run id to upsert
-/// * `lat` - The latitude
-/// * `long` - The longitude
-pub async fn update_run_with_coords(
-    db: &mut Database<'_>,
-    run_id: i32,
-    lat: f64,
-    long: f64,
-) -> Result<Run, diesel::result::Error> {
-    diesel::update(run.filter(id.eq(run_id)))
-        .set((latitude.eq(lat), longitude.eq(long)))
+        .values((time.eq(timestamp), runId.eq(run_id)))
         .get_result(db)
         .await
 }

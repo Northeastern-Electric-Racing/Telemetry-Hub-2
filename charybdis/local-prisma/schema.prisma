@@ -15,23 +15,23 @@ datasource db {
 }
 
 model run {
-  id         String   @id @default(uuid())
-  runId      Int      @default(autoincrement())
-  driverName String
-  notes      String
-  time       DateTime @db.Timestamptz()
+  runId        Int      @id @default(autoincrement())
+  driverName   String   @default("")
+  locationName String   @default("")
+  notes        String   @default("")
+  time         DateTime @db.Timestamptz()
 
   data data[]
 }
 
 model data {
-  values Float[]
+  values Float[]  @db.Real
   time   DateTime @db.Timestamptz()
 
   dataTypeName String
   dataType     data_type @relation(fields: [dataTypeName], references: [name])
-  runId        String
-  run          run       @relation(fields: [runId], references: [id])
+  runId        Int
+  run          run       @relation(fields: [runId], references: [runId])
 
   @@id([time, dataTypeName])
 }

@@ -16,9 +16,9 @@ pub struct PublicRun {
 impl From<crate::models::Run> for PublicRun {
     fn from(value: crate::models::Run) -> Self {
         PublicRun {
-            id: value.id,
-            location_name: value.locationName.unwrap_or_default(),
-            driver_name: value.driverName.unwrap_or_default(),
+            id: value.runId,
+            driver_name: value.driverName,
+            location_name: value.locationName,
             time_ms: value.time.timestamp_millis(),
             notes: value.notes,
         }
