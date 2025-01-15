@@ -3,15 +3,15 @@ use diesel::prelude::*;
 use serde::Serialize;
 
 /// Use this struct when querying data
-#[derive(Queryable, Debug, Identifiable, Insertable, Selectable, Serialize, AsChangeset)]
+#[derive(Debug, Identifiable, Insertable, Selectable, Serialize, AsChangeset, Queryable)]
 #[diesel(table_name = crate::schema::data)]
 #[diesel(belongs_to(DataType, foreign_key = dataTypeName))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[diesel(primary_key(dataTypeName, time))]
 pub struct Data {
     pub values: Vec<Option<f32>>,
-    pub dataTypeName: String,
     pub time: DateTime<Utc>,
+    pub dataTypeName: String,
     pub runId: i32,
 }
 
@@ -33,7 +33,7 @@ pub struct DataInsert {
 }
 
 #[derive(Queryable, Debug, Identifiable, Insertable, Selectable, Serialize, AsChangeset)]
-#[diesel(table_name = crate::schema::dataType)]
+#[diesel(table_name = crate::schema::data_type)]
 #[diesel(primary_key(name))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DataType {
@@ -44,14 +44,12 @@ pub struct DataType {
 
 #[derive(Queryable, Debug, Identifiable, Insertable, Selectable, Serialize, AsChangeset)]
 #[diesel(table_name = crate::schema::run)]
-#[diesel(primary_key(id))]
+#[diesel(primary_key(runId))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Run {
-    pub id: i32,
-    pub locationName: Option<String>,
-    pub latitude: Option<f64>,
-    pub longitude: Option<f64>,
-    pub driverName: Option<String>,
+    pub runId: i32,
+    pub driverName: String,
+    pub locationName: String,
     pub notes: String,
     pub time: DateTime<Utc>,
 }

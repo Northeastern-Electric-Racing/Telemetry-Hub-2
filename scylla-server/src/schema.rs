@@ -3,14 +3,14 @@
 diesel::table! {
     data (time, dataTypeName) {
         values -> Array<Nullable<Float4>>,
-        dataTypeName -> Text,
         time -> Timestamptz,
+        dataTypeName -> Text,
         runId -> Int4,
     }
 }
 
 diesel::table! {
-    dataType (name) {
+    data_type (name) {
         name -> Text,
         unit -> Text,
         nodeName -> Text,
@@ -18,18 +18,16 @@ diesel::table! {
 }
 
 diesel::table! {
-    run (id) {
-        id -> Int4,
-        locationName -> Nullable<Text>,
-        latitude -> Nullable<Float8>,
-        longitude -> Nullable<Float8>,
-        driverName -> Nullable<Text>,
+    run (runId) {
+        runId -> Int4,
+        driverName -> Text,
+        locationName -> Text,
         notes -> Text,
         time -> Timestamptz,
     }
 }
 
-diesel::joinable!(data -> dataType (dataTypeName));
+diesel::joinable!(data -> data_type (dataTypeName));
 diesel::joinable!(data -> run (runId));
 
-diesel::allow_tables_to_appear_in_same_query!(data, dataType, run,);
+diesel::allow_tables_to_appear_in_same_query!(data, data_type, run,);

@@ -6,8 +6,8 @@ use tokio::{sync::mpsc::Sender, time::Duration};
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, info, instrument, trace, warn, Level};
 
-use crate::services::{data_service, data_type_service, run_service};
-use crate::{ClientData, PoolHandle, RUN_ID};
+use crate::services::{data_service, data_type_service};
+use crate::{ClientData, PoolHandle};
 
 /// A few threads to manage the processing and inserting of special types,
 /// upserting of metadata for data, and batch uploading the database
@@ -225,28 +225,6 @@ impl DbHandler {
                 warn!("DB error datatype upsert: {:?}", msg);
             }
             self.datatype_list.insert(msg.name.clone());
-        }
-
-        // Check for GPS points, insert them into current run if available
-        if msg.name == "TPU/GPS/Location" {
-            debug!("Upserting run with location points!");
-            let Ok(mut database) = self.pool.get().await else {
-                warn!("Could not get connection for db points update");
-                return;
-            };
-            // ensure lat AND long present in message, just a sanity check
-            if msg.values.len() < 2 {
-                warn!("GPS message found without both lat and long!");
-            } else if let Err(err) = run_service::update_run_with_coords(
-                &mut database,
-                RUN_ID.load(std::sync::atomic::Ordering::Relaxed),
-                msg.values[0].into(),
-                msg.values[1].into(),
-            )
-            .await
-            {
-                warn!("DB error run gps points upsert: {:?}", err);
-            }
         }
 
         // no matter what, batch upload the message

@@ -26,7 +26,7 @@ async fn test_get_run_by_id() -> Result<(), diesel::result::Error> {
             .await?;
 
     // get that run
-    let run = run_service::get_run_by_id(&mut db, run_c.id)
+    let run = run_service::get_run_by_id(&mut db, run_c.runId)
         .await?
         .expect("Run should exist was upserted ");
 

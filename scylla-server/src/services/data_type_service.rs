@@ -1,4 +1,4 @@
-use crate::{models::DataType, schema::dataType::dsl::*, Database};
+use crate::{models::DataType, schema::data_type::dsl::*, Database};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 
@@ -8,7 +8,7 @@ use diesel_async::RunQueryDsl;
 pub async fn get_all_data_types(
     db: &mut Database<'_>,
 ) -> Result<Vec<DataType>, diesel::result::Error> {
-    dataType.load(db).await
+    data_type.load(db).await
 }
 
 /// Upserts a datatype, either creating or updating one depending on its existence
@@ -28,7 +28,7 @@ pub async fn upsert_data_type(
         unit: new_unit,
         nodeName: node_name,
     };
-    diesel::insert_into(dataType)
+    diesel::insert_into(data_type)
         .values(&val)
         .on_conflict(name)
         .do_update() // actually allows for the upsert ability

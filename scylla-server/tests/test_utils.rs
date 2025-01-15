@@ -5,7 +5,7 @@ use diesel_async::{
     AsyncPgConnection, RunQueryDsl,
 };
 use dotenvy::dotenv;
-use scylla_server::schema::{data, dataType, run};
+use scylla_server::schema::{data, data_type, run};
 
 pub async fn cleanup_and_prepare() -> Result<Pool<AsyncPgConnection>, diesel::result::Error> {
     dotenv().ok();
@@ -24,7 +24,9 @@ pub async fn cleanup_and_prepare() -> Result<Pool<AsyncPgConnection>, diesel::re
     let mut client = pool.get().await.unwrap();
 
     diesel::delete(data::table).execute(&mut client).await?;
-    diesel::delete(dataType::table).execute(&mut client).await?;
+    diesel::delete(data_type::table)
+        .execute(&mut client)
+        .await?;
     diesel::delete(run::table).execute(&mut client).await?;
 
     Ok(pool.clone())

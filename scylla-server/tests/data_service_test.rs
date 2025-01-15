@@ -59,7 +59,7 @@ async fn test_data_add() -> Result<(), diesel::result::Error> {
         ClientData {
             values: vec![0f32],
             unit: "A".to_owned(),
-            run_id: run_data.id,
+            run_id: run_data.runId,
             name: TEST_KEYWORD.to_owned(),
             timestamp: chrono::DateTime::from_timestamp_millis(1000).unwrap(),
             node: "Irrelevant".to_string(),
