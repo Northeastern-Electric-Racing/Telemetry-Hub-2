@@ -216,7 +216,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .expect("Could not create initial run!");
     debug!("Configuring current run: {:?}", curr_run);
 
-    RUN_ID.store(curr_run.id, Ordering::Relaxed);
+    RUN_ID.store(curr_run.runId, Ordering::Relaxed);
     // run prod if this isnt present
     // create and spawn the mqtt processor
     info!("Running processor in MQTT (production) mode");
@@ -226,7 +226,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         token.clone(),
         MqttProcessorOptions {
             mqtt_path: cli.siren_host_url,
-            initial_run: curr_run.id,
+            initial_run: curr_run.runId,
             static_rate_limit_time: cli.static_rate_limit_value,
             rate_limit_mode: cli.rate_limit_mode,
             upload_ratio: cli.socketio_discard_percent,
