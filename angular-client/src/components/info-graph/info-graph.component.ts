@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { GraphDialogComponent } from '../graph-dialog/graph-dialog.component';
 import { GraphData } from 'src/utils/types.utils';
@@ -10,15 +10,13 @@ import { GraphData } from 'src/utils/types.utils';
   providers: [DialogService]
 })
 export class InfoGraphComponent {
+  public dialogService = inject(DialogService);
   @Input() data!: GraphData[];
   @Input() icon!: string;
   @Input() title!: string;
   @Input() color!: string;
   @Input() subTitle?: string;
   @Input() graphContainerId!: string;
-
-  constructor(public dialogService: DialogService) {}
-
   openDialog = () => {
     this.dialogService.open(GraphDialogComponent, {
       header: this.title,

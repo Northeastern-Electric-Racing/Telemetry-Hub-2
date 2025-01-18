@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 import { floatPipe } from 'src/utils/pipes.utils';
 
 enum BMSMODE {
@@ -16,6 +16,7 @@ enum BMSMODE {
   styleUrls: ['./BMS-mode-display.component.css']
 })
 export default class BMSModeDisplayComponent implements OnInit {
+  private storage = inject(Storage);
   bmsMode: BMSMODE = 1;
 
   // Mapping object for colors
@@ -25,10 +26,9 @@ export default class BMSModeDisplayComponent implements OnInit {
     [BMSMODE.CHARGING]: 'green',
     [BMSMODE.FAULTED]: 'red'
   };
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
-    this.storage.get(IdentifierDataType.BMS_MODE).subscribe((value) => {
+    this.storage.get(DataTypeEnum.BMS_MODE).subscribe((value) => {
       this.bmsMode = floatPipe(value.values[0]) as BMSMODE;
     });
   }

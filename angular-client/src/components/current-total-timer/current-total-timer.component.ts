@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 
 @Component({
@@ -7,10 +7,9 @@ import Storage from 'src/services/storage.service';
   styleUrls: ['./current-total-timer.component.css']
 })
 export default class CurrentTotalTimerComponent {
+  private storage = inject(Storage);
   @Input() currentTime: number = 0;
   @Input() totalTime: number = 0;
-
-  constructor(private storage: Storage) {}
 
   getCurrentTime() {
     return this.formatTime(this.currentTime);

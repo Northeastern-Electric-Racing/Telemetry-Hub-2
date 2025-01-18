@@ -13,7 +13,8 @@ const TEST_KEYWORD: &str = "test";
 
 #[tokio::test]
 async fn test_data_service() -> Result<(), diesel::result::Error> {
-    let mut db = cleanup_and_prepare().await?;
+    let pool = cleanup_and_prepare().await.unwrap();
+    let mut db = pool.get().await.unwrap();
 
     run_service::create_run_with_id(
         &mut db,
@@ -36,7 +37,8 @@ async fn test_data_service() -> Result<(), diesel::result::Error> {
 
 #[tokio::test]
 async fn test_data_add() -> Result<(), diesel::result::Error> {
-    let mut db = cleanup_and_prepare().await?;
+    let pool = cleanup_and_prepare().await.unwrap();
+    let mut db = pool.get().await.unwrap();
 
     // node_service::upsert_node(&db, TEST_KEYWORD.to_owned()).await?;
     data_type_service::upsert_data_type(
@@ -57,7 +59,7 @@ async fn test_data_add() -> Result<(), diesel::result::Error> {
         ClientData {
             values: vec![0f32],
             unit: "A".to_owned(),
-            run_id: run_data.id,
+            run_id: run_data.runId,
             name: TEST_KEYWORD.to_owned(),
             timestamp: chrono::DateTime::from_timestamp_millis(1000).unwrap(),
             node: "Irrelevant".to_string(),
@@ -69,7 +71,7 @@ async fn test_data_add() -> Result<(), diesel::result::Error> {
         PublicData::from(data),
         PublicData {
             time_ms: 1000,
-            values: vec![0f64]
+            values: vec![0f32]
         }
     );
 
@@ -78,7 +80,8 @@ async fn test_data_add() -> Result<(), diesel::result::Error> {
 
 #[tokio::test]
 async fn test_data_fetch_empty() -> Result<(), diesel::result::Error> {
-    let mut db = cleanup_and_prepare().await?;
+    let pool = cleanup_and_prepare().await.unwrap();
+    let mut db = pool.get().await.unwrap();
 
     // should be empty, nothing was added to run
     let data = data_service::get_data(&mut db, TEST_KEYWORD.to_owned(), 0).await?;
@@ -90,7 +93,8 @@ async fn test_data_fetch_empty() -> Result<(), diesel::result::Error> {
 
 #[tokio::test]
 async fn test_data_no_prereqs() -> Result<(), diesel::result::Error> {
-    let mut db = cleanup_and_prepare().await?;
+    let pool = cleanup_and_prepare().await.unwrap();
+    let mut db = pool.get().await.unwrap();
 
     // should err out as data type name doesnt exist yet
     data_service::add_data(

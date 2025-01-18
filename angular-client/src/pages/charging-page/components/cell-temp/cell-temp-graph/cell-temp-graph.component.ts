@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { GraphData } from 'src/utils/types.utils';
 
@@ -8,6 +8,6 @@ import { GraphData } from 'src/utils/types.utils';
   styleUrls: ['./cell-temp-graph.component.css']
 })
 export default class CellTempGraphComponent {
+  private storage = inject(Storage);
   @Input() maxCellTempData: GraphData[] = [];
-  constructor(private storage: Storage) {}
 }

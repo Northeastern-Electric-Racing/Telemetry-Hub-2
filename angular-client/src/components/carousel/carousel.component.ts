@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CarouselPageEvent } from 'primeng/carousel';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -15,6 +15,9 @@ export interface DialogData {
   styleUrls: ['carousel.component.css']
 })
 export class CarouselComponent {
+  public dialogRef = inject(DynamicDialogRef);
+  public config = inject(DynamicDialogConfig);
+  public router = inject(Router);
   runs: Run[];
   currentIndex: number = 0;
   previousIndex: number = 0;
@@ -22,15 +25,11 @@ export class CarouselComponent {
     this.dialogRef.close();
   };
 
-  constructor(
-    public dialogRef: DynamicDialogRef,
-    public config: DynamicDialogConfig,
-    public router: Router
-  ) {
-    this.runs = config.data.runs;
+  constructor() {
+    this.runs = this.config.data.runs;
     this.selectRun = (run: Run) => {
       this.dialogRef.close();
-      config.data.selectRun(run);
+      this.config.data.selectRun(run);
     };
   }
 

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import Storage from 'src/services/storage.service';
@@ -8,14 +8,10 @@ import Storage from 'src/services/storage.service';
   templateUrl: './more-details.component.html'
 })
 export default class MoreDetailsComponent {
+  private router = inject(Router);
+  private storage = inject(Storage);
+  private messageService = inject(MessageService);
   label: string = 'More Details';
-
-  constructor(
-    private router: Router,
-    private storage: Storage,
-    private messageService: MessageService
-  ) {}
-
   goToGraph = () => {
     const runId = this.storage.getCurrentRunId().value;
     if (runId) {

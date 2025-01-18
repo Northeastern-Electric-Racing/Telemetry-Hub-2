@@ -1,20 +1,33 @@
-use diesel::prelude::*;
-use dotenvy::dotenv;
-use scylla_server::{
-    schema::{data, dataType, run},
-    Database,
-};
+use std::time::Duration;
 
-pub async fn cleanup_and_prepare() -> Result<Database, diesel::result::Error> {
+use diesel_async::{
+    pooled_connection::{bb8::Pool, AsyncDieselConnectionManager},
+    AsyncPgConnection, RunQueryDsl,
+};
+use dotenvy::dotenv;
+use scylla_server::schema::{data, data_type, run};
+
+pub async fn cleanup_and_prepare() -> Result<Pool<AsyncPgConnection>, diesel::result::Error> {
     dotenv().ok();
 
-    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let mut client = PgConnection::establish(&database_url)
-        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url));
+    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be specified");
+    //let mut config = ManagerConfig::default();
+    let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(db_url);
+    let pool: Pool<AsyncPgConnection> = Pool::builder()
+        .max_size(10)
+        .min_idle(Some(5))
+        .max_lifetime(Some(Duration::from_secs(60 * 60 * 24)))
+        .idle_timeout(Some(Duration::from_secs(60 * 2)))
+        .build(manager)
+        .await
+        .unwrap();
+    let mut client = pool.get().await.unwrap();
 
-    diesel::delete(data::table).execute(&mut client)?;
-    diesel::delete(dataType::table).execute(&mut client)?;
-    diesel::delete(run::table).execute(&mut client)?;
+    diesel::delete(data::table).execute(&mut client).await?;
+    diesel::delete(data_type::table)
+        .execute(&mut client)
+        .await?;
+    diesel::delete(run::table).execute(&mut client).await?;
 
-    Ok(client)
+    Ok(pool.clone())
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 
 @Component({
@@ -7,8 +7,8 @@ import Storage from 'src/services/storage.service';
   styleUrl: './current-run-display.component.css'
 })
 export class CurrentRunDisplayComponent implements OnInit {
+  private storage = inject(Storage);
   currentRun: number = 0;
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
     this.storage.getCurrentRunId().subscribe((runId) => {

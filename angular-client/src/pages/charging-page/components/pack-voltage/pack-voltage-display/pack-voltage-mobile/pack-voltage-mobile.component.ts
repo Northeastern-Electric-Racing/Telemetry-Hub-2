@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { GraphData } from 'src/utils/types.utils';
 
@@ -8,6 +8,7 @@ import { GraphData } from 'src/utils/types.utils';
   styleUrls: ['./pack-voltage-mobile.component.css']
 })
 export default class PackVoltageMobileDisplayComponent {
+  private storage = inject(Storage);
   @Input() voltage: number = 0;
   @Input() packVoltData: GraphData[] = [];
   resetGraphButton = {
@@ -16,5 +17,4 @@ export default class PackVoltageMobileDisplayComponent {
     },
     icon: 'restart_alt'
   };
-  constructor(private storage: Storage) {}
 }

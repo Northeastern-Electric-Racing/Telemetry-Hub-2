@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     sync::{atomic::Ordering, Arc},
     time::{Duration, SystemTime},
 };
@@ -12,6 +11,9 @@ use rumqttc::v5::{
     AsyncClient, Event, EventLoop, MqttOptions,
 };
 use tokio::{sync::broadcast, time::Instant};
+use rustc_hash::FxHashMap;
+use socketioxide::SocketIo;
+use tokio::{sync::mpsc::Sender, time::Instant};
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, instrument, trace, warn, Level};
 
@@ -32,9 +34,9 @@ pub struct MqttProcessor {
     channel: broadcast::Sender<ClientData>,
     cancel_token: CancellationToken,
     /// static rate limiter
-    rate_limiter: HashMap<String, Instant>,
-    /// time to rate limit in ms
-    rate_limit_time: u64,
+    rate_limiter: FxHashMap<String, Instant>,
+    /// time to rate limit
+    rate_limit_time: Duration,
     /// rate limit mode
     rate_limit_mode: RateLimitMode,
 }
@@ -86,14 +88,12 @@ impl MqttProcessor {
             .set_session_expiry_interval(Some(u32::MAX))
             .set_topic_alias_max(Some(600));
 
-        let rate_map: HashMap<String, Instant> = HashMap::new();
-
         (
             MqttProcessor {
                 channel,
                 cancel_token,
-                rate_limiter: rate_map,
-                rate_limit_time: opts.static_rate_limit_time,
+                rate_limiter: FxHashMap::default(),
+                rate_limit_time: Duration::from_millis(opts.static_rate_limit_time),
                 rate_limit_mode: opts.rate_limit_mode,
             },
             mqtt_opts,
@@ -177,7 +177,7 @@ impl MqttProcessor {
             // check if we have a previous time for a message based on its topic
             if let Some(old) = self.rate_limiter.get(topic) {
                 // if the message is less than the rate limit, skip it and do not update the map
-                if old.elapsed() < Duration::from_millis(self.rate_limit_time) {
+                if old.elapsed() < self.rate_limit_time {
                     trace!("Static rate limit skipping message with topic {}", topic);
                     return None;
                 } else {
@@ -201,10 +201,8 @@ impl MqttProcessor {
             return None;
         };
 
-        // get the node and datatype from the topic extracted at the beginning
+        // get the node from the topic extracted at the beginning
         let node = split.0;
-
-        let data_type = String::from(split.1);
 
         // extract the unix time
         // levels of time priority
@@ -267,7 +265,7 @@ impl MqttProcessor {
 
         Some(ClientData {
             run_id: crate::RUN_ID.load(Ordering::Relaxed),
-            name: data_type,
+            name: topic.to_string(),
             unit: data.unit,
             values: data.values,
             timestamp: unix_clean,
@@ -278,7 +276,7 @@ impl MqttProcessor {
     /// Send a message to the channel, printing and IGNORING any error that may occur
     /// * `client_data` - The client data to send over the broadcast
     async fn send_db_msg(&self, client_data: ClientData) {
-        if let Err(err) = self.channel.send(client_data.clone()) {
+        if let Err(err) = self.channel.send(client_data).await {
             warn!("Error sending through channel: {:?}", err);
         }
     }

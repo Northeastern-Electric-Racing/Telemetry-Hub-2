@@ -1,10 +1,12 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
 import { DataType, Node, NodeWithVisibilityToggle, NodeWithVisibilityToggleObservable } from 'src/utils/types.utils';
 import Storage from 'src/services/storage.service';
 import { decimalPipe } from 'src/utils/pipes.utils';
 import { FormControl, FormGroup } from '@angular/forms';
 import { debounceTime, Observable, of, Subscription } from 'rxjs';
+import { dataTypesToNodes } from 'src/utils/dataTypes.utils';
+import { dataTypeNamePipe } from 'src/utils/dataTypes.utils';
 
 /**
  * Sidebar component that displays the nodes and their data types.
@@ -47,9 +49,11 @@ import { debounceTime, Observable, of, Subscription } from 'rxjs';
   ]
 })
 export default class GraphSidebarDesktopComponent implements OnInit, OnDestroy {
-  @Input() nodes!: Node[];
+  private storage = inject(Storage);
+  @Input() dataTypes!: DataType[];
   @Input() selectDataType!: (dataType: DataType) => void;
   nodesWithVisibilityToggle!: Observable<NodeWithVisibilityToggleObservable[]>;
+  nodes!: Node[];
 
   filterForm: FormGroup = new FormGroup({
     searchFilter: new FormControl<string>('')
@@ -59,11 +63,11 @@ export default class GraphSidebarDesktopComponent implements OnInit, OnDestroy {
 
   dataValuesMap: Map<string, string> = new Map();
 
-  constructor(private storage: Storage) {}
   /**
    * Initializes the nodes with the visibility toggle.
    */
   ngOnInit(): void {
+    this.nodes = dataTypesToNodes(this.dataTypes);
     this.nodesWithVisibilityToggle = of(
       this.nodes.map((node: Node) => {
         return {
@@ -103,5 +107,9 @@ export default class GraphSidebarDesktopComponent implements OnInit, OnDestroy {
    */
   toggleDataTypeVisibility(node: NodeWithVisibilityToggle) {
     node.dataTypesAreVisible = !node.dataTypesAreVisible;
+  }
+
+  transformDataTypeName(dataTypeName: string) {
+    return dataTypeNamePipe(dataTypeName);
   }
 }

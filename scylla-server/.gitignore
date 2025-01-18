@@ -23,3 +23,4 @@ prisma.rs
 # protobuf
 serverdata.rs
 command_data.rs
+playback_data.rs

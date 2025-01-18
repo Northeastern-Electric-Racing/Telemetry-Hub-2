@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import SidebarService from 'src/services/sidebar.service';
 
@@ -8,12 +8,9 @@ import SidebarService from 'src/services/sidebar.service';
   styleUrls: ['./app-sidebar.component.css']
 })
 export default class AppSidebarComponent implements OnInit {
+  private router = inject(Router);
+  private sidebarService = inject(SidebarService);
   sidebarVisible = false;
-
-  constructor(
-    private router: Router,
-    private sidebarService: SidebarService
-  ) {}
 
   ngOnInit(): void {
     this.sidebarService.isOpen.subscribe((isOpen) => {

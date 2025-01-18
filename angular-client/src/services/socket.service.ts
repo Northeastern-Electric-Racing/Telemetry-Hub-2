@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io-client';
 import { DataValue, ServerData } from 'src/utils/socket.utils';
 import Storage from './storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 
 /**
  * Service for interacting with the socket
@@ -35,7 +35,7 @@ export default class SocketService {
         storage.addValue(key, newValue);
         if (Date.now() - this.lastLatencyTimestamp > 1000) {
           const latency = Date.now() - data.timestamp;
-          storage.addValue(IdentifierDataType.LATENCY, {
+          storage.addValue(DataTypeEnum.LATENCY, {
             values: [latency.toString()],
             time: data.timestamp.toString(),
             unit: 'ms'

@@ -1,6 +1,6 @@
-import { Component, HostListener, Input, OnInit } from '@angular/core';
+import { Component, HostListener, Input, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
-import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type';
+import { DataTypeEnum } from 'src/data-type.enum';
 
 @Component({
   selector: 'charging-page-mobile',
@@ -8,9 +8,9 @@ import { IdentifierDataType } from 'src/utils/enumerations/identifier-data-type'
   styleUrls: ['./charging-page-mobile.component.css']
 })
 export default class ChargingPageMobileComponent implements OnInit {
+  private storage = inject(Storage);
   @Input() time = new Date();
   location: string = 'No Location Set';
-  constructor(private storage: Storage) {}
   mobileThreshold = 1070;
   isMobile = window.innerWidth < this.mobileThreshold;
 
@@ -19,7 +19,7 @@ export default class ChargingPageMobileComponent implements OnInit {
       this.time = new Date();
     }, 1000);
 
-    this.storage.get(IdentifierDataType.LOCATION).subscribe((value) => {
+    this.storage.get(DataTypeEnum.LOCATION).subscribe((value) => {
       [this.location] = value.values || ['No Location Set'];
     });
   }

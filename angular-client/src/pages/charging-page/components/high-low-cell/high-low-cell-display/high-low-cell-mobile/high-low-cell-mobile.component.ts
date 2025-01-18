@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 import { GraphData } from 'src/utils/types.utils';
 
@@ -8,6 +8,7 @@ import { GraphData } from 'src/utils/types.utils';
   styleUrls: ['./high-low-cell-mobile.component.css']
 })
 export default class HighLowCellMobileComponent {
+  private storage = inject(Storage);
   @Input() delta: number = 0;
   @Input() lowCellVoltage: number = 0;
   @Input() highCellVoltage: number = 0;
@@ -22,6 +23,4 @@ export default class HighLowCellMobileComponent {
     },
     icon: 'restart_alt'
   };
-
-  constructor(private storage: Storage) {}
 }

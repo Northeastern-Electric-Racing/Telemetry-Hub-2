@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import Storage from 'src/services/storage.service';
 
 @Component({
@@ -7,8 +7,8 @@ import Storage from 'src/services/storage.service';
   styleUrl: './connection-display.component.css'
 })
 export default class ConnectionDisplayComponent implements OnInit {
+  private storage = inject(Storage);
   connected: boolean = false;
-  constructor(private storage: Storage) {}
 
   ngOnInit() {
     this.storage.getCurrentRunId().subscribe((runId) => {
