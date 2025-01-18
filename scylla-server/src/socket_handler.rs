@@ -1,10 +1,10 @@
-use std::{collections::HashMap, sync::atomic::Ordering, time::Duration};
-
+use chrono::serde::ts_milliseconds;
 use chrono::{DateTime, TimeDelta, Utc};
 use regex::Regex;
 use ringbuffer::{AllocRingBuffer, RingBuffer};
 use serde::Serialize;
 use socketioxide::SocketIo;
+use std::{collections::HashMap, sync::atomic::Ordering, time::Duration};
 use tokio::sync::broadcast;
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, trace, warn};
@@ -34,8 +34,12 @@ pub async fn socket_handler(
 }
 #[derive(Serialize)]
 struct TimerData {
+    /// the topic being timed
     pub topic: &'static str,
+    /// the last time the value changed
+    #[serde(with = "ts_milliseconds")]
     pub last_change: DateTime<Utc>,
+    /// the value at the above time
     pub last_value: f32,
 }
 const TIMER_SOCKET_KEY: &str = "timers";
@@ -60,8 +64,10 @@ struct FaultData {
     /// the word describing the fault
     pub name: String,
     /// when the fault occured
+    #[serde(with = "ts_milliseconds")]
     pub occured_at: DateTime<Utc>,
     /// when the fault was last seen
+    #[serde(with = "ts_milliseconds")]
     pub last_seen: DateTime<Utc>,
     /// whether another fault of the same node and name as occured after this fault
     pub expired: bool,
@@ -97,7 +103,7 @@ pub async fn socket_handler_with_metadata(
 
     // INTERVAL TIMERS for periodic things to be sent
     let mut view_interval = tokio::time::interval(Duration::from_secs(3));
-    let mut timers_interval = tokio::time::interval(Duration::from_secs(3));
+    let mut timers_interval = tokio::time::interval(Duration::from_secs(1));
     let mut recent_faults_interval = tokio::time::interval(Duration::from_secs(1));
 
     // init timers
@@ -175,10 +181,10 @@ pub async fn socket_handler_with_metadata(
                     // if a fault of the same type is in the queue, and not expired
                     if item.name == flt_txt && node.clone() == item.node && !item.expired {
                         // update the last seen metric
-                        (*item).last_seen = data.timestamp;
+                        item.last_seen = data.timestamp;
                         // if the time since the last fault is greater than [FAULT_MIN_REG_GAP], mark this fault as expired
                         if (data.timestamp - item.last_seen) > FAULT_MIN_REG_GAP {
-                            (*item).expired = true;
+                            item.expired = true;
                         } else {
                             // otherwise, if the fault isnt expired, ensure we dont create a duplicate fault
                             should_push = false;
@@ -188,7 +194,7 @@ pub async fn socket_handler_with_metadata(
                 // send a new fault if no message matches and is not expired
                 if should_push {
                    fault_ringbuffer.push(FaultData {
-                     node: node,
+                     node,
                      name: flt_txt.to_string(),
                      occured_at: data.timestamp,
                      last_seen: data.timestamp,
