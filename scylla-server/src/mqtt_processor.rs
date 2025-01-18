@@ -10,15 +10,13 @@ use rumqttc::v5::{
     mqttbytes::v5::{Packet, Publish},
     AsyncClient, Event, EventLoop, MqttOptions,
 };
-use tokio::{sync::broadcast, time::Instant};
 use rustc_hash::FxHashMap;
-use socketioxide::SocketIo;
-use tokio::{sync::mpsc::Sender, time::Instant};
+use tokio::{sync::broadcast, time::Instant};
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, instrument, trace, warn, Level};
 
 use crate::{
-    controllers::car_command_controller::CALYPSO_BIDIR_CMD_PREFIX, serverdata, RateLimitMode,
+    controllers::car_command_controller::CALYPSO_BIDIR_CMD_PREFIX, proto::serverdata, RateLimitMode,
 };
 
 use super::ClientData;
@@ -276,7 +274,7 @@ impl MqttProcessor {
     /// Send a message to the channel, printing and IGNORING any error that may occur
     /// * `client_data` - The client data to send over the broadcast
     async fn send_db_msg(&self, client_data: ClientData) {
-        if let Err(err) = self.channel.send(client_data).await {
+        if let Err(err) = self.channel.send(client_data) {
             warn!("Error sending through channel: {:?}", err);
         }
     }

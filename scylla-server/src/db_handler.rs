@@ -1,6 +1,5 @@
-use tokio::sync::{broadcast, mpsc};
 use rustc_hash::FxHashSet;
-use tokio::sync::mpsc::Receiver;
+use tokio::sync::{broadcast, mpsc};
 
 use tokio::time::Duration;
 

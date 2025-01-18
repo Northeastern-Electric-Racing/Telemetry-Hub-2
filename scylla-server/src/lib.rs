@@ -13,9 +13,7 @@ pub mod models;
 #[allow(non_snake_case)]
 pub mod schema;
 
-pub mod command_data;
-pub mod playback_data;
-pub mod serverdata;
+pub mod proto;
 
 pub mod transformers;
 

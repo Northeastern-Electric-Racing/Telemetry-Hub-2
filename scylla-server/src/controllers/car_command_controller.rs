@@ -7,7 +7,7 @@ use rumqttc::v5::AsyncClient;
 use serde::Deserialize;
 use tracing::{info, warn};
 
-use crate::{command_data::CommandData, error::ScyllaError};
+use crate::{error::ScyllaError, proto::command_data};
 
 /// the prefix for the calypso topic, so topic of cmd is this plus the key appended on
 pub const CALYPSO_BIDIR_CMD_PREFIX: &str = "Calypso/Bidir/Command/";
@@ -34,7 +34,7 @@ pub async fn send_config_command(
     );
 
     // the protobuf calypso converts into CAN
-    let mut payload = CommandData::new();
+    let mut payload = command_data::CommandData::new();
     // empty "data" in the protobuf tells calypso to use the default value
     if let Some(data) = data_query.data {
         payload.data = data;

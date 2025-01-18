@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::atomic::Ordering, time::Duration};
 
 use chrono::{DateTime, Utc};
 use regex::Regex;
-use ringbuffer::AllocRingBuffer;
+use ringbuffer::{AllocRingBuffer, RingBuffer};
 use serde::Serialize;
 use socketioxide::SocketIo;
 use tokio::sync::broadcast;
@@ -45,13 +45,50 @@ const TIMERS_TOPICS: &[&str] = &[
     "BMS/Charging/Control",
 ];
 
-#[derive(Serialize)]
+#[derive(Serialize, PartialEq, Clone, Debug)]
+enum Node {
+    BMS,
+    DTI,
+    MPU,
+    Charger,
+}
+// impl Node {
+//     fn convert_from(value: &str) -> Option<Self> {
+//         match value {
+//             "DTI" => Some(Self::DTI),
+//             "BMS" => Some(Self::BMS),
+//             "MPU" => Some(Self::MPU),
+//             "Charger" => Some(Self::Charger),
+//             _ => None,
+//         }
+//     }
+// }
+
+#[derive(Serialize, Clone)]
 struct FaultData {
-    pub topic: &'static str,
+    pub node: Node,
     pub name: String,
     pub occured_at: DateTime<Utc>,
 }
 const FAULT_SOCKET_KEY: &str = "faults";
+
+const FAULT_BINS: &[&str] = &["DTI/Fault/FaultCode"];
+const fn map_dti_flt(index: usize) -> Option<&'static str> {
+    match index {
+        0 => None,
+        1 => Some("Overvoltage"),
+        2 => None,
+        3 => Some("DRV"),
+        4 => Some("ABS_Overcurrent"),
+        5 => Some("CTLR_Overtemp"),
+        6 => Some("Motor_Overtemp"),
+        7 => Some("Sensor_wire"),
+        8 => Some("Sensor_general"),
+        9 => Some("CAN_command"),
+        0x0A => Some("Analog_input"),
+        _ => None,
+    }
+}
 
 pub async fn socket_handler_with_metadata(
     cancel_token: CancellationToken,
@@ -64,6 +101,7 @@ pub async fn socket_handler_with_metadata(
     // INTERVAL TIMERS for periodic things to be sent
     let mut view_interval = tokio::time::interval(Duration::from_secs(3));
     let mut timers_interval = tokio::time::interval(Duration::from_secs(3));
+    let mut recent_faults_interval = tokio::time::interval(Duration::from_secs(1));
 
     // init timers
     let mut timer_map: HashMap<String, TimerData> = HashMap::new();
@@ -79,9 +117,12 @@ pub async fn socket_handler_with_metadata(
     }
 
     // init faults
-    let fault_regex: Regex = Regex::new(r"(BMS/Status/F/*|Charger/Box/F_*|MPU/Fault/F_*")
-        .expect("Could not compile regex!");
-    const FAULT_BINS: &[&str] = &["DTI/Fault/FaultCode"];
+    let fault_regex_bms: Regex =
+        Regex::new(r"BMS\/Status\/F\/(.*)").expect("Could not compile regex!");
+    let fault_regex_charger: Regex =
+        Regex::new(r"Charger\/Box\/F_(.*)").expect("Could not compile regex!");
+    let fault_regex_mpu: Regex =
+        Regex::new(r"MPU\/Fault\/F_(.*)").expect("Could not compile regex!");
     let mut fault_ringbuffer = AllocRingBuffer::<FaultData>::new(25);
 
     loop {
@@ -99,8 +140,12 @@ pub async fn socket_handler_with_metadata(
                     DATA_SOCKET_KEY,
                 );
 
+                warn!("hmm: {}", data.name);
+
                 // check to see if we fit a timer case, and then act upon it
+                // assumes a timer is never also a fault
                 if let Some(time) = timer_map.get_mut(&data.name) {
+                    warn!("Triggering timer: {}", data.name);
                     let new_val = *data.values.first().unwrap_or(&-1f32);
                     if time.last_value != new_val {
                         time.last_value = new_val;
@@ -109,13 +154,44 @@ pub async fn socket_handler_with_metadata(
                     continue;
                 }
 
-                if fault_regex.is_match(&data.name) {
-                    //fault_ringbuffer.push()
+                // check to see if this is a fault, and return the fault name and node
+                let (flt_txt, node) = if let Some(mtch) = fault_regex_bms.captures_iter(&data.name).next() {
+                   (mtch.get(1).map_or("", |m| m.as_str()), Node::BMS)
+                } else if let Some(mtch) = fault_regex_charger.captures_iter(&data.name).next() {
+                    (mtch.get(1).map_or("", |m| m.as_str()), Node::Charger)
+                 }
+                 else if let Some(mtch) = fault_regex_mpu.captures_iter(&data.name).next() {
+                    (mtch.get(1).map_or("", |m| m.as_str()), Node::MPU)
+                 }
+                else if FAULT_BINS[0] == data.name {
+                    let Some(flt) = map_dti_flt(*data.values.first().unwrap_or(&0f32) as usize) else  {
+                        continue;
+                    };
+                    (flt, Node::DTI)
                 } else {
+                    continue;
+                };
 
+                warn!("Matched on {}, {:?}", flt_txt, node);
+
+                for item in fault_ringbuffer.iter() {
+
+                    if item.name == flt_txt &&  node == item.node {
+                        continue;
+                    }
                 }
+                fault_ringbuffer.push(FaultData { node: node, name: flt_txt.to_string(), occured_at: data.timestamp });
 
             }
+            _ = recent_faults_interval.tick() => {
+                send_socket_msg(
+                    &fault_ringbuffer.to_vec(),
+                    &mut upload_counter,
+                        upload_ratio,
+                        &io,
+                        FAULT_SOCKET_KEY,
+                )
+            },
             _ = timers_interval.tick() => {
                 trace!("Sending Timers Intervals!");
                 for item in timer_map.values() {
@@ -169,7 +245,7 @@ fn send_socket_msg<T>(
     if *upload_counter >= upload_ratio {
         match io.emit(
             socket_key,
-            serde_json::to_string(client_data).expect("Could not serialize ClientData"),
+            &serde_json::to_string(client_data).expect("Could not serialize ClientData"),
         ) {
             Ok(_) => (),
             Err(err) => match err {

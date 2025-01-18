@@ -26,7 +26,6 @@ use scylla_server::{
     },
     services::run_service::{self},
     socket_handler::{socket_handler, socket_handler_with_metadata},
-    PoolHandle, RateLimitMode,
     RateLimitMode,
 };
 use scylla_server::{
@@ -220,10 +219,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     task_tracker.spawn(
         db_handler::DbHandler::new(
             mqtt_send.subscribe(),
-            db.clone(),
+            pool.clone(),
             cli.batch_upsert_time * 1000,
         )
-        .handling_loop(db_send, token.clone()),
+        .handling_loop(db_send.clone(), token.clone()),
     );
     // spawn the database inserter, if we have it enabled
     if !cli.disable_data_upload {
