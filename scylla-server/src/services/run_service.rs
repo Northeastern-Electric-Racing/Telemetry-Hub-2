@@ -1,5 +1,6 @@
 use crate::{models::Run, schema::run::dsl::*, Database};
 use chrono::{DateTime, Utc};
+use clap::builder::Str;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 
@@ -64,6 +65,36 @@ pub async fn update_run_with_coords(
 ) -> Result<Run, diesel::result::Error> {
     diesel::update(run.filter(id.eq(run_id)))
         .set((latitude.eq(lat), longitude.eq(long)))
+        .get_result(db)
+        .await
+}
+
+/// Creates a run with a run note
+/// * `db` - The prisma client to make the call to
+/// * `run_id` - The id of the run to search for
+/// * `run_note` - The updated run note
+pub async fn create_run_with_note(
+    db: &mut Database<'_>,
+    timestamp: DateTime<Utc>,
+    run_note: String,
+) -> Result<Run, diesel::result::Error> {
+    diesel::insert_into(run)
+        .values((time.eq(timestamp), notes.eq(run_note)))
+        .get_result(db)
+        .await
+}
+
+/// Updates a run note with a given run id
+/// * `db` - The prisma client to make the call to
+/// * `run_id` - The id of the run to search for
+/// * `run_note` - The updated run note
+pub async fn update_run_note_with_run_id(
+    db: &mut Database<'_>,
+    run_id: i32,
+    run_note: String,
+) -> Result<Run, diesel::result::Error> {
+    diesel::update(run.filter(id.eq(run_id)))
+        .set(notes.eq(run_note))
         .get_result(db)
         .await
 }
