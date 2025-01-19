@@ -7,7 +7,7 @@ use diesel::{
 };
 use diesel_async::RunQueryDsl;
 use scylla_server::{
-    models::DataType, schema::dataType, services::data_type_service,
+    models::DataType, schema::data_type, services::data_type_service,
     transformers::data_type_transformer::PublicDataType,
 };
 use test_utils::cleanup_and_prepare;
@@ -41,8 +41,8 @@ async fn test_datatype_create() -> Result<(), diesel::result::Error> {
         .await?;
 
     // fetch
-    let data = dataType::table
-        .filter(dataType::name.eq(data_type_name.clone()))
+    let data = data_type::table
+        .filter(data_type::name.eq(data_type_name.clone()))
         .select(DataType::as_select())
         .get_result(&mut db)
         .await?;

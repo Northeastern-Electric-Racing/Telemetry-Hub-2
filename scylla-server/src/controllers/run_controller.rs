@@ -46,7 +46,7 @@ pub async fn new_run(State(pool): State<PoolHandle>) -> Result<Json<PublicRun>, 
     let mut db = pool.get().await?;
     let run_data = run_service::create_run(&mut db, chrono::offset::Utc::now()).await?;
 
-    crate::RUN_ID.store(run_data.id, Ordering::Relaxed);
+    crate::RUN_ID.store(run_data.runId, Ordering::Relaxed);
     tracing::info!(
         "Starting new run with ID: {}",
         crate::RUN_ID.load(Ordering::Relaxed)
