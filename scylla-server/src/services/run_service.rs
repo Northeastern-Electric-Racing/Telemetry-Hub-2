@@ -1,6 +1,5 @@
 use crate::{models::Run, schema::run::dsl::*, Database};
 use chrono::{DateTime, Utc};
-use clap::builder::Str;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 
@@ -55,14 +54,24 @@ pub async fn create_run_with_id(
 /// Creates a run with a run note
 /// * `db` - The prisma client to make the call to
 /// * `run_id` - The id of the run to search for
-/// * `run_note` - The updated run note
-pub async fn create_run_with_note(
+/// * `driver` - The driver's name
+/// * `location` - The location of the runs
+/// * `run_notes` - The notes written for the run
+/// returns: A result containing the data or the QueryError propogated by the db
+pub async fn create_run_with_data(
     db: &mut Database<'_>,
     timestamp: DateTime<Utc>,
-    run_note: String,
+    driver: String,
+    location: String,
+    run_notes: String,
 ) -> Result<Run, diesel::result::Error> {
     diesel::insert_into(run)
-        .values((time.eq(timestamp), notes.eq(run_note)))
+        .values((
+            time.eq(timestamp),
+            driverName.eq(driver),
+            locationName.eq(location),
+            notes.eq(run_notes),
+        ))
         .get_result(db)
         .await
 }
@@ -70,14 +79,15 @@ pub async fn create_run_with_note(
 /// Updates a run note with a given run id
 /// * `db` - The prisma client to make the call to
 /// * `run_id` - The id of the run to search for
-/// * `run_note` - The updated run note
-pub async fn update_run_note_with_run_id(
+/// * `run_notes` - The updated run notes
+///   returns: A result containing the data or the QueryError propogated by the db
+pub async fn update_run_notes_with_run_id(
     db: &mut Database<'_>,
     run_id: i32,
-    run_note: String,
+    run_notes: String,
 ) -> Result<Run, diesel::result::Error> {
-    diesel::update(run.filter(id.eq(run_id)))
-        .set(notes.eq(run_note))
+    diesel::update(run.filter(runId.eq(run_id)))
+        .set(notes.eq(run_notes))
         .get_result(db)
         .await
 }

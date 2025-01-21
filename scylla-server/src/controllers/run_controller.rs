@@ -55,16 +55,22 @@ pub async fn new_run(State(pool): State<PoolHandle>) -> Result<Json<PublicRun>, 
     Ok(Json::from(PublicRun::from(run_data)))
 }
 
-/// creates a new run with a run note
-pub async fn new_run_with_note(
+/// creates a new run with all associated data (driver, location, notes)
+pub async fn new_run_with_data(
     State(pool): State<PoolHandle>,
-    Path(run_note): Path<String>,
+    Path((driver, location, run_notes)): Path<(String, String, String)>,
 ) -> Result<Json<PublicRun>, ScyllaError> {
     let mut db = pool.get().await?;
-    let run_data =
-        run_service::create_run_with_note(&mut db, chrono::offset::Utc::now(), run_note).await?;
+    let run_data = run_service::create_run_with_data(
+        &mut db,
+        chrono::offset::Utc::now(),
+        driver,
+        location,
+        run_notes,
+    )
+    .await?;
 
-    crate::RUN_ID.store(run_data.id, Ordering::Relaxed);
+    crate::RUN_ID.store(run_data.runId, Ordering::Relaxed);
     tracing::info!(
         "Starting new run with ID: {}",
         crate::RUN_ID.load(Ordering::Relaxed)
@@ -73,13 +79,13 @@ pub async fn new_run_with_note(
     Ok(Json::from(PublicRun::from(run_data)))
 }
 
-/// updates a run note with a given run id
-pub async fn update_run_with_note(
+/// updates a run's notes with a given run id
+pub async fn update_run_with_notes(
     State(pool): State<PoolHandle>,
-    Path((run_id, run_note)): Path<(i32, String)>,
+    Path((run_id, run_notes)): Path<(i32, String)>,
 ) -> Result<Json<PublicRun>, ScyllaError> {
     let mut db = pool.get().await?;
-    let updated_run = run_service::update_run_note_with_run_id(&mut db, run_id, run_note).await?;
+    let updated_run = run_service::update_run_notes_with_run_id(&mut db, run_id, run_notes).await?;
 
     Ok(Json::from(PublicRun::from(updated_run)))
 }
