@@ -76,18 +76,26 @@ pub async fn create_run_with_data(
         .await
 }
 
-/// Updates a run note with a given run id
+/// Updates run data with a given run id
 /// * `db` - The prisma client to make the call to
 /// * `run_id` - The id of the run to search for
+/// * `driver` - The driver's name
+/// * `location` - The location of the runs
 /// * `run_notes` - The updated run notes
 ///   returns: A result containing the data or the QueryError propogated by the db
-pub async fn update_run_notes_with_run_id(
+pub async fn update_run_data_with_run_id(
     db: &mut Database<'_>,
     run_id: i32,
+    driver: String,
+    location: String,
     run_notes: String,
 ) -> Result<Run, diesel::result::Error> {
     diesel::update(run.filter(runId.eq(run_id)))
-        .set(notes.eq(run_notes))
+        .set((
+            driverName.eq(driver), 
+            locationName.eq(location), 
+            notes.eq(run_notes)
+        ))
         .get_result(db)
         .await
 }

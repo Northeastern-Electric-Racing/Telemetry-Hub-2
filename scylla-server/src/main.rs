@@ -249,8 +249,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/runs/new", post(run_controller::new_run))
         .route("/runs/new/{driver}/{location}/{notes}", post(run_controller::new_run_with_data))
         .route(
-            "/runs/update/{id}/{notes}",
-            post(run_controller::update_run_with_notes),
+            "/runs/update/{id}/{driver}/{location}/{notes}",
+            post(run_controller::update_run_with_data),
         )
         // CONFIG
         .route(

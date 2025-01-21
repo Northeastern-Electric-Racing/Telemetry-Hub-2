@@ -80,12 +80,14 @@ pub async fn new_run_with_data(
 }
 
 /// updates a run's notes with a given run id
-pub async fn update_run_with_notes(
+pub async fn update_run_with_data(
     State(pool): State<PoolHandle>,
-    Path((run_id, run_notes)): Path<(i32, String)>,
+    Path((run_id, driver, location, run_notes)): Path<(i32, String, String, String)>,
 ) -> Result<Json<PublicRun>, ScyllaError> {
     let mut db = pool.get().await?;
-    let updated_run = run_service::update_run_notes_with_run_id(&mut db, run_id, run_notes).await?;
+    let updated_run_data =
+        run_service::update_run_data_with_run_id(&mut db, run_id, driver, location, run_notes)
+            .await?;
 
-    Ok(Json::from(PublicRun::from(updated_run)))
+    Ok(Json::from(PublicRun::from(updated_run_data)))
 }
