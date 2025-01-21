@@ -52,7 +52,7 @@ pub async fn create_run_with_id(
 }
 
 /// Creates a run with a run note
-/// * `db` - The prisma client to make the call to
+/// * `db` - The database connection
 /// * `run_id` - The id of the run to search for
 /// * `driver` - The driver's name
 /// * `location` - The location of the runs
@@ -77,7 +77,7 @@ pub async fn create_run_with_data(
 }
 
 /// Updates run data with a given run id
-/// * `db` - The prisma client to make the call to
+/// * `db` - The database connection
 /// * `run_id` - The id of the run to search for
 /// * `driver` - The driver's name
 /// * `location` - The location of the runs
@@ -92,9 +92,9 @@ pub async fn update_run_data_with_run_id(
 ) -> Result<Run, diesel::result::Error> {
     diesel::update(run.filter(runId.eq(run_id)))
         .set((
-            driverName.eq(driver), 
-            locationName.eq(location), 
-            notes.eq(run_notes)
+            driverName.eq(driver),
+            locationName.eq(location),
+            notes.eq(run_notes),
         ))
         .get_result(db)
         .await
