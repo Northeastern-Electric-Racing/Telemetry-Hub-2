@@ -50,3 +50,52 @@ pub async fn create_run_with_id(
         .get_result(db)
         .await
 }
+
+/// Creates a run with a run note
+/// * `db` - The database connection
+/// * `run_id` - The id of the run to search for
+/// * `driver` - The driver's name
+/// * `location` - The location of the runs
+/// * `run_notes` - The notes written for the run
+/// returns: A result containing the data or the QueryError propogated by the db
+pub async fn create_run_with_data(
+    db: &mut Database<'_>,
+    timestamp: DateTime<Utc>,
+    driver: String,
+    location: String,
+    run_notes: String,
+) -> Result<Run, diesel::result::Error> {
+    diesel::insert_into(run)
+        .values((
+            time.eq(timestamp),
+            driverName.eq(driver),
+            locationName.eq(location),
+            notes.eq(run_notes),
+        ))
+        .get_result(db)
+        .await
+}
+
+/// Updates run data with a given run id
+/// * `db` - The database connection
+/// * `run_id` - The id of the run to search for
+/// * `driver` - The driver's name
+/// * `location` - The location of the runs
+/// * `run_notes` - The updated run notes
+///   returns: A result containing the data or the QueryError propogated by the db
+pub async fn update_run_data_with_run_id(
+    db: &mut Database<'_>,
+    run_id: i32,
+    driver: String,
+    location: String,
+    run_notes: String,
+) -> Result<Run, diesel::result::Error> {
+    diesel::update(run.filter(runId.eq(run_id)))
+        .set((
+            driverName.eq(driver),
+            locationName.eq(location),
+            notes.eq(run_notes),
+        ))
+        .get_result(db)
+        .await
+}
