@@ -9,7 +9,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
-# There is a single job in this workflow. It's configured to run on the latest available version of Ubuntu.
+# There is a single job in this workflow. It's configured to run on the 22.04 version of Ubuntu (TODO: configure for new latests).
 jobs:
   build-and-push-image:
     runs-on: ubuntu-22.04
