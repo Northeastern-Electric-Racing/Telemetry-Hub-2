@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { parse } from "csv-parse";
-import { PrismaClient as CloudPrisma } from "../../cloud-prisma/prisma";
+import { PrismaClient as CloudPrisma } from "../../../cloud-prisma/prisma";
 import { v4 as uuidv4 } from "uuid";
 
 // Initialize the cloud DB client
@@ -62,7 +62,6 @@ export async function uploadToCloud() {
         runIdMap[r.runId] = newId;
 
         return {
-          id: newId,
           runId: Number(r.runId),
           driverName: r.driverName,
           notes: r.notes

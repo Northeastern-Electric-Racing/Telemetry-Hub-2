@@ -1,6 +1,6 @@
 import { Parser } from "json2csv";
 import * as fs from "fs";
-import { PrismaClient as LocalPrisma } from "../../local-prisma/prisma";
+import { PrismaClient as LocalPrisma } from "../../../local-prisma/prisma";
 
 const localDb = new LocalPrisma();
 

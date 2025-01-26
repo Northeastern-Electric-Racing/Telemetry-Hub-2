@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "start": "npx tsx --env-file=.env --watch  src/index.ts",
     "prisma:local:migrate:dev": "prisma migrate dev --schema ./local-prisma/schema.prisma && node scripts/prisma-sql-not-null-enforcment.js && cp ./local-prisma/migrations/*_init/migration.sql ../scylla-server/migrations/*_create_all/up.sql && cd ../scylla-server && diesel database reset --database-url postgresql://postgres:docker@localhost:8000/charybdis-local && diesel database setup --database-url postgresql://postgres:docker@localhost:8000/charybdis-local && diesel print-schema --database-url postgresql://postgres:docker@localhost:8000/charybdis-local > src/schema.rs",
     "prisma:cloud:migrate:dev": "prisma migrate dev --schema ./cloud-prisma/schema.prisma",
     "prisma:cloud:migrate": "prisma migrate deploy --schema ./cloud-prisma/schema.prisma",
@@ -26,7 +25,6 @@
     "@types/csv-parse": "^1.1.12",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.10",
-    "@types/uuid": "^10.0.0",
     "prisma": "^6.2.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
