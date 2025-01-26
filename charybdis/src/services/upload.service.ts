@@ -48,7 +48,7 @@ async function processCsvInBatches<T>(
   });
 }
 
-async function main() {
+export async function uploadToCloud() {
   try {
     console.log("Starting CSV to Cloud DB transfer...");
 
@@ -178,5 +178,3 @@ function parseFloatArray(maybeArrayString: string): number[] {
 
   return validNumbers;
 }
-
-main();

@@ -32,7 +32,7 @@ function appendToCsv<T>(records: T[], filename: string) {
   fs.appendFileSync(filename, csv + "\n", { encoding: "utf8" });
 }
 
-async function main() {
+export async function dumpLocalDb() {
   try {
     console.log("Starting data export...");
 
@@ -47,5 +47,3 @@ async function main() {
     await localDb.$disconnect();
   }
 }
-
-main();
