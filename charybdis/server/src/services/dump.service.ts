@@ -38,7 +38,7 @@ export async function dumpLocalDb() {
 
     await fetchAndWriteTable("run", 2000);
     await fetchAndWriteTable("data_type", 1000);
-    await fetchAndWriteTable("data", 5000);
+    await fetchAndWriteTable("data", 30000);
 
     console.log("Data export completed successfully.");
   } catch (error) {

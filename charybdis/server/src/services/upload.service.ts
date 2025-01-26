@@ -23,6 +23,7 @@ async function processCsvInBatches<T>(
       .createReadStream(path.resolve(filename))
       .pipe(parse({ columns: true, skip_empty_lines: true }));
 
+    // this data has
     readStream.on("data", (row) => {
       records.push(row);
 
@@ -62,6 +63,7 @@ export async function uploadToCloud() {
         runIdMap[r.runId] = newId;
 
         return {
+          id: newId,
           runId: Number(r.runId),
           driverName: r.driverName,
           notes: r.notes

@@ -36,11 +36,11 @@ program
 
 // Command to upload data
 program
-  .command("up-dev <inputPath>")
+  .command("upload-dev")
   .description("Upload data from local CSVs into the cloud database")
   .action(async (inputPath) => {
     try {
-      console.log(`Uploading data from ${inputPath}...`);
+      console.log(`Uploading data from...`);
       const response = await axios.put(`${SERVER_URL}/upload`, {
         inputPath,
       });
