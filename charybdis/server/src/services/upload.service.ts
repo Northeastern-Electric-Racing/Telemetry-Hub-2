@@ -4,6 +4,8 @@ import { parse } from "csv-parse";
 import { PrismaClient as CloudPrisma } from "../../../cloud-prisma/prisma";
 import { v4 as uuidv4 } from "uuid";
 
+const tableNames = ["run", "data_type", "data"];
+
 // Initialize the cloud DB client
 const cloudDb = new CloudPrisma();
 
@@ -13,12 +15,12 @@ const BATCH_SIZE = 1000; // Process records in chunks of 1000
 /**
  * Stream CSV data in batches to avoid memory overload.
  */
-async function processCsvInBatches<T>(
+async function processCsvInBatches(
   filename: string,
-  processBatch: (batch: T[]) => Promise<void>
+  processBatch: (batch: any[]) => Promise<void>
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const records: T[] = [];
+    const records: any[] = [];
     const readStream = fs
       .createReadStream(path.resolve(filename))
       .pipe(parse({ columns: true, skip_empty_lines: true }));
@@ -57,19 +59,19 @@ export async function uploadToCloud() {
     const runIdMap: Record<number, string> = {};
 
     // 1. Insert runs in batches
-    await processCsvInBatches<any>("run.csv", async (batch) => {
-      const newRuns = batch.map((r) => {
+    await processCsvInBatches("run.csv", async (batch) => {
+      const newRuns = batch.map((run) => {
         const newId = uuidv4();
-        runIdMap[r.runId] = newId;
+        runIdMap[run.runId] = newId;
 
         return {
           id: newId,
-          runId: Number(r.runId),
-          driverName: r.driverName,
-          notes: r.notes
-            ? `${r.notes} (location: ${r.locationName || ""})`
-            : `(location: ${r.locationName || ""})`,
-          time: new Date(r.time),
+          runId: Number(run.runId),
+          driverName: run.driverName,
+          notes: run.notes
+            ? `${run.notes} (location: ${run.locationName || ""})`
+            : `(location: ${run.locationName || ""})`,
+          time: new Date(run.time),
         };
       });
 
@@ -80,7 +82,7 @@ export async function uploadToCloud() {
     console.log("Inserted all runs");
 
     // 2. Insert data_type in batches
-    await processCsvInBatches<any>("data_type.csv", async (batch) => {
+    await processCsvInBatches("data_type.csv", async (batch) => {
       const newDataTypes = batch.map((dt) => ({
         name: dt.name,
         unit: dt.unit,
