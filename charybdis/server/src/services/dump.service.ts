@@ -155,9 +155,9 @@ async function dumpAllDataByRuns(batchSize: number, currentDumpPath: string) {
   await createFolder(dataFolder);
 
   // TODO: if there is ever some sort of restart, we should have some way of resuming where we left off.
-  downloadedRunIds.forEach(async (runId) => {
-    dumpDataByRun(runId, 10000, dataFolder);
-  });
+  for (const runId of downloadedRunIds) {
+    await dumpDataByRun(runId, 39000, dataFolder);
+  }
 }
 
 async function dumpDataByRun(
@@ -165,40 +165,26 @@ async function dumpDataByRun(
   batchSize: number,
   storagePath: string
 ) {
-  let cursor:
-    | { time_dataTypeName: { time: Date; dataTypeName: string } }
-    | undefined;
+  let offset = 0;
   let moreData = true;
 
   while (moreData) {
     const dataChunk = await localPrisma.data.findMany({
       where: { runId },
+      skip: offset, // skip the already fetched rows
       take: batchSize,
-      cursor,
-      skip: cursor ? 1 : 0, // skip the cursor itself if we already have one
-      orderBy: [{ time: "asc" }, { dataTypeName: "asc" }], // ordering by unqiue id
+      orderBy: [{ time: "asc" }, { dataTypeName: "asc" }], // keep ordering consistent
     });
 
-    // even if we try to take one billion pieces of data, the database
-    // will only give us back 0 if there are 0 pieces of data left past the cursor
-    // (refering to find my query above and justifying only checking .len === 0 not, .len <= 0)
     if (dataChunk.length === 0) {
-      moreData = false;
+      moreData = false; // stop fetching when there's no more data
     } else {
-      console.log();
+      // Increase the offset for the next batch
+      offset += dataChunk.length;
 
-      // Update cursor
-      cursor = {
-        time_dataTypeName: {
-          time: dataChunk[dataChunk.length - 1].time,
-          dataTypeName: dataChunk[dataChunk.length - 1].dataTypeName,
-        },
-      };
-
-      // in this case we just directly insert the data, no need to translate to csv format prior to translation to csv
-      // (see append to csv function for how this is possible)
+      // Append to CSV
       appendToCsv(dataChunk, `${storagePath}/run-${runId}-data.csv`);
-      console.log(`Inserted ${dataChunk.length} to run-${runId}-data.csv`);
+      console.log(`Inserted ${dataChunk.length} rows to run-${runId}-data.csv`);
     }
   }
 }
@@ -217,37 +203,10 @@ export async function dumpLocalDb() {
     await dumpRunToCsv(1000, dumpFolderPath);
 
     // data goes last because it is dependent on the run and data type tables
-    await dumpAllDataByRuns(30000, dumpFolderPath);
+    await dumpAllDataByRuns(10000, dumpFolderPath);
 
     console.log("Data export completed successfully.");
   } catch (error) {
     console.error("Error exporting data to CSV:", error);
   }
 }
-
-/*
-async function fetchAndWriteTable(tableName: string, chunkSize = 5000) {
-  let skip = 0;
-  let hasMore = true;
-
-  while (hasMore) {
-    const records = await (
-      localPrisma[tableName as keyof typeof localPrisma] as any
-    ).findMany({
-      skip,
-      take: chunkSize,
-    });
-
-    if (records.length === 0) {
-      hasMore = false;
-    } else {
-      appendToCsv(records, `${tableName}.csv`);
-      console.log(`Fetched ${records.length} records from ${tableName}`);
-      skip += chunkSize;
-    }
-  }
-}
-
-
-
-*/
