@@ -1,3 +1,5 @@
+/* TBD, waiting to decide on how to handle data date fields */
+
 // import * as fs from "fs";
 // import * as path from "path";
 // import { parse } from "csv-parse";
