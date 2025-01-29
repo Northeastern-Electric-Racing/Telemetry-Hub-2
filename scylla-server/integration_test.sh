@@ -14,7 +14,7 @@ docker compose up -d odyssey-timescale || { echo "Failed to start odyssey-timesc
 
 # Wait for the database to initialize
 echo "Waiting for the database to initialize..."
-sleep 3
+sleep 5
 
 # Navigate to the scylla-server directory
 cd ../scylla-server || { echo "scylla-server directory not found"; exit 1; }

@@ -10,7 +10,7 @@ use serde::Serialize;
 #[diesel(primary_key(dataTypeName, time))]
 pub struct Data {
     pub values: Vec<Option<f32>>,
-    pub time: DateTime<Utc>,
+    pub time: i64,
     pub dataTypeName: String,
     pub runId: i32,
 }
@@ -28,7 +28,7 @@ pub struct Data {
 pub struct DataInsert {
     pub values: Vec<f32>,
     pub dataTypeName: String,
-    pub time: DateTime<Utc>,
+    pub time: i64,
     pub runId: i32,
 }
 

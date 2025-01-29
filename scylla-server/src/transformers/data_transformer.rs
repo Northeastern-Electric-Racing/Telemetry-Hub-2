@@ -38,7 +38,7 @@ impl From<crate::models::Data> for PublicData {
     fn from(value: crate::models::Data) -> Self {
         PublicData {
             values: value.values.into_iter().flatten().collect(),
-            time_ms: value.time.timestamp_millis(),
+            time_ms: value.time,
         }
     }
 }

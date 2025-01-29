@@ -7,14 +7,15 @@ pub mod services;
 pub mod db_handler;
 pub mod mqtt_processor;
 
+pub mod metadata_structs;
+pub mod socket_handler;
+
 #[allow(non_snake_case)]
 pub mod models;
 #[allow(non_snake_case)]
 pub mod schema;
 
-pub mod command_data;
-pub mod playback_data;
-pub mod serverdata;
+pub mod proto;
 
 pub mod transformers;
 
@@ -66,7 +67,7 @@ impl From<ClientData> for models::DataInsert {
         models::DataInsert {
             values: val.values,
             dataTypeName: val.name,
-            time: val.timestamp,
+            time: val.timestamp.timestamp_millis(),
             runId: val.run_id,
         }
     }

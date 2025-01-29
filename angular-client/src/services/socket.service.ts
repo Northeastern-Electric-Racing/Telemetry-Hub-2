@@ -22,7 +22,7 @@ export default class SocketService {
    * Subscribe to the 'message' event from the server
    */
   receiveData = (storage: Storage) => {
-    this.socket.on('message', (message: string) => {
+    this.socket.on('data', (message: string) => {
       try {
         /* Parse the message and store it in the storage service */
 
