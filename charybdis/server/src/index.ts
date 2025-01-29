@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { dump } from "./controllers/dump.controller";
-import { upload } from "./controllers/upload.controller";
+// import { upload } from "./controllers/upload.controller";
 import { compareCloudToLocal } from "./controllers/compare.controller";
 
 // Create a new express application instance
@@ -17,9 +17,9 @@ app
   .put("/dump", (req: Request, res: Response) => {
     dump(req, res);
   })
-  .put("/upload", (req: Request, res: Response) => {
-    upload(req, res);
-  })
+  // .put("/upload", (req: Request, res: Response) => {
+  //   upload(req, res);
+  // })
   .get("/compare", (req: Request, res: Response) => {
     compareCloudToLocal(req, res);
   });

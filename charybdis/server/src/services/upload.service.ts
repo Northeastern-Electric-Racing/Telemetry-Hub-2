@@ -1,183 +1,204 @@
-import * as fs from "fs";
-import * as path from "path";
-import { parse } from "csv-parse";
-import { PrismaClient as CloudPrisma } from "../../../cloud-prisma/prisma";
-import { v4 as uuidv4 } from "uuid";
+// import * as fs from "fs";
+// import * as path from "path";
+// import { parse } from "csv-parse";
+// import { PrismaClient as CloudPrisma } from "../../../cloud-prisma/prisma";
+// import { LocalData, LocalDataType, LocalRun } from "../types/local.types";
+// import { CloudData, CloudDataType, CloudRun } from "../types/cloud.types";
+// import { CsvRunRow } from "../types/csv.types";
+// import { DOWNLOADS_PATH } from "../storage-paths";
 
-const tableNames = ["run", "data_type", "data"];
+// const localTables = {
+//   run: "run",
+//   data: "data",
+//   data_type: "data_type",
+// };
 
-// Initialize the cloud DB client
-const cloudDb = new CloudPrisma();
+// export async function processRuns(
+//   processRunBatch: (batch: CsvRunRow[]) => Promise<void>
+// ) {
+//   await processCsvInBatches<CsvRunRow>(
+//     `${localTables.run}.csv`,
+//     processRunBatch,
+//     1000
+//   );
+// }
 
-// Define batch size to avoid memory overload
-const BATCH_SIZE = 1000; // Process records in chunks of 1000
+// export async function processDataType(
+//   processDataTypeBatch: (batch: LocalDataType[]) => Promise<void>
+// ) {
+//   await processCsvInBatches<LocalDataType>(
+//     `${localTables.data_type}.csv`,
+//     processDataTypeBatch,
+//     1000
+//   );
+// }
 
-/**
- * Stream CSV data in batches to avoid memory overload.
- */
-async function processCsvInBatches(
-  filename: string,
-  processBatch: (batch: any[]) => Promise<void>
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const records: any[] = [];
-    const readStream = fs
-      .createReadStream(path.resolve(filename))
-      .pipe(parse({ columns: true, skip_empty_lines: true }));
+// export async function processData(
+//   processDataBatch: (batch: LocalData[]) => Promise<void>
+// ) {
+//   await processCsvInBatches<LocalData>(
+//     `${localTables.data}.csv`,
+//     processDataBatch,
+//     5000
+//   );
+// }
 
-    // this data has
-    readStream.on("data", (row) => {
-      records.push(row);
+// // Initialize the cloud DB client
+// const cloudDb = new CloudPrisma();
 
-      if (records.length >= BATCH_SIZE) {
-        readStream.pause(); // Pause stream to process batch
-        processBatch(records.splice(0, BATCH_SIZE))
-          .then(() => readStream.resume()) // Resume stream after batch processing
-          .catch(reject);
-      }
-    });
+// // Define batch size to avoid memory overload
+// const BATCH_SIZE = 1000; // Process records in chunks of 1000
 
-    readStream.on("end", async () => {
-      if (records.length > 0) {
-        await processBatch(records);
-      }
-      console.log(`Finished processing ${filename}`);
-      resolve();
-    });
+// /**
+//  * Stream CSV data in batches to avoid memory overload.
+//  */
+// async function processCsvInBatches<T>(
+//   filename: string,
+//   processBatch: (batch: T[]) => Promise<void>,
+//   batchSize: number
+// ): Promise<void> {
+//   return new Promise((resolve, reject) => {
+//     const records: any[] = [];
+//     const readStream = fs
+//       .createReadStream(path.resolve(filename))
+//       .pipe(parse({ columns: true, skip_empty_lines: true, cast: true }));
 
-    readStream.on("error", (err) => {
-      reject(`Error reading ${filename}: ${err.message}`);
-    });
-  });
-}
+//     // this data has
+//     readStream.on("data", (row) => {
+//       records.push(row);
 
-export async function uploadToCloud() {
-  try {
-    console.log("Starting CSV to Cloud DB transfer...");
+//       if (records.length >= batchSize) {
+//         readStream.pause(); // Pause stream to process batch
+//         processBatch(records.splice(0, batchSize))
+//           .then(() => readStream.resume()) // Resume stream after batch processing
+//           .catch(reject);
+//       }
+//     });
 
-    // Store a map of localRunId -> newCloudRunId (UUID)
-    const runIdMap: Record<number, string> = {};
+//     readStream.on("end", async () => {
+//       if (records.length > 0) {
+//         await processBatch(records);
+//       }
+//       console.log(`Finished processing ${filename}`);
+//       resolve();
+//     });
 
-    // 1. Insert runs in batches
-    await processCsvInBatches("run.csv", async (batch) => {
-      const newRuns = batch.map((run) => {
-        const newId = uuidv4();
-        runIdMap[run.runId] = newId;
+//     readStream.on("error", (err) => {
+//       reject(`Error reading ${filename}: ${err.message}`);
+//     });
+//   });
+// }
 
-        return {
-          id: newId,
-          runId: Number(run.runId),
-          driverName: run.driverName,
-          notes: run.notes
-            ? `${run.notes} (location: ${run.locationName || ""})`
-            : `(location: ${run.locationName || ""})`,
-          time: new Date(run.time),
-        };
-      });
+// export async function uploadToCloud() {
+//   try {
+//     console.log("Starting CSV to Cloud DB transfer...");
 
-      await cloudDb.run.createMany({ data: newRuns, skipDuplicates: true });
-      console.log(`Inserted ${newRuns.length} runs`);
-    });
+//     const mostRecentFolder = getFirstLexicographicalFolder(DOWNLOADS_PATH);
+//     if (!mostRecentFolder) {
+//       console.error("No folders found in downloads directory.");
+//       process.exit(1);
+//     }
 
-    console.log("Inserted all runs");
+//     // Upsert data types into the cloud database
+//     await processDataType(async (batch) => {
+//       const cloudDataTypes: CloudDataType[] = batch.map((localDataType) => ({
+//         name: localDataType.name,
+//         unit: localDataType.unit,
+//         nodeName: localDataType.nodeName,
+//       }));
 
-    // 2. Insert data_type in batches
-    await processCsvInBatches("data_type.csv", async (batch) => {
-      const newDataTypes = batch.map((dt) => ({
-        name: dt.name,
-        unit: dt.unit,
-        nodeName: dt.nodeName,
-      }));
+//       await cloudDb.data_type.createMany({
+//         data: cloudDataTypes,
+//         skipDuplicates: true,
+//       });
+//       console.log(`Inserted ${cloudDataTypes.length} data_type entries`);
+//     });
 
-      await cloudDb.data_type.createMany({
-        data: newDataTypes,
-        skipDuplicates: true,
-      });
-      console.log(`Inserted ${newDataTypes.length} data_type entries`);
-    });
+//     // Insert each run and it's data in batches
+//     await processRunsAndData(mostRecentFolder);
 
-    console.log("Inserted all data_type entries");
+//     console.log("Inserted all runs");
 
-    // 3. Insert data in batches
-    await processCsvInBatches<any>("data.csv", async (batch) => {
-      const newData = batch.map((d, index) => {
-        const values = parseFloatArray(d.values);
+//     // 2. Insert data_type in batches
+//     await processCsvInBatches<LocalDataType>("data_type.csv", async (batch) => {
+//       const cloudDataTypes: CloudDataType[] = batch.map((localDataType) => ({
+//         name: localDataType.name,
+//         unit: localDataType.unit,
+//         nodeName: localDataType.nodeName,
+//       }));
 
-        if (values.length === 0) {
-          console.warn(
-            `Warning: Row ${index + 1} has empty values for dataType ${
-              d.dataTypeName
-            }`
-          );
-        }
+//       await cloudDb.data_type.createMany({
+//         data: cloudDataTypes,
+//         skipDuplicates: true,
+//       });
+//       console.log(`Inserted ${cloudDataTypes.length} data_type entries`);
+//     });
 
-        return {
-          time: new Date(d.time),
-          dataTypeName: d.dataTypeName,
-          runId: runIdMap[d.runId], // Convert local runId(Int) to new run ID(String)
-          values,
-        };
-      });
+//     console.log("Inserted all data_type entries");
 
-      await cloudDb.data.createMany({ data: newData, skipDuplicates: true });
-      console.log(`Inserted ${newData.length} data entries`);
-    });
+//     // 3. Insert data in batches
+//     await processCsvInBatches<LocalData>("data.csv", async (batch) => {
+//       const newData: CloudData[] = batch.map((localData, index) => {
+//         // const values = parseFloatArray(localData.values);
 
-    console.log("Inserted all data entries");
-    console.log("CSV to Cloud transfer complete.");
-  } catch (error) {
-    console.error("Error processing CSV files:", error);
-    process.exit(1);
-  } finally {
-    await cloudDb.$disconnect();
-  }
-}
+//         if (localData.values.length === 0) {
+//           console.warn(
+//             `Warning: Row ${index + 1} has empty values for dataType ${
+//               localData.dataTypeName
+//             }`
+//           );
+//         }
 
-/**
- * Helper to parse a string representation of array floats into an actual Float[].
- *
- * For example, if the CSV has "1,2,3", or "{1,2,3}", you'd want to split on commas.
- */
-function parseFloatArray(maybeArrayString: string): number[] {
-  if (!maybeArrayString || maybeArrayString.trim() === "") {
-    console.warn(
-      "Warning: Encountered empty values field, setting an empty array."
-    );
-    return []; // Return an empty array instead of null
-  }
+//         return {
+//           time: new Date(localData.time),
+//           dataTypeName: localData.dataTypeName,
+//           runId: runIdMap[localData.runId], // Convert local runId(Int) to new run ID(String)
+//           values: localData.values,
+//         };
+//       });
 
-  // Remove brackets [] and whitespace
-  const cleaned = maybeArrayString.replace(/[\[\]{}]/g, "").trim();
+//       await cloudDb.data.createMany({ data: newData, skipDuplicates: true });
+//       console.log(`Inserted ${newData.length} data entries`);
+//     });
 
-  // Check if the cleaned string is empty after removing brackets
-  if (cleaned.length === 0) {
-    console.warn(
-      `Warning: Empty values array after parsing for input: "${maybeArrayString}"`
-    );
-    return [];
-  }
+//     console.log("Inserted all data entries");
+//     console.log("CSV to Cloud transfer complete.");
+//   } catch (error) {
+//     console.error("Error processing CSV files:", error);
+//     process.exit(1);
+//   } finally {
+//     await cloudDb.$disconnect();
+//   }
+// }
 
-  // Split the cleaned string by commas, map to float values
-  const parsedArray = cleaned.split(",").map((val) => {
-    const parsed = parseFloat(val.trim());
+// /**
+//  * Get the lexically first folder in the specified directory.
+//  *
+//  * @param directoryPath The path to the directory to search.
+//  * @returns The name of the first folder found, or null if no folders are found.
+//  */
+// function getFirstLexicographicalFolder(directoryPath: string): string | null {
+//   try {
+//     // Read all items in the directory
+//     const items = fs.readdirSync(directoryPath, { withFileTypes: true });
 
-    if (isNaN(parsed)) {
-      console.warn(
-        `Warning: Encountered NaN value in input: "${maybeArrayString}"`
-      );
-      return null; // Replace NaN with null to remove it later
-    }
-    return parsed;
-  });
+//     // Filter items to include only directories
+//     const folders = items
+//       .filter((item) => item.isDirectory())
+//       .map((folder) => folder.name);
 
-  // Filter out null values caused by parsing errors
-  const validNumbers = parsedArray.filter((val) => val !== null);
+//     if (folders.length === 0) {
+//       console.log("No folders found in the directory.");
+//       return null;
+//     }
 
-  if (validNumbers.length === 0) {
-    console.warn(
-      `Warning: Empty values array after parsing for input: "${maybeArrayString}"`
-    );
-  }
+//     // Sort folders by name (assumes timestamped names)
+//     const sortedFolders = folders.sort();
 
-  return validNumbers;
-}
+//     // Return the last folder name (most recent)
+//     return sortedFolders[0];
+//   } catch (error) {
+//     console.error("Error reading directory:", error);
+//     return null;
+//   }
+// }
