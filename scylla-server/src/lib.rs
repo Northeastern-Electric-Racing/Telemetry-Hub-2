@@ -67,7 +67,7 @@ impl From<ClientData> for models::DataInsert {
         models::DataInsert {
             values: val.values,
             dataTypeName: val.name,
-            time: val.timestamp,
+            time: val.timestamp.timestamp_millis(),
             runId: val.run_id,
         }
     }

@@ -19,7 +19,7 @@ CREATE TABLE "run" (
 -- CreateTable
 CREATE TABLE "data" (
     "values" DOUBLE PRECISION[],
-    "time" TIMESTAMPTZ NOT NULL,
+    "time" BIGINT NOT NULL,
     "dataTypeName" TEXT NOT NULL,
     "runId" TEXT NOT NULL,
 
@@ -41,13 +41,15 @@ ALTER TABLE "data" ADD CONSTRAINT "data_dataTypeName_fkey" FOREIGN KEY ("dataTyp
 -- AddForeignKey
 ALTER TABLE "data" ADD CONSTRAINT "data_runId_fkey" FOREIGN KEY ("runId") REFERENCES "run"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-SELECT * FROM create_hypertable('data', by_range('time'));
+
+
+SELECT create_hypertable('data', 'time', chunk_time_interval => 86400000);
 SELECT * FROM add_dimension('data', by_hash('dataTypeName', 4));
 
+-- Enable compression
 ALTER TABLE "data" SET (timescaledb.compress,
    timescaledb.compress_orderby = 'time DESC',
-   timescaledb.compress_segmentby = '"runId", "dataTypeName"',
-   timescaledb.compress_chunk_time_interval='24 hours'
+   timescaledb.compress_segmentby = '"runId", "dataTypeName"'
 );
 
-SELECT add_compression_policy('data', compress_after => INTERVAL '1d');
+SELECT add_compression_policy('data', compress_after => 86400000::BIGINT);

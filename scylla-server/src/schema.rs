@@ -3,7 +3,7 @@
 diesel::table! {
     data (time, dataTypeName) {
         values -> Array<Nullable<Float4>>,
-        time -> Timestamptz,
+        time -> Int8,
         dataTypeName -> Text,
         runId -> Int4,
     }
