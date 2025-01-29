@@ -1972,6 +1972,7 @@ dependencies = [
  "protobuf-codegen",
  "rand",
  "rangemap",
+ "regex",
  "ringbuffer",
  "rumqttc",
  "rustc-hash 2.1.0",

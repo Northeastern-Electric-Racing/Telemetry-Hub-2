@@ -11,13 +11,12 @@ use rumqttc::v5::{
     AsyncClient, Event, EventLoop, MqttOptions,
 };
 use rustc_hash::FxHashMap;
-use socketioxide::SocketIo;
-use tokio::{sync::mpsc::Sender, time::Instant};
+use tokio::{sync::broadcast, time::Instant};
 use tokio_util::sync::CancellationToken;
 use tracing::{debug, instrument, trace, warn, Level};
 
 use crate::{
-    controllers::car_command_controller::CALYPSO_BIDIR_CMD_PREFIX, serverdata, RateLimitMode,
+    controllers::car_command_controller::CALYPSO_BIDIR_CMD_PREFIX, proto::serverdata, RateLimitMode,
 };
 
 use super::ClientData;
@@ -26,16 +25,12 @@ use super::ClientData;
 /// - mqtt state
 /// - reception via mqtt and subsequent parsing
 /// - labeling of data with runs
-/// - sending data over socket
-/// - sending data over the channel to a db handler
+/// - sending data over the channel to a db handler and socket
 ///
 /// It also is the main form of rate limiting
 pub struct MqttProcessor {
-    channel: Sender<ClientData>,
-    io: SocketIo,
+    channel: broadcast::Sender<ClientData>,
     cancel_token: CancellationToken,
-    /// Upload ratio, below is not socket sent above is socket sent
-    upload_ratio: u8,
     /// static rate limiter
     rate_limiter: FxHashMap<String, Instant>,
     /// time to rate limit
@@ -54,20 +49,16 @@ pub struct MqttProcessorOptions {
     pub static_rate_limit_time: u64,
     /// the rate limit mode
     pub rate_limit_mode: RateLimitMode,
-    /// the upload ratio for the socketio
-    pub upload_ratio: u8,
 }
 
 impl MqttProcessor {
     /// Creates a new mqtt receiver and socketio and db sender
     /// * `channel` - The mpsc channel to send the database data to
-    /// * `io` - The socketio layer to send the data to
     /// * `cancel_token` - The token which indicates cancellation of the task
     /// * `opts` - The mqtt processor options to use
     ///     Returns the instance and options to create a client, which is then used in the process_mqtt loop
     pub fn new(
-        channel: Sender<ClientData>,
-        io: SocketIo,
+        channel: broadcast::Sender<ClientData>,
         cancel_token: CancellationToken,
         opts: MqttProcessorOptions,
     ) -> (MqttProcessor, MqttOptions) {
@@ -98,9 +89,7 @@ impl MqttProcessor {
         (
             MqttProcessor {
                 channel,
-                io,
                 cancel_token,
-                upload_ratio: opts.upload_ratio,
                 rate_limiter: FxHashMap::default(),
                 rate_limit_time: Duration::from_millis(opts.static_rate_limit_time),
                 rate_limit_mode: opts.rate_limit_mode,
@@ -113,12 +102,8 @@ impl MqttProcessor {
     /// * `eventloop` - The eventloop returned by ::new to connect to.  The loop isnt sync so this is the best that can be done
     /// * `client` - The async mqttt v5 client to use for subscriptions
     pub async fn process_mqtt(mut self, client: Arc<AsyncClient>, mut eventloop: EventLoop) {
-        let mut view_interval = tokio::time::interval(Duration::from_secs(3));
-
-        let mut latency_interval = tokio::time::interval(Duration::from_millis(250));
+        // let mut latency_interval = tokio::time::interval(Duration::from_millis(250));
         let mut latency_ringbuffer = ringbuffer::AllocRingBuffer::<TimeDelta>::new(20);
-
-        let mut upload_counter: u8 = 0;
 
         debug!("Subscribing to siren");
         client
@@ -142,49 +127,30 @@ impl MqttProcessor {
                             None => continue
                         };
                         latency_ringbuffer.push(chrono::offset::Utc::now() - msg.timestamp);
-                        self.send_socket_msg(&msg, &mut upload_counter);
-                        self.send_db_msg(msg).await;
+                        self.send_db_msg(msg.clone()).await;
                     },
                     Err(msg) => trace!("Received mqtt error: {:?}", msg),
                     _ => trace!("Received misc mqtt: {:?}", msg),
                 },
-                _ = view_interval.tick() => {
-                    trace!("Updating viewership data!");
-                    let sockets = self.io.sockets();
-                    let sockets_cnt = match sockets {
-                        Ok(s) => s.len() as f32,
-                        Err(_) => -1f32,
-                    };
-                    let client_data = ClientData {
-                        name: "Viewers".to_string(),
-                        node: "Internal".to_string(),
-                        unit: "".to_string(),
-                        run_id: crate::RUN_ID.load(Ordering::Relaxed),
-                        timestamp: chrono::offset::Utc::now(),
-                        values: vec![sockets_cnt]
-                    };
-                    self.send_socket_msg(&client_data, &mut upload_counter);
-                }
-                _ = latency_interval.tick() => {
-                    // set latency to 0 if no messages are in buffer
-                    let avg_latency = if latency_ringbuffer.is_empty() {
-                        0
-                    } else {
-                        latency_ringbuffer.iter().sum::<TimeDelta>().num_milliseconds() / latency_ringbuffer.len() as i64
-                    };
+                // _ = latency_interval.tick() => {
+                //     // set latency to 0 if no messages are in buffer
+                //     let avg_latency = if latency_ringbuffer.is_empty() {
+                //         0
+                //     } else {
+                //         latency_ringbuffer.iter().sum::<TimeDelta>().num_milliseconds() / latency_ringbuffer.len() as i64
+                //     };
 
-                    let client_data = ClientData {
-                        name: "Latency".to_string(),
-                        node: "Internal".to_string(),
-                        unit: "ms".to_string(),
-                        run_id: crate::RUN_ID.load(Ordering::Relaxed),
-                        timestamp: chrono::offset::Utc::now(),
-                        values: vec![avg_latency as f32]
-                    };
-                    trace!("Latency update sending: {}", client_data.values.first().unwrap_or(&0.0f32));
-                    self.send_socket_msg(&client_data, &mut upload_counter);
+                //     let client_data = ClientData {
+                //         name: "Latency".to_string(),
+                //         node: "Internal".to_string(),
+                //         unit: "ms".to_string(),
+                //         run_id: crate::RUN_ID.load(Ordering::Relaxed),
+                //         timestamp: chrono::offset::Utc::now(),
+                //         values: vec![avg_latency as f32]
+                //     };
+                //     trace!("Latency update sending: {}", client_data.values.first().unwrap_or(&0.0f32));
+                //     self.send_socket_msg(client_data, &mut upload_counter);
                 }
-            }
         }
     }
 
@@ -308,35 +274,8 @@ impl MqttProcessor {
     /// Send a message to the channel, printing and IGNORING any error that may occur
     /// * `client_data` - The client data to send over the broadcast
     async fn send_db_msg(&self, client_data: ClientData) {
-        if let Err(err) = self.channel.send(client_data).await {
+        if let Err(err) = self.channel.send(client_data) {
             warn!("Error sending through channel: {:?}", err);
-        }
-    }
-
-    /// Sends a message to the socket, printing and IGNORING any error that may occur
-    /// * `client_data` - The client data to send over the broadcast
-    fn send_socket_msg(&self, client_data: &ClientData, upload_counter: &mut u8) {
-        *upload_counter = upload_counter.wrapping_add(1);
-        if *upload_counter >= self.upload_ratio {
-            match self.io.emit(
-                "message",
-                &serde_json::to_string(&client_data).expect("Could not serialize ClientData"),
-            ) {
-                Ok(_) => (),
-                Err(err) => match err {
-                    socketioxide::BroadcastError::Socket(e) => {
-                        trace!("Socket: Transmit error: {:?}", e);
-                    }
-                    socketioxide::BroadcastError::Serialize(_) => {
-                        warn!("Socket: Serialize error: {}", err)
-                    }
-                    socketioxide::BroadcastError::Adapter(_) => {
-                        warn!("Socket: Adapter error: {}", err)
-                    }
-                },
-            }
-        } else {
-            trace!("Discarding message with topic {}", client_data.name);
         }
     }
 }

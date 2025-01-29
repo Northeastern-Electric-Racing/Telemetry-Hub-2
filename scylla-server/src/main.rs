@@ -25,6 +25,7 @@ use scylla_server::{
         data_type_controller, file_insertion_controller, run_controller,
     },
     services::run_service::{self},
+    socket_handler::{socket_handler, socket_handler_with_metadata},
     RateLimitMode,
 };
 use scylla_server::{
@@ -33,7 +34,10 @@ use scylla_server::{
     ClientData, RUN_ID,
 };
 use socketioxide::{extract::SocketRef, SocketIo};
-use tokio::{signal, sync::mpsc};
+use tokio::{
+    signal,
+    sync::{broadcast, mpsc},
+};
 use tokio_util::{sync::CancellationToken, task::TaskTracker};
 use tower::ServiceBuilder;
 use tower_http::{
@@ -106,6 +110,10 @@ struct ScyllaArgs {
         default_value = "0"
     )]
     socketio_discard_percent: u8,
+
+    /// Whether to disable sending of metadata over the socket to the client
+    #[arg(long, env = "SCYLLA_SOCKET_DISABLE_METADATA")]
+    no_metadata: bool,
 }
 
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
@@ -180,9 +188,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // channel to pass the mqtt data
     // TODO tune buffer size
-    let (mqtt_send, mqtt_receive) = mpsc::channel::<ClientData>(10000);
+    let (mqtt_send, mqtt_receive) = broadcast::channel::<ClientData>(10000);
 
-    // channel to pass the processed data to the db thread
+    // channel to pass the processed data to the batch uploading thread
     // TODO tune buffer size
     let (db_send, db_receive) = mpsc::channel::<Vec<ClientData>>(1000);
 
@@ -190,10 +198,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // create a task tracker and cancellation token
     let task_tracker = TaskTracker::new();
     let token = CancellationToken::new();
+
+    if cli.no_metadata {
+        task_tracker.spawn(socket_handler(
+            token.clone(),
+            mqtt_receive,
+            cli.socketio_discard_percent,
+            io,
+        ));
+    } else {
+        task_tracker.spawn(socket_handler_with_metadata(
+            token.clone(),
+            mqtt_receive,
+            cli.socketio_discard_percent,
+            io,
+        ));
+    }
+
     // spawn the database handler
     task_tracker.spawn(
-        db_handler::DbHandler::new(mqtt_receive, pool.clone(), cli.batch_upsert_time * 1000)
-            .handling_loop(db_send.clone(), token.clone()),
+        db_handler::DbHandler::new(
+            mqtt_send.subscribe(),
+            pool.clone(),
+            cli.batch_upsert_time * 1000,
+        )
+        .handling_loop(db_send.clone(), token.clone()),
     );
     // spawn the database inserter, if we have it enabled
     if !cli.disable_data_upload {
@@ -222,14 +251,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Running processor in MQTT (production) mode");
     let (recv, opts) = MqttProcessor::new(
         mqtt_send,
-        io,
         token.clone(),
         MqttProcessorOptions {
             mqtt_path: cli.siren_host_url,
             initial_run: curr_run.runId,
             static_rate_limit_time: cli.static_rate_limit_value,
             rate_limit_mode: cli.rate_limit_mode,
-            upload_ratio: cli.socketio_discard_percent,
         },
     );
     let (client, eventloop) = AsyncClient::new(opts, 600);

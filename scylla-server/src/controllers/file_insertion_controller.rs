@@ -9,7 +9,9 @@ use rangemap::RangeInclusiveMap;
 use tokio::sync::mpsc;
 use tracing::{debug, info, trace, warn};
 
-use crate::{error::ScyllaError, playback_data, services::run_service, ClientData, PoolHandle};
+use crate::{
+    error::ScyllaError, proto::playback_data, services::run_service, ClientData, PoolHandle,
+};
 
 /// Inserts a file using http multipart
 /// This file is parsed and clientdata values are extracted, the run ID of each variable is inferred, and then data is batch uploaded
