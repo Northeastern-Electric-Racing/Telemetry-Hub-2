@@ -40,3 +40,15 @@ ALTER TABLE "data" ADD CONSTRAINT "data_dataTypeName_fkey" FOREIGN KEY ("dataTyp
 
 -- AddForeignKey
 ALTER TABLE "data" ADD CONSTRAINT "data_runId_fkey" FOREIGN KEY ("runId") REFERENCES "run"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+
+SELECT * FROM create_hypertable('data', by_range('time'));
+SELECT * FROM add_dimension('data', by_hash('dataTypeName', 4));
+
+ALTER TABLE "data" SET (timescaledb.compress,
+   timescaledb.compress_orderby = 'time DESC',
+   timescaledb.compress_segmentby = '"runId", "dataTypeName"',
+   timescaledb.compress_chunk_time_interval='24 hours'
+);
+
+SELECT add_compression_policy('data', compress_after => 84000);
