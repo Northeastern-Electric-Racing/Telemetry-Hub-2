@@ -5,7 +5,7 @@ import { v4 as uuidV4 } from "uuid";
 import { LocalData, LocalRun } from "../types/local.types";
 import { CsvDataRow, CsvRunRow } from "../types/csv.types";
 import { parse } from "csv-parse";
-import path from "path";
+import * as path from "path";
 import { DOWNLOADS_PATH } from "../storage-paths";
 
 async function createFolder(folderPath: string) {
