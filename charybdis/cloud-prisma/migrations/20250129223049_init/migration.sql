@@ -51,4 +51,4 @@ ALTER TABLE "data" SET (timescaledb.compress,
    timescaledb.compress_chunk_time_interval='24 hours'
 );
 
-SELECT add_compression_policy('data', compress_after => 84000);
+SELECT add_compression_policy('data', compress_after => 86400000);
