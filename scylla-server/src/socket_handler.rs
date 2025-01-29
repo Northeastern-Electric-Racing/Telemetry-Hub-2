@@ -83,65 +83,7 @@ pub async fn socket_handler_with_metadata(
                     &io,
                     DATA_SOCKET_KEY,
                 );
-
-                // check to see if we fit a timer case, and then act upon it
-                // IMPORTANT: assumes a timer is never also a fault
-                if let Some(time) = timer_map.get_mut(&data.name) {
-                    trace!("Triggering timer: {}", data.name);
-                    let new_val = *data.values.first().unwrap_or(&-1f32);
-                    if time.last_value != new_val {
-                        time.last_value = new_val;
-                        time.last_change = Utc::now();
-                    }
-                    continue;
-                }
-
-                // check to see if this is a fault, and return the fault name and node
-                // each bring is the logic to get a node, note the difference in DTI
-                let (flt_txt, node) = if let Some(mtch) = fault_regex_bms.captures_iter(&data.name).next() {
-                    (mtch.get(1).map_or("", |m| m.as_str()), Node::Bms)
-                } else if let Some(mtch) = fault_regex_charger.captures_iter(&data.name).next() {
-                    (mtch.get(1).map_or("", |m| m.as_str()), Node::Charger)
-                } else if let Some(mtch) = fault_regex_mpu.captures_iter(&data.name).next() {
-                    (mtch.get(1).map_or("", |m| m.as_str()), Node::Mpu)
-                } else if FAULT_BINS[0] == data.name {
-                    let Some(flt) = map_dti_flt(*data.values.first().unwrap_or(&0f32) as usize) else {
-                        continue;
-                    };
-                    (flt, Node::Dti)
-                } else {
-                    continue;
-                };
-
-                trace!("Matched on {}, {:?}", flt_txt, node);
-
-                // default to sending a new fault
-                let mut should_push = true;
-                // iterate through current faults
-                for item in fault_ringbuffer.iter_mut() {
-                    // if a fault of the same type is in the queue, and not expired
-                    if item.name == flt_txt && node.clone() == item.node && !item.expired {
-                        // update the last seen metric
-                        item.last_seen = data.timestamp;
-                        // if the time since the last fault is greater than [FAULT_MIN_REG_GAP], mark this fault as expired
-                        if (data.timestamp - item.last_seen) > FAULT_MIN_REG_GAP {
-                            item.expired = true;
-                        } else {
-                            // otherwise, if the fault isnt expired, ensure we dont create a duplicate fault
-                            should_push = false;
-                        }
-                    }
-                }
-                // send a new fault if no message matches and is not expired
-                if should_push {
-                   fault_ringbuffer.push(FaultData {
-                     node,
-                     name: flt_txt.to_string(),
-                     occured_at: data.timestamp,
-                     last_seen: data.timestamp,
-                     expired: false,
-                    });
-                }
+                handle_socket_msg(data, &fault_regex_mpu, &fault_regex_bms, &fault_regex_charger, &mut timer_map, &mut fault_ringbuffer);
             }
             _ = recent_faults_interval.tick() => {
                 send_socket_msg(
@@ -183,6 +125,75 @@ pub async fn socket_handler_with_metadata(
                     );
             }
         }
+    }
+}
+
+/// Handles parsing and creating metadata for a newly received socket message.
+fn handle_socket_msg(
+    data: ClientData,
+    fault_regex_mpu: &Regex,
+    fault_regex_bms: &Regex,
+    fault_regex_charger: &Regex,
+    timer_map: &mut HashMap<String, TimerData>,
+    fault_ringbuffer: &mut AllocRingBuffer<FaultData>,
+) {
+    // check to see if we fit a timer case, and then act upon it
+    // IMPORTANT: assumes a timer is never also a fault
+    if let Some(time) = timer_map.get_mut(&data.name) {
+        trace!("Triggering timer: {}", data.name);
+        let new_val = *data.values.first().unwrap_or(&-1f32);
+        if time.last_value != new_val {
+            time.last_value = new_val;
+            time.last_change = Utc::now();
+        }
+        return;
+    }
+
+    // check to see if this is a fault, and return the fault name and node
+    // each bring is the logic to get a node, note the difference in DTI
+    let (flt_txt, node) = if let Some(mtch) = fault_regex_bms.captures_iter(&data.name).next() {
+        (mtch.get(1).map_or("", |m| m.as_str()), Node::Bms)
+    } else if let Some(mtch) = fault_regex_charger.captures_iter(&data.name).next() {
+        (mtch.get(1).map_or("", |m| m.as_str()), Node::Charger)
+    } else if let Some(mtch) = fault_regex_mpu.captures_iter(&data.name).next() {
+        (mtch.get(1).map_or("", |m| m.as_str()), Node::Mpu)
+    } else if FAULT_BINS[0] == data.name {
+        let Some(flt) = map_dti_flt(*data.values.first().unwrap_or(&0f32) as usize) else {
+            return;
+        };
+        (flt, Node::Dti)
+    } else {
+        return;
+    };
+
+    trace!("Matched on {}, {:?}", flt_txt, node);
+
+    // default to sending a new fault
+    let mut should_push = true;
+    // iterate through current faults
+    for item in fault_ringbuffer.iter_mut() {
+        // if a fault of the same type is in the queue, and not expired
+        if item.name == flt_txt && node.clone() == item.node && !item.expired {
+            // update the last seen metric
+            item.last_seen = data.timestamp;
+            // if the time since the last fault is greater than [FAULT_MIN_REG_GAP], mark this fault as expired
+            if (data.timestamp - item.last_seen) > FAULT_MIN_REG_GAP {
+                item.expired = true;
+            } else {
+                // otherwise, if the fault isnt expired, ensure we dont create a duplicate fault
+                should_push = false;
+            }
+        }
+    }
+    // send a new fault if no message matches and is not expired
+    if should_push {
+        fault_ringbuffer.push(FaultData {
+            node,
+            name: flt_txt.to_string(),
+            occured_at: data.timestamp,
+            last_seen: data.timestamp,
+            expired: false,
+        });
     }
 }
 
