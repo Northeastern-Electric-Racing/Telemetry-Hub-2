@@ -2,11 +2,12 @@ import { Parser } from "json2csv";
 import * as fs from "fs";
 import { prisma as localPrisma } from "../../../local-prisma/prisma";
 import { v4 as uuidV4 } from "uuid";
-import { LocalData, LocalRun } from "../types/local.types";
-import { CsvDataRow, CsvRunRow } from "../types/csv.types";
+import { LocalData, LocalDataType, LocalRun } from "../types/local.types";
+import { CsvRunRow } from "../types/csv.types";
 import { parse } from "csv-parse";
 import * as path from "path";
 import { DOWNLOADS_PATH } from "../storage-paths";
+import { WriteStream } from "fs";
 
 async function createFolder(folderPath: string) {
   if (!fs.existsSync(folderPath)) {
@@ -34,21 +35,80 @@ function createMeaningfulFileName(name: string, date: Date): string {
 }
 
 /**
- * Appends the records given to the csv file specified by the filename.
+ * The interface describing our CSV writer, parameterized by a generic type T.
  *
- * @param records
- * @param filename
+ * - `appendRecords(records: T[]): void`
+ *    Appends an array of T records to the CSV.
+ * - `close(): void`
+ *    Closes the underlying file stream.
  */
-function appendToCsv<T>(records: T[], filename: string) {
-  // TODO: throw error if headers do not match existing headers (or create wrapper)
-  const parser = new Parser({ header: fs.existsSync(filename) ? false : true });
-  const csv = parser.parse(records);
-  fs.appendFileSync(filename, csv + "\n", { encoding: "utf8" });
+export interface CsvStreamWriter<T> {
+  appendRecords(records: T[]): void;
+  close(): void;
+}
+
+/**
+ * Creates a writer object that can append records to a CSV file in batches.
+ *
+ * @param filename The path to the CSV file.
+ * @returns A typed object (`CsvStreamWriter<T>`) with `appendRecords` and `close` methods.
+ */
+export function createCsvStreamWriter<T>(filename: string): CsvStreamWriter<T> {
+  // Check if the file already exists (to determine whether to write headers).
+  const fileExists = fs.existsSync(filename);
+
+  // Create a write stream in append mode.
+  const writeStream: WriteStream = fs.createWriteStream(filename, {
+    flags: "a",
+  });
+
+  // Create a JSON2CSV parser. If the file doesn't exist, enable headers. Otherwise, skip them.
+  // Adjust parser options as needed (e.g., flatten, transforms, etc.)
+  const parser = new Parser<T>({
+    header: !fileExists, // Write headers only if file doesn't exist
+  });
+
+  return {
+    /**
+     * Appends the given records of type T to the CSV file.
+     *
+     * @param records Array of T objects to append.
+     */
+    appendRecords(records: T[]): void {
+      if (!records || records.length === 0) {
+        return;
+      }
+
+      const csv = parser.parse(records);
+      const filePath = writeStream.path as string; // Get file path from stream
+
+      // Check if the file already has content (i.e., a header)
+      if (fs.existsSync(filePath) && fs.statSync(filePath).size > 0) {
+        // ✅ File already has a header, append only data
+        const lines = csv.split("\n").slice(1).join("\n"); // Remove first line (header)
+        writeStream.write(lines + "\n");
+      } else {
+        // ✅ File is new, write full CSV including header
+        writeStream.write(csv + "\n");
+      }
+    },
+
+    /**
+     * Closes the underlying file stream.
+     * Make sure to call this after finishing all appends!
+     */
+    close(): void {
+      writeStream.end();
+    },
+  };
 }
 
 async function dumpDataTypeToCsv(batchSize: number, storagePath: string) {
   let moreData = true;
   let cursor: { name: string } | undefined;
+  let csvWriter = createCsvStreamWriter<LocalDataType>(
+    `${storagePath}/data_type.csv`
+  );
 
   while (moreData) {
     const dataTypes = await localPrisma.data_type.findMany({
@@ -69,7 +129,7 @@ async function dumpDataTypeToCsv(batchSize: number, storagePath: string) {
       cursor = {
         name: dataTypes[dataTypes.length - 1].name,
       };
-      appendToCsv(dataTypes, `${storagePath}/data_type.csv`);
+      csvWriter.appendRecords(dataTypes);
       console.log(`Fetched ${dataTypes.length} Data Types`);
     }
   }
@@ -78,6 +138,7 @@ async function dumpDataTypeToCsv(batchSize: number, storagePath: string) {
 async function dumpRunToCsv(batchSize: number, storagePath: string) {
   let moreRuns = true;
   let cursor: { runId: number } | undefined;
+  let csvWriter = createCsvStreamWriter<CsvRunRow>(`${storagePath}/run.csv`);
 
   while (moreRuns) {
     const runs: LocalRun[] = await localPrisma.run.findMany({
@@ -109,7 +170,7 @@ async function dumpRunToCsv(batchSize: number, storagePath: string) {
         };
       });
 
-      appendToCsv(csvDataRow, `${storagePath}/run.csv`);
+      csvWriter.appendRecords(csvDataRow);
       console.log(`Inserted ${csvDataRow.length} to run.csv`);
     }
   }
@@ -156,7 +217,7 @@ async function dumpAllDataByRuns(batchSize: number, currentDumpPath: string) {
 
   // TODO: if there is ever some sort of restart, we should have some way of resuming where we left off.
   for (const runId of downloadedRunIds) {
-    await dumpDataByRun(runId, 39000, dataFolder);
+    await dumpDataByRun(runId, 50000, dataFolder);
   }
 }
 
@@ -165,25 +226,26 @@ async function dumpDataByRun(
   batchSize: number,
   storagePath: string
 ) {
-  let offset = 0;
   let moreData = true;
+  let offset = 0;
+  let csvWriter = createCsvStreamWriter<LocalData>(
+    `${storagePath}/run-${runId}-data.csv`
+  );
 
   while (moreData) {
+    // Fetch batched data using `findMany`
     const dataChunk = await localPrisma.data.findMany({
       where: { runId },
-      skip: offset, // skip the already fetched rows
       take: batchSize,
-      orderBy: [{ time: "asc" }, { dataTypeName: "asc" }], // keep ordering consistent
+      skip: offset, // ✅ Efficiently skip processed data
+      orderBy: [{ time: "asc" }, { dataTypeName: "asc" }],
     });
 
     if (dataChunk.length === 0) {
-      moreData = false; // stop fetching when there's no more data
+      moreData = false;
     } else {
-      // Increase the offset for the next batch
-      offset += dataChunk.length;
-
-      // Append to CSV
-      appendToCsv(dataChunk, `${storagePath}/run-${runId}-data.csv`);
+      offset += dataChunk.length; // ✅ Move offset forward
+      csvWriter.appendRecords(dataChunk);
       console.log(`Inserted ${dataChunk.length} rows to run-${runId}-data.csv`);
     }
   }

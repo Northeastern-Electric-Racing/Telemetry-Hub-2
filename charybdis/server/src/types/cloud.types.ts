@@ -15,7 +15,7 @@ export interface CloudRun {
 export interface CloudData {
   runId: string; // the run this data was recorded during
   dataTypeName: string; // the name of where the data came from (on the car)
-  time: Date; // the time the data was recorded
+  time: BigInt; // the time the data was recorded
   values: number[]; // the values recorded
 }
 

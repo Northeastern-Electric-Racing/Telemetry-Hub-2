@@ -14,8 +14,8 @@ export interface LocalRun {
  */
 export interface LocalData {
   values: number[];
-  time: Date;
-  runId: string;
+  time: bigint;
+  runId: number;
   dataTypeName: string;
 }
 
