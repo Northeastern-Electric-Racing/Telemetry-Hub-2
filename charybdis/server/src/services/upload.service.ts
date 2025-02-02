@@ -1,206 +1,222 @@
-/* TBD, waiting to decide on how to handle data date fields */
+import * as fs from "fs";
+import * as path from "path";
+import { parse } from "csv-parse";
+import { Request, Response } from "express";
+import { PrismaClient as CloudPrisma } from "../../../cloud-prisma/prisma";
+import { LocalData, LocalDataType, LocalRun } from "../types/local.types";
+import { CloudData, CloudDataType, CloudRun } from "../types/cloud.types";
+import { CsvDataRow, CsvDataTypeRow, CsvRunRow } from "../types/csv.types";
+import { DOWNLOADS_PATH } from "../storage-paths";
+import { extractRunIds } from "./dump.service";
+import { get } from "http";
+import { csvToCloudData } from "../transformers/csv.transformer";
 
-// import * as fs from "fs";
-// import * as path from "path";
-// import { parse } from "csv-parse";
-// import { PrismaClient as CloudPrisma } from "../../../cloud-prisma/prisma";
-// import { LocalData, LocalDataType, LocalRun } from "../types/local.types";
-// import { CloudData, CloudDataType, CloudRun } from "../types/cloud.types";
-// import { CsvRunRow } from "../types/csv.types";
-// import { DOWNLOADS_PATH } from "../storage-paths";
+const localTables = {
+  run: "run",
+  data: "data",
+  data_type: "data_type",
+};
 
-// const localTables = {
-//   run: "run",
-//   data: "data",
-//   data_type: "data_type",
-// };
+const csvNames = {
+  run: (path: string) => `${path}/run.csv`,
+  data: (path: string, runId: number) => `${path}/data/run-${runId}-data.csv`,
+  data_type: (path: string) => `${path}/data_type.csv`,
+};
+export async function processRuns(
+  processRunBatch: (batch: CsvRunRow[]) => Promise<void>
+) {
+  await processCsvInBatches<CsvRunRow>(
+    csvNames.run(await getMostRecentDownloadFolder()),
+    processRunBatch,
+    1000
+  );
+}
 
-// export async function processRuns(
-//   processRunBatch: (batch: CsvRunRow[]) => Promise<void>
-// ) {
-//   await processCsvInBatches<CsvRunRow>(
-//     `${localTables.run}.csv`,
-//     processRunBatch,
-//     1000
-//   );
-// }
+export async function processDataType(
+  processDataTypeBatch: (batch: CsvDataTypeRow[]) => Promise<void>
+) {
+  await processCsvInBatches<LocalDataType>(
+    csvNames.data_type(await getMostRecentDownloadFolder()),
+    processDataTypeBatch,
+    1000
+  );
+}
 
-// export async function processDataType(
-//   processDataTypeBatch: (batch: LocalDataType[]) => Promise<void>
-// ) {
-//   await processCsvInBatches<LocalDataType>(
-//     `${localTables.data_type}.csv`,
-//     processDataTypeBatch,
-//     1000
-//   );
-// }
+export async function processData() {
+  const uuidToRunId = await extractRunIds(
+    csvNames.run(await getMostRecentDownloadFolder())
+  );
 
-// export async function processData(
-//   processDataBatch: (batch: LocalData[]) => Promise<void>
-// ) {
-//   await processCsvInBatches<LocalData>(
-//     `${localTables.data}.csv`,
-//     processDataBatch,
-//     5000
-//   );
-// }
+  for (const run of uuidToRunId) {
+    await processCsvInBatches<CsvDataRow>(
+      csvNames.data(await getMostRecentDownloadFolder(), run[1]),
+      async (batch) => {
+        try {
+          const cloudData: CloudData[] = batch.map((localData: CsvDataRow) =>
+            csvToCloudData(localData, run[0])
+          );
 
-// // Initialize the cloud DB client
-// const cloudDb = new CloudPrisma();
+          await cloudDb.data.createMany({
+            data: cloudData,
+            skipDuplicates: true,
+          });
+          console.log(`Inserted ${cloudData.length} data entries`);
+        } catch (error) {
+          console.error("Error inserting data:", error);
+          process.exit(1);
+        }
+      },
+      4960
+    );
+  }
+}
 
-// // Define batch size to avoid memory overload
-// const BATCH_SIZE = 1000; // Process records in chunks of 1000
+const cloudDb = new CloudPrisma();
 
-// /**
-//  * Stream CSV data in batches to avoid memory overload.
-//  */
-// async function processCsvInBatches<T>(
-//   filename: string,
-//   processBatch: (batch: T[]) => Promise<void>,
-//   batchSize: number
-// ): Promise<void> {
-//   return new Promise((resolve, reject) => {
-//     const records: any[] = [];
-//     const readStream = fs
-//       .createReadStream(path.resolve(filename))
-//       .pipe(parse({ columns: true, skip_empty_lines: true, cast: true }));
+const BATCH_SIZE = 1000;
 
-//     // this data has
-//     readStream.on("data", (row) => {
-//       records.push(row);
+async function processCsvInBatches<T>(
+  csv_path: string,
+  processBatch: (batch: T[]) => Promise<void>,
+  batchSize: number
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const records: any[] = [];
+    const readStream = fs
+      .createReadStream(path.resolve(csv_path))
+      .pipe(parse({ columns: true, skip_empty_lines: true, cast: true }));
 
-//       if (records.length >= batchSize) {
-//         readStream.pause(); // Pause stream to process batch
-//         processBatch(records.splice(0, batchSize))
-//           .then(() => readStream.resume()) // Resume stream after batch processing
-//           .catch(reject);
-//       }
-//     });
+    readStream.on("data", (row) => {
+      records.push(row);
 
-//     readStream.on("end", async () => {
-//       if (records.length > 0) {
-//         await processBatch(records);
-//       }
-//       console.log(`Finished processing ${filename}`);
-//       resolve();
-//     });
+      if (records.length >= batchSize) {
+        readStream.pause();
+        processBatch(records.splice(0, batchSize))
+          .then(() => readStream.resume())
+          .catch(reject);
+      }
+    });
 
-//     readStream.on("error", (err) => {
-//       reject(`Error reading ${filename}: ${err.message}`);
-//     });
-//   });
-// }
+    readStream.on("end", async () => {
+      if (records.length > 0) {
+        await processBatch(records);
+      }
+      console.log(`Finished processing ${csv_path}`);
+      resolve();
+    });
 
-// export async function uploadToCloud() {
-//   try {
-//     console.log("Starting CSV to Cloud DB transfer...");
+    readStream.on("error", (err) => {
+      reject(`Error reading ${csv_path}: ${err.message}`);
+    });
+  });
+}
 
-//     const mostRecentFolder = getFirstLexicographicalFolder(DOWNLOADS_PATH);
-//     if (!mostRecentFolder) {
-//       console.error("No folders found in downloads directory.");
-//       process.exit(1);
-//     }
+export async function uploadToCloud(req: Request, res: Response) {
+  try {
+    console.info("Starting CSV to Cloud DB transfer...");
 
-//     // Upsert data types into the cloud database
-//     await processDataType(async (batch) => {
-//       const cloudDataTypes: CloudDataType[] = batch.map((localDataType) => ({
-//         name: localDataType.name,
-//         unit: localDataType.unit,
-//         nodeName: localDataType.nodeName,
-//       }));
+    await processDataType(async (batch) => {
+      console.info("Processing data types");
+      const cloudDataTypes: CloudDataType[] = batch.map((localDataType) => ({
+        name: localDataType.name,
+        unit: localDataType.unit,
+        nodeName: localDataType.nodeName,
+      }));
 
-//       await cloudDb.data_type.createMany({
-//         data: cloudDataTypes,
-//         skipDuplicates: true,
-//       });
-//       console.log(`Inserted ${cloudDataTypes.length} data_type entries`);
-//     });
+      await cloudDb.data_type.createMany({
+        data: cloudDataTypes,
+        skipDuplicates: true,
+      });
+      console.log(`Inserted ${cloudDataTypes.length} data_type entries`);
+    });
 
-//     // Insert each run and it's data in batches
-//     await processRunsAndData(mostRecentFolder);
+    await processRuns(async (batch) => {
+      const cloudRuns: CloudRun[] = batch.map((csvRun: CsvRunRow) => ({
+        id: csvRun.uuid,
+        runId: Number(csvRun.runId),
+        driverName: csvRun.driverName,
+        notes: csvRun.notes,
+        time: new Date(csvRun.time),
+      }));
 
-//     console.log("Inserted all runs");
+      console.info(`inserting run batch of: ${cloudRuns.length}`);
+      try {
+        await cloudDb.run.createMany({
+          data: cloudRuns,
+          skipDuplicates: true,
+        });
+        console.info("inserted all runs succesfully");
+      } catch (error) {
+        console.error("Error inserting runs:", error);
+        process.exit(1);
+      }
+    });
 
-//     // 2. Insert data_type in batches
-//     await processCsvInBatches<LocalDataType>("data_type.csv", async (batch) => {
-//       const cloudDataTypes: CloudDataType[] = batch.map((localDataType) => ({
-//         name: localDataType.name,
-//         unit: localDataType.unit,
-//         nodeName: localDataType.nodeName,
-//       }));
+    console.info("Inserted all runs");
 
-//       await cloudDb.data_type.createMany({
-//         data: cloudDataTypes,
-//         skipDuplicates: true,
-//       });
-//       console.log(`Inserted ${cloudDataTypes.length} data_type entries`);
-//     });
+    await processData();
 
-//     console.log("Inserted all data_type entries");
+    console.log("Inserted all data entries");
+    console.log("CSV to Cloud transfer complete.");
 
-//     // 3. Insert data in batches
-//     await processCsvInBatches<LocalData>("data.csv", async (batch) => {
-//       const newData: CloudData[] = batch.map((localData, index) => {
-//         // const values = parseFloatArray(localData.values);
+    res.json({ message: "Uploaded the mf data" });
+  } catch (error) {
+    console.error("Error processing CSV files:", error);
+    process.exit(1);
+  } finally {
+    await cloudDb.$disconnect();
+  }
+}
 
-//         if (localData.values.length === 0) {
-//           console.warn(
-//             `Warning: Row ${index + 1} has empty values for dataType ${
-//               localData.dataTypeName
-//             }`
-//           );
-//         }
+function getFirstLexicographicalFolder(directoryPath: string): string | null {
+  try {
+    const items = fs.readdirSync(directoryPath, { withFileTypes: true });
+    const folders = items
+      .filter((item) => item.isDirectory())
+      .map((folder) => folder.name);
 
-//         return {
-//           time: new Date(localData.time),
-//           dataTypeName: localData.dataTypeName,
-//           runId: runIdMap[localData.runId], // Convert local runId(Int) to new run ID(String)
-//           values: localData.values,
-//         };
-//       });
+    if (folders.length === 0) {
+      console.log("No folders found in the directory.");
+      return null;
+    }
 
-//       await cloudDb.data.createMany({ data: newData, skipDuplicates: true });
-//       console.log(`Inserted ${newData.length} data entries`);
-//     });
+    const sortedFolders = folders.sort();
+    return sortedFolders[0];
+  } catch (error) {
+    console.error("Error reading directory:", error);
+    return null;
+  }
+}
 
-//     console.log("Inserted all data entries");
-//     console.log("CSV to Cloud transfer complete.");
-//   } catch (error) {
-//     console.error("Error processing CSV files:", error);
-//     process.exit(1);
-//   } finally {
-//     await cloudDb.$disconnect();
-//   }
-// }
+/**
+ *
+ * @returns the path to the folder based on the folder name at the top of the list of the audit_log.csv file.
+ */
+async function getMostRecentDownloadFolder(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    console.log("Getting most recent download folder...");
+    const auditLogPath = path.resolve(`${DOWNLOADS_PATH}/audit_log.csv`);
+    const auditLogStream = fs.createReadStream(auditLogPath).pipe(parse({}));
 
-// /**
-//  * Get the lexically first folder in the specified directory.
-//  *
-//  * @param directoryPath The path to the directory to search.
-//  * @returns The name of the first folder found, or null if no folders are found.
-//  */
-// function getFirstLexicographicalFolder(directoryPath: string): string | null {
-//   try {
-//     // Read all items in the directory
-//     const items = fs.readdirSync(directoryPath, { withFileTypes: true });
+    let lineCount = 0;
 
-//     // Filter items to include only directories
-//     const folders = items
-//       .filter((item) => item.isDirectory())
-//       .map((folder) => folder.name);
+    auditLogStream.on("data", (row) => {
+      lineCount += 1;
+      if (lineCount === 2) {
+        const folderName = row[1]; // Get the second column of the second row
+        console.log(`Found folder: ${folderName}`);
+        resolve(`${DOWNLOADS_PATH}/${folderName}`);
+      }
+    });
 
-//     if (folders.length === 0) {
-//       console.log("No folders found in the directory.");
-//       return null;
-//     }
+    auditLogStream.on("error", (err) => {
+      reject(err);
+    });
 
-//     // Sort folders by name (assumes timestamped names)
-//     const sortedFolders = folders.sort();
-
-//     // Return the last folder name (most recent)
-//     return sortedFolders[0];
-//   } catch (error) {
-//     console.error("Error reading directory:", error);
-//     return null;
-//   }
-// }
+    auditLogStream.on("end", () => {
+      if (lineCount < 2) {
+        reject(new Error("No second row found in audit log."));
+      }
+    });
+  });
+}

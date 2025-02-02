@@ -12,26 +12,26 @@ import { WriteStream } from "fs";
 async function createFolder(folderPath: string) {
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath);
-    console.log(`Folder created at: ${folderPath}`);
+    console.info(`Folder created at: ${folderPath}`);
   } else {
-    console.log(`Folder already exists at: ${folderPath}`);
+    console.info(`Folder already exists at: ${folderPath}`);
   }
 }
 
 function createMeaningfulFileName(name: string, date: Date): string {
   // Format the date as "yyyy_month_day-hr_minute_ms"
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
-  const milliseconds = String(date.getMilliseconds()).padStart(3, "0");
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+  const milliseconds = String(date.getUTCMilliseconds()).padStart(3, "0");
 
-  const formattedDate = `${year}_${month}_${day}-${hours}_${minutes}_${seconds}_${milliseconds}`;
+  const formattedDate = `${year}-${month}-${day}__${hours}-${minutes}-${seconds}-${milliseconds}`;
 
   // Combine the sanitized file name with the formatted date
-  return `${name}-${formattedDate}`;
+  return `${name}_${formattedDate}`;
 }
 
 /**
@@ -44,6 +44,7 @@ function createMeaningfulFileName(name: string, date: Date): string {
  */
 export interface CsvStreamWriter<T> {
   appendRecords(records: T[]): void;
+  prependRecord(record: T): void;
   close(): void;
 }
 
@@ -90,6 +91,52 @@ export function createCsvStreamWriter<T>(filename: string): CsvStreamWriter<T> {
       } else {
         // ✅ File is new, write full CSV including header
         writeStream.write(csv + "\n");
+      }
+    },
+
+    /**
+     * Adds the record to the beginning of the file, under the header.
+     */
+    prependRecord(record: T): void {
+      if (!record) {
+        return;
+      }
+
+      const filePath = writeStream.path as string; // Get file path from stream
+      const newCsv = parser.parse([record]); // Convert record to CSV format
+
+      if (!fs.existsSync(filePath) || fs.statSync(filePath).size === 0) {
+        // ✅ File does not exist or is empty, write full CSV including header
+        fs.writeFileSync(filePath, newCsv + "\n", "utf8");
+        return;
+      }
+
+      // ✅ File exists and has content, read existing content
+      const existingContent = fs.readFileSync(filePath, "utf8").trim();
+      const lines = existingContent.split("\n");
+
+      if (lines.length > 1) {
+        // ✅ File has a header and data, insert under header
+        const header = lines[0];
+        console.log("Header:", header);
+        const data = lines.slice(1); // Keep only the existing data rows
+        console.log("Existing data:", data);
+        console.log("New data:", newCsv);
+        const updatedContent = [header, ...newCsv.split("\n"), ...data].join(
+          "\n"
+        );
+        console.info(
+          "Audit log update with new record at the top: ",
+          updatedContent
+        );
+        fs.writeFileSync(filePath, updatedContent + "\n", "utf8");
+      } else {
+        // ✅ File only has a header, add the new record as the first data entry
+        fs.writeFileSync(
+          filePath,
+          existingContent + "\n" + newCsv.split("\n")[1] + "\n",
+          "utf8"
+        );
       }
     },
 
@@ -176,31 +223,31 @@ async function dumpRunToCsv(batchSize: number, storagePath: string) {
   }
 }
 
-async function extractRunIds(filePath: string): Promise<number[]> {
+/**
+ * Extracts the runids linked to there new uuid's from the run.csv file
+ * @param filePath
+ * @returns
+ */
+export async function extractRunIds(
+  filePath: string
+): Promise<Map<string, number>> {
   return new Promise((resolve, reject) => {
-    const runIds: number[] = [];
+    console.info("Extracting runIds from run.csv");
+    const runIdMap = new Map<string, number>();
+    const parser = parse({ columns: true });
+    const fileStream = fs.createReadStream(filePath).pipe(parser);
 
-    const readStream = fs.createReadStream(path.resolve(filePath));
-    const parser = parse({ columns: true, skip_empty_lines: true }); // `columns: true` parses rows into objects
+    fileStream.on("data", (row) => {
+      runIdMap.set(row.uuid, parseInt(row.runId, 10));
+    });
 
-    readStream
-      .pipe(parser)
-      .on("data", (row: CsvRunRow) => {
-        if (row.runId) {
-          // get the runId from the row
-          let runId = parseInt(row.runId);
-          // and save it to the runIds array
-          runIds.push(runId);
-        }
-      })
-      .on("end", () => {
-        console.log("Extracted runIds:", runIds);
-        return resolve(runIds);
-      })
-      .on("error", (err) => {
-        console.error("Error reading CSV:", err);
-        reject(err);
-      });
+    fileStream.on("end", () => {
+      resolve(runIdMap);
+    });
+
+    fileStream.on("error", (error) => {
+      reject(error);
+    });
   });
 }
 
@@ -216,7 +263,7 @@ async function dumpAllDataByRuns(batchSize: number, currentDumpPath: string) {
   await createFolder(dataFolder);
 
   // TODO: if there is ever some sort of restart, we should have some way of resuming where we left off.
-  for (const runId of downloadedRunIds) {
+  for (const runId of downloadedRunIds.values()) {
     await dumpDataByRun(runId, 50000, dataFolder);
   }
 }
@@ -251,21 +298,43 @@ async function dumpDataByRun(
   }
 }
 
+export interface AuditRow {
+  status: string;
+  dumpFolderName: string;
+  timeTrigger: Date;
+}
+
 export async function dumpLocalDb() {
   try {
     console.log("Starting data export...");
+    const auditLogFile = `${DOWNLOADS_PATH}/audit_log.csv`;
     const currentDumpName = createMeaningfulFileName("dump", new Date());
     const dumpFolderPath = `${DOWNLOADS_PATH}/${currentDumpName}`;
     await createFolder(dumpFolderPath);
 
-    // data type goes first because it is not dependent on any other table
-    await dumpDataTypeToCsv(1000, dumpFolderPath);
+    try {
+      // data type goes first because it is not dependent on any other table
+      await dumpDataTypeToCsv(1000, dumpFolderPath);
 
-    // run goes second because it is not dependent on any other table
-    await dumpRunToCsv(1000, dumpFolderPath);
+      // run goes second because it is not dependent on any other table
+      await dumpRunToCsv(1000, dumpFolderPath);
 
-    // data goes last because it is dependent on the run and data type tables
-    await dumpAllDataByRuns(10000, dumpFolderPath);
+      // data goes last because it is dependent on the run and data type tables
+      await dumpAllDataByRuns(10000, dumpFolderPath);
+
+      createCsvStreamWriter<AuditRow>(auditLogFile).prependRecord({
+        status: "Success",
+        dumpFolderName: currentDumpName,
+        timeTrigger: new Date(),
+      });
+    } catch (error) {
+      console.error("Error dumping data:", error);
+      createCsvStreamWriter<AuditRow>(auditLogFile).prependRecord({
+        status: "Failed",
+        dumpFolderName: currentDumpName,
+        timeTrigger: new Date(),
+      });
+    }
 
     console.log("Data export completed successfully.");
   } catch (error) {

@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { dump } from "./controllers/dump.controller";
 // import { upload } from "./controllers/upload.controller";
 import { compareCloudToLocal } from "./controllers/compare.controller";
+import { uploadToCloud } from "./services/upload.service";
 
 // Create a new express application instance
 const app = express();
@@ -17,9 +18,9 @@ app
   .put("/dump", (req: Request, res: Response) => {
     dump(req, res);
   })
-  // .put("/upload", (req: Request, res: Response) => {
-  //   upload(req, res);
-  // })
+  .put("/upload", (req: Request, res: Response) => {
+    uploadToCloud(req, res);
+  })
   .get("/compare", (req: Request, res: Response) => {
     compareCloudToLocal(req, res);
   });

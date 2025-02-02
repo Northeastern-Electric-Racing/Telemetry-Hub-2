@@ -1,73 +1,20 @@
+import { CloudData } from "../types/cloud.types";
 import { CsvDataRow, CsvDataTypeRow, CsvRunRow } from "../types/csv.types";
 import { LocalData, LocalDataType, LocalRun } from "../types/local.types";
 
-/**
- * Converts the CSV run row, which has fields all as they
- * are stored in the CSV (as strings), to a local run.
- *
- * @param csvRunRow The CSV run row to convert.
- * @returns a typed version of run as it is stored in the Local database.
- */
-export const csvToLocalRun = (csvRunRow: CsvRunRow): LocalRun => {
-  const runId = parseInt(csvRunRow.runId);
-  if (isNaN(runId) || runId < 0) {
-    console.log("Invalid runId found in CSV:", csvRunRow.runId);
-    throw new Error("Invalid runId");
-  }
-
-  const time = new Date(csvRunRow.time);
-  if (isNaN(time.getTime())) {
-    console.log("Invalid time found in CSV:", csvRunRow.time);
-    throw new Error("Invalid time format in CSV");
-  }
-
-  return {
-    runId,
-    driverName: csvRunRow.driverName,
-    locationName: csvRunRow.locationName,
-    notes: csvRunRow.notes,
-    time,
-  };
-};
-
-/**
- * Converts the CSV data type row, which has fields all as they
- * are stored in the CSV (as strings), to a local data type.
- *
- * @param csvDataTypeRow The CSV data type row to convert.
- * @returns a typed version of data type as it is stored in the Local database.
- */
-export const csvToLocalDataType = (
-  csvDataTypeRow: CsvDataTypeRow
-): LocalDataType => {
-  return {
-    name: csvDataTypeRow.name,
-    unit: csvDataTypeRow.unit,
-    nodeName: csvDataTypeRow.nodeName,
-  };
-};
-
-/**
- * Converts the CSV data row, which has fields all as they
- * are stored in the CSV (as strings), to a local data.
- *
- * @param csvDataRow The CSV data row to convert.
- * @returns the typed version of data as it is stored in the Local database.
- */
-export const csvToLocalData = (csvDataRow: CsvDataRow): LocalData => {
-  const time = new Date(csvDataRow.time);
-  if (isNaN(time.getTime())) {
-    console.log("Invalid time found in CSV:", csvDataRow.time);
-    throw new Error("Invalid time format in CSV");
-  }
+export const csvToCloudData = (
+  csvDataRow: CsvDataRow,
+  uuid: string
+): CloudData => {
+  const time = BigInt(csvDataRow.time);
 
   const values = parseFloatArray(csvDataRow.values);
 
   return {
-    values,
-    time,
-    runId: csvDataRow.runId,
+    runId: uuid,
     dataTypeName: csvDataRow.dataTypeName,
+    time,
+    values,
   };
 };
 
