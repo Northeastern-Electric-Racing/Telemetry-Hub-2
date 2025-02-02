@@ -1,0 +1,20 @@
+services:
+  server:
+    build:
+      context: .  # Use root as build context to include package.json
+      dockerfile: server/Dockerfile
+    container_name: server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: "${NODE_ENV:-development}"
+      LOCAL_DATABASE_URL: "${LOCAL_DATABASE_URL:-postgresql://postgres:password@localhost:5432/postgres?schema=public}"
+      CLOUD_DATABASE_URL: "${CLOUD_DATABASE_URL:-postgresql://postgres:docker@localhost:8001/postgres?schema=public}"
+      PRISMA_CLI_BINARY_TARGETS: "linux-arm64-openssl-3.0.x"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app  # ✅ Mount root directory so dependencies remain available
+      - ./server:/app/server  # ✅ Ensure server files are mounted correctly
+      - ./local-prisma:/app/local-prisma
+      - ./cloud-prisma:/app/cloud-prisma
+      - /app/node_modules  # ✅ Prevents overwriting installed dependencies

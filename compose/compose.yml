@@ -40,6 +40,25 @@ services:
     stop_signal: SIGINT
     init: true
 
+    # Charybdis Server (Runs in ./charybdis/server)
+  charybdis-server:
+    container_name: charybdis-server
+    build:
+      context: ../charybdis  # ✅ Use local build from charybdis directory
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    depends_on:
+      - odyssey-timescale
+    environment:
+      - LOCAL_DATABASE_URL=postgresql://postgres:password@odyssey-timescale:5432/postgres
+      - CLOUD_DATABASE_URL=postgresql://postgres:docker@odyssey-timescale:5432/postgres
+    cpu_shares: 1024
+    stop_grace_period: 2m
+    stop_signal: SIGINT
+    init: true
+
 volumes:
   db-data:
 

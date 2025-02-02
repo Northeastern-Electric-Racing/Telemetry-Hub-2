@@ -1,7 +1,4 @@
 services:
-    scylla-server: # do not run scylla
-        entrypoint: ["echo", "DISABLED"]
-        restart: "no"
     siren:
         extends:
             file: ../siren-base/compose.siren.yml
