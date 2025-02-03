@@ -1,27 +1,43 @@
-import { dump } from "./controllers/dump.controller";
 // import { upload } from "./controllers/upload.controller";
-import { compareCloudToLocal } from "./controllers/compare.controller";
 import { uploadToCloud } from "./services/upload.service";
-import figlet from "figlet";
+import figlet, { Options } from "figlet";
 import { input, confirm, select } from "@inquirer/prompts";
-import { pastel } from "gradient-string";
-import { CouldNotConnectToDB, dumpLocalDb } from "./services/dump.service";
+import { dumpLocalDb } from "./services/dump.service";
 import { compareDatabases } from "./services/compare.service";
+import chalk from "chalk";
+import {
+  CouldNotConnectToDB,
+  DataDumpFailed,
+  DataTypeDumpFailed,
+  FailedWriteAuditLog,
+  RunDumpFailed,
+} from "./errors/dump.errors";
+
+const printError = (errorMessage: string) => {
+  console.log(
+    chalk.red.bold(`\nError: `) + chalk.underline.bold(`${errorMessage}\n`)
+  );
+};
 
 const printTitle = async (projectName: string) => {
-  // Super cool project name
-  figlet(projectName, function (err, data) {
-    console.log(data);
+  // Print the project title in ASCII art using figlet.
+  figlet(projectName, (err, data) => {
+    if (err) {
+      console.error("Something went wrong with figlet:", err);
+      return;
+    }
+    console.log(`\n${data}\n`);
   });
 
-  // Wait a second so that the project name is fully printed
-  // before the calling user can print anything else
+  // Wait a second so that the project title is fully printed
+  // before the user can enter anything else.
   await new Promise((resolve) => setTimeout(resolve, 1000));
 };
 
 const commandDialog = async () => {
-  let command = await select({
-    message: "what would you like to do:",
+  // Using chalk to style the select prompt message.
+  const command = await select({
+    message: chalk.bold.blue("What would you like to do with the data:"),
     choices: ["dump", "upload", "compare"],
   });
 
@@ -31,10 +47,25 @@ const commandDialog = async () => {
         await dumpLocalDb();
       } catch (error) {
         if (error instanceof CouldNotConnectToDB) {
-          console.log("Could not connect to the local database");
-          commandDialog();
+          printError("Could not connect to the local database");
+        } else if (error instanceof DataTypeDumpFailed) {
+          printError("Failed to dump data types");
+        } else if (error instanceof RunDumpFailed) {
+          printError("Failed to dump runs");
+        } else if (error instanceof DataDumpFailed) {
+          printError("Failed to dump data");
+        } else if (error instanceof FailedWriteAuditLog) {
+          printError("Failed to write to audit log");
         } else {
-          console.log("An error occurred while dumping the local database");
+          printError("An unknown error occurred: " + error.message);
+        }
+
+        if (
+          await confirm({
+            message: "Would you like to try again?",
+          })
+        ) {
+          await commandDialog();
         }
       }
       break;
@@ -45,7 +76,7 @@ const commandDialog = async () => {
       await compareDatabases();
       break;
     default:
-      console.log("Invalid command");
+      printError("Invalid command");
   }
 };
 
@@ -54,5 +85,5 @@ const main = async () => {
   await commandDialog();
 };
 
-// Call the askName function
+// Start the application
 main();
