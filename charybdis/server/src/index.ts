@@ -1,21 +1,28 @@
 // import { upload } from "./controllers/upload.controller";
 import { uploadToCloud } from "./services/upload.service";
-import figlet, { Options } from "figlet";
+import figlet from "figlet";
 import { input, confirm, select } from "@inquirer/prompts";
 import { dumpLocalDb } from "./services/dump.service";
 import { compareDatabases } from "./services/compare.service";
 import chalk from "chalk";
 import {
-  CouldNotConnectToDB,
+  CouldNotConnectToLocalDB,
   DataDumpFailed,
   DataTypeDumpFailed,
-  FailedWriteAuditLog,
   RunDumpFailed,
 } from "./errors/dump.errors";
+import { FailedWriteAuditLog } from "./errors/audit.errors";
+import {
+  CouldNotConnectToCloudDB,
+  DataTypeUploadError,
+  DataUploadError,
+  RunsUploadError,
+} from "./errors/upload.errors";
 
 const printError = (errorMessage: string) => {
   console.log(
-    chalk.red.bold(`\nError: `) + chalk.underline.bold(`${errorMessage}\n`)
+    chalk.whiteBright.bold(`\n\nError: `) +
+      chalk.underline.red.bold(`${errorMessage}\n`)
   );
 };
 
@@ -46,7 +53,7 @@ const commandDialog = async () => {
       try {
         await dumpLocalDb();
       } catch (error) {
-        if (error instanceof CouldNotConnectToDB) {
+        if (error instanceof CouldNotConnectToLocalDB) {
           printError("Could not connect to the local database");
         } else if (error instanceof DataTypeDumpFailed) {
           printError("Failed to dump data types");
@@ -59,25 +66,38 @@ const commandDialog = async () => {
         } else {
           printError("An unknown error occurred: " + error.message);
         }
-
-        if (
-          await confirm({
-            message: "Would you like to try again?",
-          })
-        ) {
-          await commandDialog();
-        }
       }
       break;
     case "upload":
-      await uploadToCloud();
+      try {
+        await uploadToCloud();
+      } catch (error) {
+        if (error instanceof CouldNotConnectToCloudDB) {
+          printError("Could not connect to the cloud database");
+        } else if (error instanceof DataTypeUploadError) {
+          printError("Failed to upload data types");
+        } else if (error instanceof RunsUploadError) {
+          printError("Failed to upload runs");
+        } else if (error instanceof DataUploadError) {
+          printError("Failed to upload data");
+        } else {
+          printError("An unknown error occurred: " + error.message);
+        }
+      }
       break;
     case "compare":
-      await compareDatabases();
+      try {
+        await compareDatabases();
+      } catch (error) {
+        printError("compare databases failed");
+      }
+
       break;
     default:
       printError("Invalid command");
   }
+
+  await commandDialog();
 };
 
 const main = async () => {
@@ -85,5 +105,5 @@ const main = async () => {
   await commandDialog();
 };
 
-// Start the application
+// Start the CLI
 main();

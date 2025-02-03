@@ -6,6 +6,12 @@ import { extractRunIds } from "./dump.service";
 import { csvToCloudData } from "../transformers/csv.transformer";
 import { getMostRecentDownloadFolder } from "./audit.service";
 import { processCsvInBatches } from "../utils/csv.utils";
+import {
+  DataTypeUploadError,
+  RunsUploadError,
+  DataUploadError,
+  CouldNotConnectToCloudDB,
+} from "../errors/upload.errors";
 
 const cloudDb = new CloudPrisma();
 
@@ -19,11 +25,60 @@ const csvNames = {
   data_type: (path: string) => `${path}/data_type.csv`,
 };
 
+async function checkDbConnection() {
+  try {
+    await cloudDb.$connect();
+  } catch (error) {
+    throw new CouldNotConnectToCloudDB();
+  }
+}
+
 export async function uploadToCloud() {
+  // ensure we can actually connect to the database
+  await checkDbConnection();
+
   try {
     console.info("Starting CSV to Cloud DB transfer...");
+    let dumpFolderPath = await getMostRecentDownloadFolder();
 
-    await processDataType(async (batch) => {
+    try {
+      await processDataType(dumpFolderPath);
+    } catch (error) {
+      throw new DataTypeUploadError(error.message);
+    }
+
+    try {
+      await processRuns(dumpFolderPath);
+    } catch (error) {
+      throw new RunsUploadError(error.message);
+    }
+
+    console.info("Inserted all runs");
+
+    try {
+      await processData(dumpFolderPath);
+    } catch (error) {
+      throw new DataUploadError(error.message);
+    }
+
+    console.log("Inserted all data entries");
+    console.log("CSV to Cloud transfer complete.");
+  } catch (error) {
+    throw error;
+  } finally {
+    await cloudDb.$disconnect();
+  }
+}
+
+export async function processDataType(
+  dumpFolderPath: string,
+  batchSize: number = DATATYPE_BATCH_SIZE
+) {
+  const dataTypeCsvPath = csvNames.data_type(dumpFolderPath);
+
+  await processCsvInBatches<LocalDataType>(
+    dataTypeCsvPath,
+    async (batch: CsvDataTypeRow[]) => {
       console.info("Processing data types");
       const cloudDataTypes: CloudDataType[] = batch.map((localDataType) => ({
         name: localDataType.name,
@@ -36,9 +91,20 @@ export async function uploadToCloud() {
         skipDuplicates: true,
       });
       console.log(`Inserted ${cloudDataTypes.length} data_type entries`);
-    });
+    },
+    batchSize
+  );
+}
 
-    await processRuns(async (batch) => {
+export async function processRuns(
+  dumpFolderPath: string,
+  batchSize: number = RUN_BATCH_SIZE
+) {
+  const runsCsvPath = csvNames.run(dumpFolderPath);
+
+  await processCsvInBatches<CsvRunRow>(
+    runsCsvPath,
+    async (batch: CsvRunRow[]) => {
       const cloudRuns: CloudRun[] = batch.map((csvRun: CsvRunRow) => ({
         id: csvRun.uuid,
         runId: Number(csvRun.runId),
@@ -47,63 +113,33 @@ export async function uploadToCloud() {
         time: new Date(csvRun.time),
       }));
 
-      console.info(`inserting run batch of: ${cloudRuns.length}`);
+      console.info(`Inserting run batch of: ${cloudRuns.length}`);
       try {
         await cloudDb.run.createMany({
           data: cloudRuns,
           skipDuplicates: true,
         });
-        console.info("inserted all runs succesfully");
+        console.info("Inserted all runs successfully");
       } catch (error) {
         console.error("Error inserting runs:", error);
         process.exit(1);
       }
-    });
-
-    console.info("Inserted all runs");
-
-    await processData();
-
-    console.log("Inserted all data entries");
-    console.log("CSV to Cloud transfer complete.");
-  } catch (error) {
-    console.error("Error processing CSV files:", error);
-    process.exit(1);
-  } finally {
-    await cloudDb.$disconnect();
-  }
-}
-
-export async function processDataType(
-  processDataTypeBatch: (batch: CsvDataTypeRow[]) => Promise<void>,
-  batchSize: number = DATATYPE_BATCH_SIZE
-) {
-  await processCsvInBatches<LocalDataType>(
-    csvNames.data_type(await getMostRecentDownloadFolder()),
-    processDataTypeBatch,
+    },
     batchSize
   );
 }
 
-export async function processRuns(
-  processRunBatch: (batch: CsvRunRow[]) => Promise<void>,
-  batchSize: number = RUN_BATCH_SIZE
+export async function processData(
+  dumpFolderPath: string,
+  batchSize: number = DATA_BATCH_SIZE
 ) {
-  await processCsvInBatches<CsvRunRow>(
-    csvNames.run(await getMostRecentDownloadFolder()),
-    processRunBatch,
-    RUN_BATCH_SIZE
-  );
-}
-
-export async function processData(batchSize: number = DATA_BATCH_SIZE) {
-  const uuidToRunId = await extractRunIds(
-    csvNames.run(await getMostRecentDownloadFolder())
-  );
+  const runsCsvPath = csvNames.run(dumpFolderPath);
+  const dataCsvPath = csvNames.data(dumpFolderPath, 0);
+  const uuidToRunId = await extractRunIds(runsCsvPath);
 
   for (const run of uuidToRunId) {
     await processCsvInBatches<CsvDataRow>(
-      csvNames.data(await getMostRecentDownloadFolder(), run[1]),
+      dataCsvPath,
       async (batch) => {
         try {
           const cloudData: CloudData[] = batch.map((localData: CsvDataRow) =>

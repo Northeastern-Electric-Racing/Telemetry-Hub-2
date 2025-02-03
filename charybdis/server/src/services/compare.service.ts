@@ -81,7 +81,6 @@ export async function compareDatabases() {
 
     return { matches, mismatches, extraTables };
   } catch (error) {
-    console.error("Error during database comparison:", error);
     throw error;
   }
 }

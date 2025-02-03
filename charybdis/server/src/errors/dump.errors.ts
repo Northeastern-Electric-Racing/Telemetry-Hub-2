@@ -1,4 +1,4 @@
-export class CouldNotConnectToDB extends Error {
+export class CouldNotConnectToLocalDB extends Error {
   constructor(message = "Could not connect to database") {
     super(message);
   }
@@ -19,11 +19,5 @@ export class RunDumpFailed extends Error {
 export class DataDumpFailed extends Error {
   constructor(error: string) {
     super(`Failed to dump data: ${error}`);
-  }
-}
-
-export class FailedWriteAuditLog extends Error {
-  constructor(error: string) {
-    super(`Failed to write to audit log: ${error}`);
   }
 }

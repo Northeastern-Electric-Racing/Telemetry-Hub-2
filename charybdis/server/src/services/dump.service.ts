@@ -4,23 +4,23 @@ import { LocalData, LocalDataType, LocalRun } from "../types/local.types";
 import { AuditRow, CsvRunRow } from "../types/csv.types";
 import { DOWNLOADS_PATH } from "../storage-paths";
 import {
-  CouldNotConnectToDB,
+  CouldNotConnectToLocalDB,
   DataTypeDumpFailed,
   RunDumpFailed,
   DataDumpFailed,
-  FailedWriteAuditLog,
 } from "../errors/dump.errors";
 import { createCsvStreamWriter, extractRunIds } from "../utils/csv.utils";
 import {
   createFolder,
   createMeaningfulFileName,
 } from "../utils/filesystem.utils";
+import { FailedWriteAuditLog } from "../errors/audit.errors";
 
 async function checkDbConnection() {
   try {
     await prisma.$connect();
   } catch (error) {
-    throw new CouldNotConnectToDB("Could not connect to database");
+    throw new CouldNotConnectToLocalDB("Could not connect to database");
   }
 }
 
