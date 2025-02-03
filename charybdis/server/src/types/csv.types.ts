@@ -26,3 +26,9 @@ export interface CsvDataTypeRow {
   unit: string;
   nodeName: string;
 }
+
+export interface AuditRow {
+  status: string;
+  dumpFolderName: string;
+  timeTrigger: Date;
+}

@@ -45,11 +45,7 @@ async function fetchRowCounts(
 }
 
 // Function to compare local and cloud row counts and return comparison results
-export async function compareDatabases(): Promise<{
-  matches: string[];
-  mismatches: string[];
-  extraTables: string[];
-}> {
+export async function compareDatabases() {
   try {
     const localCounts = await fetchRowCounts(localDbConfig, "LOCAL");
     const cloudCounts = await fetchRowCounts(cloudDbConfig, "CLOUD");

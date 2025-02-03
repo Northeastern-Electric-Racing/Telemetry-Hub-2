@@ -1,9 +1,9 @@
 import { Parser } from "json2csv";
 import * as fs from "fs";
-import { prisma as localPrisma } from "../../../local-prisma/prisma";
+import { prisma as localPrisma, prisma } from "../../../local-prisma/prisma";
 import { v4 as uuidV4 } from "uuid";
 import { LocalData, LocalDataType, LocalRun } from "../types/local.types";
-import { CsvRunRow } from "../types/csv.types";
+import { AuditRow, CsvRunRow } from "../types/csv.types";
 import { parse } from "csv-parse";
 import * as path from "path";
 import { DOWNLOADS_PATH } from "../storage-paths";
@@ -298,13 +298,19 @@ async function dumpDataByRun(
   }
 }
 
-export interface AuditRow {
-  status: string;
-  dumpFolderName: string;
-  timeTrigger: Date;
+export class CouldNotConnectToDB extends Error {
+  constructor(message = "Could not connect to database") {
+    super(message);
+  }
 }
 
-export async function dumpLocalDb() {
+export async function dumpLocalDb(): Promise<void> {
+  // check that we can actually connect to the database
+  try {
+    await prisma.$connect();
+  } catch (error) {
+    throw new CouldNotConnectToDB("Could not connect to database");
+  }
   try {
     console.log("Starting data export...");
     const auditLogFile = `${DOWNLOADS_PATH}/audit_log.csv`;

@@ -111,7 +111,7 @@ async function processCsvInBatches<T>(
   });
 }
 
-export async function uploadToCloud(req: Request, res: Response) {
+export async function uploadToCloud() {
   try {
     console.info("Starting CSV to Cloud DB transfer...");
 
@@ -158,8 +158,6 @@ export async function uploadToCloud(req: Request, res: Response) {
 
     console.log("Inserted all data entries");
     console.log("CSV to Cloud transfer complete.");
-
-    res.json({ message: "Uploaded the mf data" });
   } catch (error) {
     console.error("Error processing CSV files:", error);
     process.exit(1);

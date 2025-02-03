@@ -3,10 +3,21 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "npx tsx --env-file=.env --watch  src/index.ts"
+    "start": "npx tsx src/index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@inquirer/prompts": "^7.3.1",
+    "@inquirer/type": "^3.0.4",
+    "@types/figlet": "^1.7.0",
+    "figlet": "^1.8.0",
+    "gradient-string": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/gradient-string": "^1.1.6",
+    "@types/node": "^22.13.0"
+  }
 }
