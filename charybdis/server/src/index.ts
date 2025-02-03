@@ -19,6 +19,11 @@ import {
   RunsUploadError,
 } from "./errors/upload.errors";
 
+const main = async () => {
+  await printTitle("Charybdis 2.0");
+  await commandDialog();
+};
+
 const printError = (errorMessage: string) => {
   console.log(
     chalk.whiteBright.bold(`\n\nError: `) +
@@ -53,36 +58,14 @@ const commandDialog = async () => {
       try {
         await dumpLocalDb();
       } catch (error) {
-        if (error instanceof CouldNotConnectToLocalDB) {
-          printError("Could not connect to the local database");
-        } else if (error instanceof DataTypeDumpFailed) {
-          printError("Failed to dump data types");
-        } else if (error instanceof RunDumpFailed) {
-          printError("Failed to dump runs");
-        } else if (error instanceof DataDumpFailed) {
-          printError("Failed to dump data");
-        } else if (error instanceof FailedWriteAuditLog) {
-          printError("Failed to write to audit log");
-        } else {
-          printError("An unknown error occurred: " + error.message);
-        }
+        handleDumpError(error);
       }
       break;
     case "upload":
       try {
         await uploadToCloud();
       } catch (error) {
-        if (error instanceof CouldNotConnectToCloudDB) {
-          printError("Could not connect to the cloud database");
-        } else if (error instanceof DataTypeUploadError) {
-          printError("Failed to upload data types");
-        } else if (error instanceof RunsUploadError) {
-          printError("Failed to upload runs");
-        } else if (error instanceof DataUploadError) {
-          printError("Failed to upload data");
-        } else {
-          printError("An unknown error occurred: " + error.message);
-        }
+        handleUploadError(error);
       }
       break;
     case "compare":
@@ -100,10 +83,35 @@ const commandDialog = async () => {
   await commandDialog();
 };
 
-const main = async () => {
-  await printTitle("Charybdis 2.0");
-  await commandDialog();
-};
+function handleUploadError(error: any) {
+  if (error instanceof CouldNotConnectToCloudDB) {
+    printError("Could not connect to the cloud database");
+  } else if (error instanceof DataTypeUploadError) {
+    printError("Failed to upload data types");
+  } else if (error instanceof RunsUploadError) {
+    printError("Failed to upload runs");
+  } else if (error instanceof DataUploadError) {
+    printError("Failed to upload data");
+  } else {
+    printError("An unknown error occurred: " + error.message);
+  }
+}
+
+function handleDumpError(error: any) {
+  if (error instanceof CouldNotConnectToLocalDB) {
+    printError("Could not connect to the local database");
+  } else if (error instanceof DataTypeDumpFailed) {
+    printError("Failed to dump data types");
+  } else if (error instanceof RunDumpFailed) {
+    printError("Failed to dump runs");
+  } else if (error instanceof DataDumpFailed) {
+    printError("Failed to dump data");
+  } else if (error instanceof FailedWriteAuditLog) {
+    printError("Failed to write to audit log");
+  } else {
+    printError("An unknown error occurred: " + error.message);
+  }
+}
 
 // Start the CLI
 main();
