@@ -1,8 +1,8 @@
 // import { upload } from "./controllers/upload.controller";
 import { uploadToCloud } from "./services/upload.service";
 import figlet from "figlet";
-import { input, confirm, select } from "@inquirer/prompts";
-import { dumpLocalDb } from "./services/dump.service";
+import { select } from "@inquirer/prompts";
+import { deleteAllDownloads, dumpLocalDb } from "./services/dump.service";
 import { compareDatabases } from "./services/compare.service";
 import chalk from "chalk";
 import {
@@ -21,24 +21,17 @@ import {
 
 const main = async () => {
   await printTitle("Charybdis 2.0");
-  await commandDialog();
-};
-
-const printError = (errorMessage: string) => {
-  console.log(
-    chalk.whiteBright.bold(`\n\nError: `) +
-      chalk.underline.red.bold(`${errorMessage}\n`)
-  );
+  await await commandDialog();
 };
 
 const printTitle = async (projectName: string) => {
   // Print the project title in ASCII art using figlet.
-  figlet(projectName, (err, data) => {
+  figlet(projectName, (err, projectName) => {
     if (err) {
       console.error("Something went wrong with figlet:", err);
       return;
     }
-    console.log(`\n${data}\n`);
+    console.log(`\n${projectName}\n`);
   });
 
   // Wait a second so that the project title is fully printed
@@ -50,7 +43,7 @@ const commandDialog = async () => {
   // Using chalk to style the select prompt message.
   const command = await select({
     message: chalk.bold.blue("What would you like to do with the data:"),
-    choices: ["dump", "upload", "compare"],
+    choices: ["dump", "upload", "compare", "delete-all-downloads"],
   });
 
   switch (command) {
@@ -70,9 +63,20 @@ const commandDialog = async () => {
       break;
     case "compare":
       try {
-        await compareDatabases();
+        let info = await compareDatabases();
+        let formattedInfo = chalk.bold.green(info.matches.join("\n"));
+        formattedInfo += "\n" + chalk.bold.red(info.mismatches.join("\n"));
+        formattedInfo += "\n" + chalk.bold.yellow(info.extraTables.join("\n"));
+        console.log(formattedInfo);
       } catch (error) {
         printError("compare databases failed");
+      }
+      break;
+    case "delete-all-downloads":
+      try {
+        await deleteAllDownloads();
+      } catch (error) {
+        printError("delete all downloads failed");
       }
 
       break;
@@ -81,6 +85,13 @@ const commandDialog = async () => {
   }
 
   await commandDialog();
+};
+
+const printError = (errorMessage: string) => {
+  console.log(
+    chalk.whiteBright.bold("\n\nError: ") +
+      chalk.underline.red.bold(`${errorMessage}\n`)
+  );
 };
 
 function handleUploadError(error: any) {

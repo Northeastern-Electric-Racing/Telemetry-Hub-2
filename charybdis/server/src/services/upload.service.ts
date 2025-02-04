@@ -2,7 +2,7 @@ import { PrismaClient as CloudPrisma } from "../../../cloud-prisma/prisma";
 import { LocalDataType } from "../types/local.types";
 import { CloudData, CloudDataType, CloudRun } from "../types/cloud.types";
 import { CsvDataRow, CsvDataTypeRow, CsvRunRow } from "../types/csv.types";
-import { extractRunIds } from "./dump.service";
+import { extractRunIds } from "../utils/csv.utils";
 import { csvToCloudData } from "../transformers/csv.transformer";
 import { getMostRecentDownloadFolder } from "./audit.service";
 import { processCsvInBatches } from "../utils/csv.utils";
@@ -134,10 +134,10 @@ export async function processData(
   batchSize: number = DATA_BATCH_SIZE
 ) {
   const runsCsvPath = csvNames.run(dumpFolderPath);
-  const dataCsvPath = csvNames.data(dumpFolderPath, 0);
   const uuidToRunId = await extractRunIds(runsCsvPath);
 
   for (const run of uuidToRunId) {
+    let dataCsvPath = csvNames.data(dumpFolderPath, run[1]);
     await processCsvInBatches<CsvDataRow>(
       dataCsvPath,
       async (batch) => {

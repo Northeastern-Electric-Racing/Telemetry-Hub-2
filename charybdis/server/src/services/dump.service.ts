@@ -1,4 +1,6 @@
-import { prisma as localPrisma, prisma } from "../../../local-prisma/prisma";
+import { prisma as localPrisma } from "../../../local-prisma/prisma";
+import * as fs from "fs/promises";
+import * as path from "path";
 import { v4 as uuidV4 } from "uuid";
 import { LocalData, LocalDataType, LocalRun } from "../types/local.types";
 import { AuditRow, CsvRunRow } from "../types/csv.types";
@@ -18,7 +20,7 @@ import { FailedWriteAuditLog } from "../errors/audit.errors";
 
 async function checkDbConnection() {
   try {
-    await prisma.$connect();
+    await localPrisma.$connect();
   } catch (error) {
     throw new CouldNotConnectToLocalDB("Could not connect to database");
   }
@@ -32,6 +34,7 @@ export async function dumpLocalDb(): Promise<void> {
   const auditLogFile = `${DOWNLOADS_PATH}/audit_log.csv`;
   const currentDumpName = createMeaningfulFileName("dump", new Date());
   const dumpFolderPath = `${DOWNLOADS_PATH}/${currentDumpName}`;
+  await createFolder(DOWNLOADS_PATH);
   await createFolder(dumpFolderPath);
 
   try {
@@ -202,4 +205,26 @@ async function dumpDataByRun(
     }
   }
 }
-export { extractRunIds };
+
+export async function deleteAllDownloads(): Promise<void> {
+  try {
+    // Read all entries in the downloads folder
+    const entries = await fs.readdir(DOWNLOADS_PATH, { withFileTypes: true });
+
+    // Iterate over each entry and remove it
+    for (const entry of entries) {
+      const fullPath = path.join(DOWNLOADS_PATH, entry.name);
+      if (entry.isDirectory()) {
+        // Recursively remove the directory and its contents
+        await fs.rm(fullPath, { recursive: true, force: true });
+      } else {
+        // Remove the file
+        await fs.unlink(fullPath);
+      }
+    }
+    console.log("All downloads have been deleted.");
+  } catch (error) {
+    console.error("Error deleting downloads:", error);
+    throw error;
+  }
+}

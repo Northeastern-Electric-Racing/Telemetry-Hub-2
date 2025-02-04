@@ -31,11 +31,14 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
+    "@inquirer/prompts": "^7.3.1",
     "@prisma/client": "^6.2.1",
     "@types/figlet": "^1.7.0",
     "@types/json2csv": "^5.0.7",
     "@types/pg": "^8.11.11",
+    "chalk": "^5.4.1",
     "csv-parse": "^5.6.0",
+    "figlet": "^1.8.0",
     "json2csv": "^6.0.0-alpha.2",
     "pg": "^8.13.1",
     "uuid": "^11.0.5"
