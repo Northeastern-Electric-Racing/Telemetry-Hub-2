@@ -1,5 +1,5 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject, HostListener } from '@angular/core';
 import { DataType, Node, NodeWithVisibilityToggle, NodeWithVisibilityToggleObservable } from 'src/utils/types.utils';
 import Storage from 'src/services/storage.service';
 import { decimalPipe } from 'src/utils/pipes.utils';
@@ -52,6 +52,7 @@ export default class GraphSidebarDesktopComponent implements OnInit, OnDestroy {
   private storage = inject(Storage);
   @Input() dataTypes!: DataType[];
   @Input() selectDataType!: (dataType: DataType) => void;
+  selectedDataType!: DataType;
   nodesWithVisibilityToggle!: Observable<NodeWithVisibilityToggleObservable[]>;
   nodes!: Node[];
 
@@ -77,6 +78,7 @@ export default class GraphSidebarDesktopComponent implements OnInit, OnDestroy {
         };
       })
     );
+    console.log(this.nodesWithVisibilityToggle);
 
     // Callback to update search regex (debounced at 300 ms)
     this.filterFormSubsription = this.filterForm.valueChanges.pipe(debounceTime(300)).subscribe((changes) => {
@@ -101,6 +103,11 @@ export default class GraphSidebarDesktopComponent implements OnInit, OnDestroy {
     this.filterFormSubsription.unsubscribe();
   }
 
+  clickDataType(dataType: DataType) {
+    this.selectDataType(dataType);
+    this.selectedDataType = dataType;
+  }
+
   /**
    * Toggles Visibility whenever a node is selected
    * @param node The node to toggle the visibility of the data types for.
@@ -111,5 +118,88 @@ export default class GraphSidebarDesktopComponent implements OnInit, OnDestroy {
 
   transformDataTypeName(dataTypeName: string) {
     return dataTypeNamePipe(dataTypeName);
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    console.log(this.selectedDataType);
+    if (this.selectedDataType) {
+      const node = this.getNode(this.selectedDataType.name as string);
+      const nodeIndex = this.getNodeIndex(this.getNode(this.selectedDataType.name as string));
+      const dataTypeIndex = this.getDataTypeIndex(
+        this.getNode(this.selectedDataType.name as string),
+        this.getDataType(this.getNode(this.selectedDataType.name as string), this.selectedDataType.name as string)
+      );
+      console.log(this.selectedDataType.name, event, node, nodeIndex, dataTypeIndex);
+      if (event.key === 'ArrowDown') {
+        if (dataTypeIndex + 1 === node.dataTypes.length && nodeIndex + 1 === this.nodes?.length) {
+          this.clickDataType(this.nodes?.at(0)?.dataTypes[0] as DataType);
+        } else if (dataTypeIndex + 1 === node.dataTypes.length) {
+          this.clickDataType(this.nodes?.at(nodeIndex + 1)?.dataTypes[0] as DataType);
+        } else {
+          console.log(node.dataTypes[dataTypeIndex + 1]);
+          this.clickDataType(node.dataTypes[dataTypeIndex + 1]);
+        }
+      } else if (event.key === 'ArrowUp') {
+        if (dataTypeIndex === 0 && nodeIndex === 0) {
+          const lastNode = this.nodes?.at(this.nodes.length - 1) as Node;
+          this.clickDataType(lastNode.dataTypes[(lastNode.dataTypes.length as number) - 1] as DataType);
+        } else if (dataTypeIndex === 0) {
+          const lastNode = this.nodes?.at(nodeIndex - 1) as Node;
+          this.clickDataType(lastNode.dataTypes[(lastNode.dataTypes.length as number) - 1] as DataType);
+        } else {
+          this.clickDataType(node.dataTypes[dataTypeIndex - 1]);
+        }
+      }
+    }
+  }
+  // handleKeyboardEvent(event: KeyboardEvent) {
+  //   if (this.dataTypeName === undefined) {
+  //     this.setSelectedDataType(this.nodes?.at(0)?.dataTypes[0] as DataType);
+  //   } else {
+  //     const node = this.getNode(this.dataTypeName as string);
+  //     const nodeIndex = this.getNodeIndex(this.getNode(this.dataTypeName as string));
+  //     const dataTypeIndex = this.getDataTypeIndex(
+  //       this.getNode(this.dataTypeName as string),
+  //       this.getDataType(this.getNode(this.dataTypeName as string), this.dataTypeName as string)
+  //     );
+  //     if (event.key === 'ArrowDown') {
+  //       if (dataTypeIndex + 1 === node.dataTypes.length && nodeIndex + 1 === this.nodes?.length) {
+  //         this.setSelectedDataType(this.nodes?.at(0)?.dataTypes[0] as DataType);
+  //       } else if (dataTypeIndex + 1 === node.dataTypes.length) {
+  //         this.setSelectedDataType(this.nodes?.at(nodeIndex + 1)?.dataTypes[0] as DataType);
+  //       } else {
+  //         this.setSelectedDataType(node.dataTypes[dataTypeIndex + 1]);
+  //       }
+  //     } else if (event.key === 'ArrowUp') {
+  //       if (dataTypeIndex === 0 && nodeIndex === 0) {
+  //         const lastNode = this.nodes?.at(this.nodes.length - 1) as Node;
+  //         this.setSelectedDataType(lastNode.dataTypes[(lastNode.dataTypes.length as number) - 1] as DataType);
+  //       } else if (dataTypeIndex === 0) {
+  //         const lastNode = this.nodes?.at(nodeIndex - 1) as Node;
+  //         this.setSelectedDataType(lastNode.dataTypes[(lastNode.dataTypes.length as number) - 1] as DataType);
+  //       } else {
+  //         this.setSelectedDataType(node.dataTypes[dataTypeIndex - 1]);
+  //       }
+  //     }
+  //   }
+  // }
+
+  private getNode(name: string): Node {
+    return this.nodes?.filter(
+      (node: Node) => node.dataTypes.filter((dataType: DataType) => dataType.name === name)[0]
+    )[0] as Node;
+  }
+
+  private getNodeIndex(node: Node): number {
+    return this.nodes?.indexOf(node) as number;
+  }
+
+  private getDataType(node: Node, name: string) {
+    return node.dataTypes.filter((dataType: DataType) => dataType.name === name)[0];
+  }
+
+  private getDataTypeIndex(node: Node, dataType: DataType) {
+    return node.dataTypes.indexOf(dataType);
   }
 }
