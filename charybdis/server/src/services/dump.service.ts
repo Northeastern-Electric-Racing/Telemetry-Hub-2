@@ -27,18 +27,21 @@ async function checkDbConnection() {
 }
 
 export async function dumpLocalDb(): Promise<void> {
+  console.log("Checking database connection...");
   // check that we can actually connect to the database
   await checkDbConnection(); // throws if prisma cannot connect to local
 
-  console.log("Starting data export...");
+  console.log("Acquiring dump file paths...");
   const auditLogFile = `${DOWNLOADS_PATH}/audit_log.csv`;
   const currentDumpName = createMeaningfulFileName("dump", new Date());
   const dumpFolderPath = `${DOWNLOADS_PATH}/${currentDumpName}`;
   await createFolder(DOWNLOADS_PATH);
   await createFolder(dumpFolderPath);
 
+  console.log("Starting dump process...");
   try {
     try {
+      console.log("Data Types dump...");
       // data type goes first because it is not dependent on any other table
       await dumpDataTypeToCsv(1000, dumpFolderPath);
     } catch (error) {
@@ -46,6 +49,7 @@ export async function dumpLocalDb(): Promise<void> {
     }
 
     try {
+      console.log("Run dump...");
       // run goes second because it is not dependent on any other table
       await dumpRunToCsv(1000, dumpFolderPath);
     } catch (error) {
@@ -53,6 +57,7 @@ export async function dumpLocalDb(): Promise<void> {
     }
 
     try {
+      console.log("Data dump...");
       // data goes last because it is dependent on the run and data type tables
       await dumpAllDataByRuns(10000, dumpFolderPath);
     } catch (error) {
@@ -122,6 +127,7 @@ async function dumpRunToCsv(batchSize: number, storagePath: string) {
   let moreRuns = true;
   let cursor: { runId: number } | undefined;
   let csvWriter = createCsvStreamWriter<CsvRunRow>(`${storagePath}/run.csv`);
+  let totalDataFetched = 0;
 
   while (moreRuns) {
     const runs: LocalRun[] = await localPrisma.run.findMany({
@@ -142,7 +148,7 @@ async function dumpRunToCsv(batchSize: number, storagePath: string) {
       };
 
       // convert to the csv type before inserting (allowing us to create a uuid)
-      const csvDataRow: CsvRunRow[] = runs.map((localRun) => {
+      const csvRunRow: CsvRunRow[] = runs.map((localRun) => {
         return {
           uuid: uuidV4(),
           runId: localRun.runId.toString(),
@@ -153,10 +159,13 @@ async function dumpRunToCsv(batchSize: number, storagePath: string) {
         };
       });
 
-      csvWriter.appendRecords(csvDataRow);
-      console.log(`Inserted ${csvDataRow.length} to run.csv`);
+      csvWriter.appendRecords(csvRunRow);
+      totalDataFetched += csvRunRow.length;
+      console.log(`Inserted ${csvRunRow.length} to run.csv`);
     }
   }
+
+  console.log(`Total runs fetched: ${totalDataFetched}`);
 }
 
 async function dumpAllDataByRuns(batchSize: number, currentDumpPath: string) {
@@ -170,22 +179,25 @@ async function dumpAllDataByRuns(batchSize: number, currentDumpPath: string) {
   const dataFolder = `${currentDumpPath}/data`;
   await createFolder(dataFolder);
 
+  let allDataFetched = 0;
   // TODO: if there is ever some sort of restart, we should have some way of resuming where we left off.
   for (const runId of downloadedRunIds.values()) {
-    await dumpDataByRun(runId, 50000, dataFolder);
+    allDataFetched += await dumpDataByRun(runId, 50000, dataFolder);
   }
+  console.log(`Total of ALL DATA fetched: ${allDataFetched}`);
 }
 
 async function dumpDataByRun(
   runId: number,
   batchSize: number,
   storagePath: string
-) {
+): Promise<number> {
   let moreData = true;
   let offset = 0;
   let csvWriter = createCsvStreamWriter<LocalData>(
     `${storagePath}/run-${runId}-data.csv`
   );
+  let totalDataFetched = 0;
 
   while (moreData) {
     // Fetch batched data using `findMany`
@@ -201,9 +213,13 @@ async function dumpDataByRun(
     } else {
       offset += dataChunk.length; // move offset by the amount of data we just read
       csvWriter.appendRecords(dataChunk);
+      totalDataFetched += dataChunk.length;
       console.log(`Inserted ${dataChunk.length} rows to run-${runId}-data.csv`);
     }
   }
+
+  console.log(`Total data fetched for run ${runId}: ${totalDataFetched}`);
+  return totalDataFetched;
 }
 
 export async function deleteAllDownloads(): Promise<void> {

@@ -35,26 +35,28 @@ async function checkDbConnection() {
 
 export async function uploadToCloud() {
   // ensure we can actually connect to the database
+  console.info("Checking database connection...");
   await checkDbConnection();
 
   try {
-    console.info("Starting CSV to Cloud DB transfer...");
+    console.info("Opening most recent download folder...");
     let dumpFolderPath = await getMostRecentDownloadFolder();
 
+    console.info("Processing data types...");
     try {
       await processDataType(dumpFolderPath);
     } catch (error) {
       throw new DataTypeUploadError(error.message);
     }
 
+    console.info("Startin Run uploads...");
     try {
       await processRuns(dumpFolderPath);
     } catch (error) {
       throw new RunsUploadError(error.message);
     }
 
-    console.info("Inserted all runs");
-
+    console.info("Starting Data uploads...");
     try {
       await processData(dumpFolderPath);
     } catch (error) {
@@ -101,32 +103,57 @@ export async function processRuns(
   batchSize: number = RUN_BATCH_SIZE
 ) {
   const runsCsvPath = csvNames.run(dumpFolderPath);
+  try {
+    await processCsvInBatches<CsvRunRow>(
+      runsCsvPath,
+      async (batch: CsvRunRow[]) => {
+        const cloudRuns: CloudRun[] = batch.map((csvRun: CsvRunRow) => ({
+          id: csvRun.uuid,
+          runId: Number(csvRun.runId),
+          driverName: csvRun.driverName,
+          notes: csvRun.notes,
+          time: new Date(csvRun.time),
+        }));
 
-  await processCsvInBatches<CsvRunRow>(
-    runsCsvPath,
-    async (batch: CsvRunRow[]) => {
-      const cloudRuns: CloudRun[] = batch.map((csvRun: CsvRunRow) => ({
-        id: csvRun.uuid,
-        runId: Number(csvRun.runId),
-        driverName: csvRun.driverName,
-        notes: csvRun.notes,
-        time: new Date(csvRun.time),
-      }));
+        if (cloudRuns.length !== 0) {
+          // check if the run we are uploading already exists
+          const existingRuns = await cloudDb.run.findFirst({
+            where: {
+              runId: {
+                equals: cloudRuns[0].runId,
+              },
+              time: {
+                equals: cloudRuns[0].time,
+              },
+            },
+          });
+          if (existingRuns) {
+            console.info(
+              `Aborting!!!!!!!! Run with runId: ${cloudRuns[0].runId} and time: ${cloudRuns[0].time} already exists. `
+            );
+            throw new RunsUploadError(
+              "A Run already exists, with same time and runId as cloud db"
+            );
+          }
+        }
 
-      console.info(`Inserting run batch of: ${cloudRuns.length}`);
-      try {
-        await cloudDb.run.createMany({
-          data: cloudRuns,
-          skipDuplicates: true,
-        });
-        console.info("Inserted all runs successfully");
-      } catch (error) {
-        console.error("Error inserting runs:", error);
-        process.exit(1);
-      }
-    },
-    batchSize
-  );
+        console.info(`Inserting run batch of: ${cloudRuns.length}`);
+        try {
+          await cloudDb.run.createMany({
+            data: cloudRuns,
+            skipDuplicates: true,
+          });
+          console.info("Inserted all runs successfully");
+        } catch (error) {
+          console.error("Error inserting runs:", error);
+          process.exit(1);
+        }
+      },
+      batchSize
+    );
+  } catch (error) {
+    throw new RunsUploadError(error.message);
+  }
 }
 
 export async function processData(
@@ -135,6 +162,7 @@ export async function processData(
 ) {
   const runsCsvPath = csvNames.run(dumpFolderPath);
   const uuidToRunId = await extractRunIds(runsCsvPath);
+  let insertCount = 0;
 
   for (const run of uuidToRunId) {
     let dataCsvPath = csvNames.data(dumpFolderPath, run[1]);
@@ -150,6 +178,7 @@ export async function processData(
             data: cloudData,
             skipDuplicates: true,
           });
+          insertCount += cloudData.length;
           console.log(`Inserted ${cloudData.length} data entries`);
         } catch (error) {
           console.error("Error inserting data:", error);
@@ -159,4 +188,5 @@ export async function processData(
       batchSize
     );
   }
+  console.log(`Inserted a TOTAL of ${insertCount} DATA entries`);
 }

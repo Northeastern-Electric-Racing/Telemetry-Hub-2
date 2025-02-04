@@ -96,13 +96,13 @@ const printError = (errorMessage: string) => {
 
 function handleUploadError(error: any) {
   if (error instanceof CouldNotConnectToCloudDB) {
-    printError("Could not connect to the cloud database");
+    printError("Could not connect to the cloud database: " + error.message);
   } else if (error instanceof DataTypeUploadError) {
-    printError("Failed to upload data types");
+    printError("Failed to upload data types: " + error.message);
   } else if (error instanceof RunsUploadError) {
-    printError("Failed to upload runs");
+    printError("Failed to upload runs: " + error.message);
   } else if (error instanceof DataUploadError) {
-    printError("Failed to upload data");
+    printError("Failed to upload data: " + error.message);
   } else {
     printError("An unknown error occurred: " + error.message);
   }
@@ -110,17 +110,17 @@ function handleUploadError(error: any) {
 
 function handleDumpError(error: any) {
   if (error instanceof CouldNotConnectToLocalDB) {
-    printError("Could not connect to the local database");
+    printError(error.message);
   } else if (error instanceof DataTypeDumpFailed) {
-    printError("Failed to dump data types");
+    printError(error.message);
   } else if (error instanceof RunDumpFailed) {
-    printError("Failed to dump runs");
+    printError(error.message);
   } else if (error instanceof DataDumpFailed) {
-    printError("Failed to dump data");
+    printError(error.message);
   } else if (error instanceof FailedWriteAuditLog) {
-    printError("Failed to write to audit log");
+    printError(error.message);
   } else {
-    printError("An unknown error occurred: " + error.message);
+    printError(error.message);
   }
 }
 

@@ -11,10 +11,12 @@ export async function getMostRecentDownloadFolder(): Promise<string> {
   return new Promise((resolve, reject) => {
     console.log("Getting most recent download folder...");
     const auditLogPath = path.resolve(`${DOWNLOADS_PATH}/audit_log.csv`);
+    console.log(`Reading audit log from: ${auditLogPath}`);
     const auditLogStream = fs.createReadStream(auditLogPath).pipe(parse({}));
 
     let lineCount = 0;
 
+    console.log("Reading audit log...");
     auditLogStream.on("data", (row) => {
       lineCount += 1;
       if (lineCount === 2) {

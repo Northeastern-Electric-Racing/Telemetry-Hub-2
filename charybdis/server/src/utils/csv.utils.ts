@@ -29,7 +29,11 @@ export async function processCsvInBatches<T>(
 
     readStream.on("end", async () => {
       if (records.length > 0) {
-        await processBatch(records);
+        try {
+          await processBatch(records);
+        } catch (error) {
+          reject(error);
+        }
       }
       console.log(`Finished processing ${csv_path}`);
       resolve();
@@ -109,6 +113,7 @@ export function createCsvStreamWriter<T>(filename: string): CsvStreamWriter<T> {
         return;
       }
 
+      console.log("Prepending record to CSV file...");
       const filePath = writeStream.path as string; // Get file path from stream
       const newCsv = parser.parse([record]); // Convert record to CSV format
 
@@ -125,16 +130,13 @@ export function createCsvStreamWriter<T>(filename: string): CsvStreamWriter<T> {
       if (lines.length > 1) {
         // ✅ File has a header and data, insert under header
         const header = lines[0];
-        console.log("Header:", header);
         const data = lines.slice(1); // Keep only the existing data rows
-        console.log("Existing data:", data);
-        console.log("New data:", newCsv);
         const updatedContent = [header, ...newCsv.split("\n"), ...data].join(
           "\n"
         );
         console.info(
           "Audit log update with new record at the top: ",
-          updatedContent
+          newCsv.split("\n")
         );
         fs.writeFileSync(filePath, updatedContent + "\n", "utf8");
       } else {
