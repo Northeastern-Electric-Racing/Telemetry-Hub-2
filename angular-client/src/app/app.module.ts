@@ -104,6 +104,8 @@ import LatencyDisplayComponent from 'src/components/latency-display/latency-disp
 import { DateLocationComponent } from 'src/pages/landing-page/components/date-location-display/date-location.component';
 import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer-display/viewer-display.component';
 import { AppNavBarComponent } from './app-nav-bar/app-nav-bar.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
 
 @NgModule({
   declarations: [
@@ -215,7 +217,9 @@ import { AppNavBarComponent } from './app-nav-bar/app-nav-bar.component';
     MatToolbarModule,
     MatButtonModule,
     MatInputModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatCardModule,
+    MatDividerModule
   ],
   providers: [DialogService, MessageService, provideHttpClient(withInterceptorsFromDi())]
 })
