@@ -99,4 +99,4 @@ iOSInjectionProject/
 
 # user compose override
 compose.override.yml
-.DS_Store
+**/.DS_Store
