@@ -1,4 +1,4 @@
-import { PrismaClient as CloudPrisma } from "../cloud-prisma/prisma";
+import { prisma as cloudPrisma } from "../cloud-prisma/prisma";
 import { LocalDataType } from "../types/local.types";
 import { CloudData, CloudDataType, CloudRun } from "../types/cloud.types";
 import { CsvDataRow, CsvDataTypeRow, CsvRunRow } from "../types/csv.types";
@@ -13,8 +13,6 @@ import {
   CouldNotConnectToCloudDB,
 } from "../errors/upload.errors";
 
-const cloudDb = new CloudPrisma();
-
 const DATATYPE_BATCH_SIZE = 1000;
 const RUN_BATCH_SIZE = 1000;
 const DATA_BATCH_SIZE = 4960;
@@ -27,7 +25,7 @@ const csvNames = {
 
 async function checkDbConnection() {
   try {
-    await cloudDb.$connect();
+    await cloudPrisma.$connect();
   } catch (error) {
     throw new CouldNotConnectToCloudDB();
   }
@@ -68,7 +66,7 @@ export async function uploadToCloud() {
   } catch (error) {
     throw error;
   } finally {
-    await cloudDb.$disconnect();
+    await cloudPrisma.$disconnect();
   }
 }
 
@@ -88,7 +86,7 @@ export async function processDataType(
         nodeName: localDataType.nodeName,
       }));
 
-      await cloudDb.data_type.createMany({
+      await cloudPrisma.data_type.createMany({
         data: cloudDataTypes,
         skipDuplicates: true,
       });
@@ -117,7 +115,7 @@ export async function processRuns(
 
         if (cloudRuns.length !== 0) {
           // check if the run we are uploading already exists
-          const existingRuns = await cloudDb.run.findFirst({
+          const existingRuns = await cloudPrisma.run.findFirst({
             where: {
               runId: {
                 equals: cloudRuns[0].runId,
@@ -139,7 +137,7 @@ export async function processRuns(
 
         console.info(`Inserting run batch of: ${cloudRuns.length}`);
         try {
-          await cloudDb.run.createMany({
+          await cloudPrisma.run.createMany({
             data: cloudRuns,
             skipDuplicates: true,
           });
@@ -174,7 +172,7 @@ export async function processData(
             csvToCloudData(localData, run[0])
           );
 
-          await cloudDb.data.createMany({
+          await cloudPrisma.data.createMany({
             data: cloudData,
             skipDuplicates: true,
           });

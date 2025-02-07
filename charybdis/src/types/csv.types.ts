@@ -31,4 +31,5 @@ export interface AuditRow {
   status: string;
   dumpFolderName: string;
   timeTrigger: Date;
+  error?: string;
 }

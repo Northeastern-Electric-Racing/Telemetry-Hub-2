@@ -11,92 +11,100 @@ import {
   RunDumpFailed,
   DataDumpFailed,
 } from "../errors/dump.errors";
-import { createCsvStreamWriter, extractRunIds } from "../utils/csv.utils";
+import { appendToCsv, prependToCsv } from "../utils/csv.utils";
 import {
+  createFile,
   createFolder,
   createMeaningfulFileName,
 } from "../utils/filesystem.utils";
 import { FailedWriteAuditLog } from "../errors/audit.errors";
+import { CsvError } from "csv-parse";
 
 async function checkDbConnection() {
   try {
     await localPrisma.$connect();
   } catch (error) {
-    throw new CouldNotConnectToLocalDB("Could not connect to database");
+    throw new CouldNotConnectToLocalDB();
   }
+}
+
+async function initializeDumpFileStructure(): Promise<{
+  dumpFolderPath: string;
+  auditLogCsv: string;
+  dataTypesCsv: string;
+  runsCsv: string;
+  dataFolder: string;
+}> {
+  console.log("Acquiring dump file paths...");
+  const currentDumpName = createMeaningfulFileName("dump", new Date());
+  const dumpFolderPath = `${DOWNLOADS_PATH}/${currentDumpName}`;
+  const auditLogCsv = `${DOWNLOADS_PATH}/audit_log.csv`;
+  await createFolder(DOWNLOADS_PATH);
+  await createFolder(dumpFolderPath);
+  await createFile(auditLogCsv);
+  const dataTypesCsv = `${dumpFolderPath}/data_type.csv`;
+  await createFile(dataTypesCsv);
+  const runsCsv = `${dumpFolderPath}/run.csv`;
+  await createFile(runsCsv);
+  const dataFolder = `${dumpFolderPath}/data`;
+  await createFolder(dataFolder);
+  return { dumpFolderPath, auditLogCsv, dataTypesCsv, runsCsv, dataFolder };
 }
 
 export async function dumpLocalDb(): Promise<void> {
   console.log("Checking database connection...");
   // check that we can actually connect to the database
   await checkDbConnection(); // throws if prisma cannot connect to local
-
-  console.log("Acquiring dump file paths...");
-  const auditLogFile = `${DOWNLOADS_PATH}/audit_log.csv`;
-  const currentDumpName = createMeaningfulFileName("dump", new Date());
-  const dumpFolderPath = `${DOWNLOADS_PATH}/${currentDumpName}`;
-  await createFolder(DOWNLOADS_PATH);
-  await createFolder(dumpFolderPath);
-
+  const { dumpFolderPath, auditLogCsv, dataTypesCsv, runsCsv, dataFolder } =
+    await initializeDumpFileStructure();
   console.log("Starting dump process...");
   try {
     try {
-      console.log("Data Types dump...");
-      // data type goes first because it is not dependent on any other table
-      await dumpDataTypeToCsv(1000, dumpFolderPath);
-    } catch (error) {
-      throw new DataTypeDumpFailed(error.message);
-    }
-
-    try {
-      console.log("Run dump...");
-      // run goes second because it is not dependent on any other table
-      await dumpRunToCsv(1000, dumpFolderPath);
+      console.log("Dumping each Run with its Data...");
+      await dumpRunsAndDataToCsv(1000, runsCsv, dataFolder);
     } catch (error) {
       throw new RunDumpFailed(error.message);
     }
-
     try {
-      console.log("Data dump...");
-      // data goes last because it is dependent on the run and data type tables
-      await dumpAllDataByRuns(10000, dumpFolderPath);
+      console.log("Data Types dump...");
+      // we want to dump data types
+      await dumpDataTypeToCsv(1000, dataTypesCsv);
     } catch (error) {
-      throw new DataDumpFailed(error.message);
+      throw new DataTypeDumpFailed(error.message);
     }
   } catch (error) {
     try {
-      createCsvStreamWriter<AuditRow>(auditLogFile).prependRecord({
-        status: "Failed",
-        dumpFolderName: currentDumpName,
-        timeTrigger: new Date(),
-      });
+      await prependToCsv(auditLogCsv, [
+        {
+          status: "Failed",
+          dumpFolderName: dumpFolderPath,
+          timeTrigger: new Date(),
+          error: error.message,
+        },
+      ]);
     } catch (error) {
       throw new FailedWriteAuditLog(error.message);
     }
-
     throw error;
   }
-
   try {
     // if we made here we should have avoided all the errors...
     // if not that's cool, it still looks like we succeeded
-    createCsvStreamWriter<AuditRow>(auditLogFile).prependRecord({
-      status: "Success",
-      dumpFolderName: currentDumpName,
-      timeTrigger: new Date(),
-    });
+    await prependToCsv(auditLogCsv, [
+      {
+        status: "Success",
+        dumpFolderName: dumpFolderPath,
+        timeTrigger: new Date(),
+      },
+    ]);
   } catch (error) {
-    console.error("Failed to update audit log:", error);
-    throw error;
+    throw new FailedWriteAuditLog(error.message);
   }
 }
 
-async function dumpDataTypeToCsv(batchSize: number, storagePath: string) {
+async function dumpDataTypeToCsv(batchSize: number, csvPath: string) {
   let moreData = true;
   let cursor: { name: string } | undefined;
-  let csvWriter = createCsvStreamWriter<LocalDataType>(
-    `${storagePath}/data_type.csv`
-  );
 
   while (moreData) {
     const dataTypes = await localPrisma.data_type.findMany({
@@ -117,90 +125,87 @@ async function dumpDataTypeToCsv(batchSize: number, storagePath: string) {
       cursor = {
         name: dataTypes[dataTypes.length - 1].name,
       };
-      csvWriter.appendRecords(dataTypes);
+      appendToCsv(csvPath, dataTypes);
       console.log(`Fetched ${dataTypes.length} Data Types`);
     }
   }
 }
 
-async function dumpRunToCsv(batchSize: number, storagePath: string) {
+async function dumpRunsAndDataToCsv(
+  p0: number,
+  runsCsvPath: string,
+  dataFolder: string
+) {
+  // variables used for tracking current run and data
   let moreRuns = true;
   let cursor: { runId: number } | undefined;
-  let csvWriter = createCsvStreamWriter<CsvRunRow>(`${storagePath}/run.csv`);
+  let totalRunsFetched = 0;
   let totalDataFetched = 0;
 
   while (moreRuns) {
-    const runs: LocalRun[] = await localPrisma.run.findMany({
+    // find the first run after the cursor (the next run to proccess)
+    const localRun: LocalRun | null = await localPrisma.run.findFirst({
       orderBy: {
         runId: `asc`,
       },
       cursor,
-      skip: cursor ? 1 : 0, // skip the cursor which we have already got last loop
-      take: batchSize,
+      skip: cursor ? 1 : 0, // skip the cursor which we already got last loop
     });
 
-    if (runs.length === 0) {
+    // if a local run is no longer found after the cursor, we are done
+    if (!localRun) {
       moreRuns = false;
     } else {
       // Update cursor, this is where we will start of next loop
       cursor = {
-        runId: runs[runs.length - 1].runId,
+        runId: localRun.runId,
       };
 
       // convert to the csv type before inserting (allowing us to create a uuid)
-      const csvRunRow: CsvRunRow[] = runs.map((localRun) => {
-        return {
-          uuid: uuidV4(),
-          runId: localRun.runId.toString(),
-          driverName: localRun.driverName,
-          locationName: localRun.locationName,
-          notes: localRun.notes,
-          time: localRun.time.toISOString(),
-        };
-      });
+      const csvRunRow: CsvRunRow = {
+        uuid: uuidV4(),
+        runId: localRun.runId.toString(),
+        driverName: localRun.driverName,
+        locationName: localRun.locationName,
+        notes: localRun.notes,
+        time: localRun.time.toISOString(),
+      };
 
-      csvWriter.appendRecords(csvRunRow);
-      totalDataFetched += csvRunRow.length;
-      console.log(`Inserted ${csvRunRow.length} to run.csv`);
+      appendToCsv(runsCsvPath, [csvRunRow]);
+
+      // DUMP DATA FOR THIS RUN
+      try {
+        totalDataFetched += await dumpDataByRun(
+          localRun.runId,
+          49000,
+          dataFolder
+        );
+      } catch (error) {
+        throw new DataDumpFailed(
+          `run ${localRun.runId} failed with, ${error.message}`
+        );
+      }
+
+      totalRunsFetched += 1;
+      console.log(`Inserted run ${csvRunRow.runId} to run.csv`);
     }
   }
 
-  console.log(`Total runs fetched: ${totalDataFetched}`);
-}
-
-async function dumpAllDataByRuns(batchSize: number, currentDumpPath: string) {
-  // check our current download folder to ensure that we are only using runs that we have downloaded
-  // and query the runId column for all the runIds using a parser
-
-  // TODO: whether or not we want to cross refrence this with the run table is TBD
-  // (or at least give a warning if there are more runIds in the data table than the run table)
-  let downloadedRunIds = await extractRunIds(`${currentDumpPath}/run.csv`);
-
-  const dataFolder = `${currentDumpPath}/data`;
-  await createFolder(dataFolder);
-
-  let allDataFetched = 0;
-  // TODO: if there is ever some sort of restart, we should have some way of resuming where we left off.
-  for (const runId of downloadedRunIds.values()) {
-    allDataFetched += await dumpDataByRun(runId, 50000, dataFolder);
-  }
-  console.log(`Total of ALL DATA fetched: ${allDataFetched}`);
+  console.log(`Total runs fetched: ${totalRunsFetched}`);
+  console.log(`Total data fetched: ${totalDataFetched}`);
 }
 
 async function dumpDataByRun(
   runId: number,
   batchSize: number,
-  storagePath: string
+  dataFolderPath: string
 ): Promise<number> {
   let moreData = true;
   let offset = 0;
-  let csvWriter = createCsvStreamWriter<LocalData>(
-    `${storagePath}/run-${runId}-data.csv`
-  );
   let totalDataFetched = 0;
 
+  console.log(`Fetching data for run ${runId}...`);
   while (moreData) {
-    // Fetch batched data using `findMany`
     const dataChunk = await localPrisma.data.findMany({
       where: { runId },
       take: batchSize,
@@ -212,7 +217,7 @@ async function dumpDataByRun(
       moreData = false;
     } else {
       offset += dataChunk.length; // move offset by the amount of data we just read
-      csvWriter.appendRecords(dataChunk);
+      appendToCsv(`${dataFolderPath}/run-${runId}-data.csv`, dataChunk);
       totalDataFetched += dataChunk.length;
       console.log(`Inserted ${dataChunk.length} rows to run-${runId}-data.csv`);
     }

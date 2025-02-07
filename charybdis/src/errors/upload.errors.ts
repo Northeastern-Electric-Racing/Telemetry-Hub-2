@@ -1,23 +1,27 @@
 export class CouldNotConnectToCloudDB extends Error {
-  constructor(message = "Could not connect to database") {
-    super(message);
+  constructor(message?: string) {
+    super(
+      message
+        ? `Could not connect to cloud database: ${message}`
+        : "Could not connect to cloud database"
+    );
   }
 }
 
 export class DataTypeUploadError extends Error {
-  constructor(error: string) {
-    super("Failed to upload data types: " + error);
+  constructor(message: string) {
+    super("Failed to upload data types: " + message);
   }
 }
 
 export class RunsUploadError extends Error {
-  constructor(error: string) {
-    super("Failed to upload runs: " + error);
+  constructor(message: string) {
+    super("Failed to upload runs: " + message);
   }
 }
 
 export class DataUploadError extends Error {
-  constructor(error: string) {
-    super("Failed to upload data: " + error);
+  constructor(message: string) {
+    super("Failed to upload data: " + message);
   }
 }

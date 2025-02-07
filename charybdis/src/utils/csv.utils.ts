@@ -1,188 +1,68 @@
 import * as fs from "fs";
-import { WriteStream } from "fs";
-import { Parser } from "json2csv";
+import { AsyncParser, Transform } from "@json2csv/node";
 import { parse } from "csv-parse";
-import { CsvRunRow } from "../types/csv.types";
-import path from "path";
+import { promisify } from "util";
+import { pipeline } from "stream/promises";
 
-export async function processCsvInBatches<T>(
-  csv_path: string,
-  processBatch: (batch: T[]) => Promise<void>,
-  batchSize: number
+export async function appendToCsv<T>(
+  filePath: string,
+  records: T[]
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const records: any[] = [];
-    const readStream = fs
-      .createReadStream(path.resolve(csv_path))
-      .pipe(parse({ columns: true, skip_empty_lines: true, cast: true }));
+  let needsHeader = true;
+  try {
+    const stats = await fs.promises.stat(filePath);
+    // for simplicity, we consider a file with size 0 as empty
+    // POSSIBLE IMPROVEMENT: check if the the headers match the given records
+    needsHeader = stats.size === 0;
+  } catch (err) {
+    if (err.code !== "ENOENT") throw err;
+  }
 
-    readStream.on("data", (row) => {
-      records.push(row);
+  let writeStream = fs.createWriteStream(filePath, { flags: "a" });
 
-      if (records.length >= batchSize) {
-        readStream.pause();
-        processBatch(records.splice(0, batchSize))
-          .then(() => readStream.resume())
-          .catch(reject);
-      }
-    });
+  const opts = { header: needsHeader };
+  const asyncParser = new AsyncParser(opts);
+  const csv = await asyncParser.parse(records).promise();
 
-    readStream.on("end", async () => {
-      if (records.length > 0) {
-        try {
-          await processBatch(records);
-        } catch (error) {
-          reject(error);
-        }
-      }
-      console.log(`Finished processing ${csv_path}`);
-      resolve();
-    });
-
-    readStream.on("error", (err) => {
-      reject(`Error reading ${csv_path}: ${err.message}`);
-    });
-  });
+  if (!needsHeader && csv.length > 0) {
+    // add leading newline if appending to non-empty file
+    await writeStream.write("\n" + csv);
+  } else {
+    await writeStream.write(csv);
+  }
 }
 
-/**
- * The interface describing our CSV writer, parameterized by a generic type T.
- *
- * - `appendRecords(records: T[]): void`
- *    Appends an array of T records to the CSV.
- * - `close(): void`
- *    Closes the underlying file stream.
- */
-export interface CsvStreamWriter<T> {
-  appendRecords(records: T[]): void;
-  prependRecord(record: T): void;
-  close(): void;
-}
+export async function prependToCsv<T>(
+  filePath: string,
+  records: T[]
+): Promise<void> {
+  let noContent = true;
+  try {
+    const stats = await fs.promises.stat(filePath);
+    // for simplicity, we consider a file with size 0 as empty
+    // POSSIBLE IMPROVEMENT: check if the the headers match the given records
+    noContent = stats.size === 0;
+  } catch (err) {
+    if (err.code !== "ENOENT") throw err;
+  }
 
-/**
- * Creates a writer object that can append records to a CSV file in batches.
- *
- * @param filename The path to the CSV file.
- * @returns A typed object (`CsvStreamWriter<T>`) with `appendRecords` and `close` methods.
- */
-export function createCsvStreamWriter<T>(filename: string): CsvStreamWriter<T> {
-  // Check if the file already exists (to determine whether to write headers).
-  const fileExists = fs.existsSync(filename);
+  const opts = { header: noContent };
+  const asyncParser = new AsyncParser(opts);
+  const csv = await asyncParser.parse(records).promise();
 
-  // Create a write stream in append mode.
-  const writeStream: WriteStream = fs.createWriteStream(filename, {
-    flags: "a",
-  });
+  const writeStream = fs.createWriteStream(filePath, { flags: "w" });
 
-  // Create a JSON2CSV parser. If the file doesn't exist, enable headers. Otherwise, skip them.
-  // Adjust parser options as needed (e.g., flatten, transforms, etc.)
-  const parser = new Parser<T>({
-    header: !fileExists, // Write headers only if file doesn't exist
-  });
+  // get the prior contents of the file
+  if (!noContent) {
+    const priorFileData = (await fs.readFileSync(filePath, "utf8")).split("\n");
+    const header = priorFileData[0];
+    console.log("Header found: " + header);
+    const content = priorFileData.slice(1).join("\n");
+    console.log("Content found: " + content);
 
-  return {
-    /**
-     * Appends the given records of type T to the CSV file.
-     *
-     * @param records Array of T objects to append.
-     */
-    appendRecords(records: T[]): void {
-      if (!records || records.length === 0) {
-        return;
-      }
-
-      const csv = parser.parse(records);
-      const filePath = writeStream.path as string; // Get file path from stream
-
-      // Check if the file already has content (i.e., a header)
-      if (fs.existsSync(filePath) && fs.statSync(filePath).size > 0) {
-        // ✅ File already has a header, append only data
-        const lines = csv.split("\n").slice(1).join("\n"); // Remove first line (header)
-        writeStream.write(lines + "\n");
-      } else {
-        // ✅ File is new, write full CSV including header
-        writeStream.write(csv + "\n");
-      }
-    },
-
-    /**
-     * Adds the record to the beginning of the file, under the header.
-     */
-    prependRecord(record: T): void {
-      if (!record) {
-        return;
-      }
-
-      console.log("Prepending record to CSV file...");
-      const filePath = writeStream.path as string; // Get file path from stream
-      const newCsv = parser.parse([record]); // Convert record to CSV format
-
-      if (!fs.existsSync(filePath) || fs.statSync(filePath).size === 0) {
-        // ✅ File does not exist or is empty, write full CSV including header
-        fs.writeFileSync(filePath, newCsv + "\n", "utf8");
-        return;
-      }
-
-      // ✅ File exists and has content, read existing content
-      const existingContent = fs.readFileSync(filePath, "utf8").trim();
-      const lines = existingContent.split("\n");
-
-      if (lines.length > 1) {
-        // ✅ File has a header and data, insert under header
-        const header = lines[0];
-        const data = lines.slice(1); // Keep only the existing data rows
-        const updatedContent = [header, ...newCsv.split("\n"), ...data].join(
-          "\n"
-        );
-        console.info(
-          "Audit log update with new record at the top: ",
-          newCsv.split("\n")
-        );
-        fs.writeFileSync(filePath, updatedContent + "\n", "utf8");
-      } else {
-        // ✅ File only has a header, add the new record as the first data entry
-        fs.writeFileSync(
-          filePath,
-          existingContent + "\n" + newCsv.split("\n")[1] + "\n",
-          "utf8"
-        );
-      }
-    },
-
-    /**
-     * Closes the underlying file stream.
-     * Make sure to call this after finishing all appends!
-     */
-    close(): void {
-      writeStream.end();
-    },
-  };
-}
-
-/**
- * Extracts the runids linked to there new uuid's from the run.csv file
- * @param filePath
- * @returns
- */
-export async function extractRunIds(
-  filePath: string
-): Promise<Map<string, number>> {
-  return new Promise((resolve, reject) => {
-    console.info("Extracting runIds from run.csv");
-    const runIdMap = new Map<string, number>();
-    const parser = parse({ columns: true });
-    const fileStream = fs.createReadStream(filePath).pipe(parser);
-
-    fileStream.on("data", (row: CsvRunRow) => {
-      runIdMap.set(row.uuid, parseInt(row.runId, 10));
-    });
-
-    fileStream.on("end", () => {
-      resolve(runIdMap);
-    });
-
-    fileStream.on("error", (error) => {
-      reject(error);
-    });
-  });
+    // write the new records to the file below the header and prior to main contents
+    await writeStream.write(header + "\n" + csv + "\n" + content);
+  } else {
+    await writeStream.write(csv);
+  }
 }

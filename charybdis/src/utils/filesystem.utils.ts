@@ -1,5 +1,10 @@
 import * as fs from "fs";
 
+/**
+ * Creates a folder at the specified path, if it doesn't already exist.
+ *
+ * @param folderPath the path to the folder to create
+ */
 export async function createFolder(folderPath: string) {
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath);
@@ -9,6 +14,27 @@ export async function createFolder(folderPath: string) {
   }
 }
 
+/**
+ * Creates a file at the specified path, if it doesn't already exist.
+ *
+ * @param filePath the path to the file to create
+ */
+export async function createFile(filePath: string) {
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, "");
+    console.info(`Folder created at: ${filePath}`);
+  }
+}
+
+/**
+ * Creates a file name formatted with the given date.
+ * DOES NOT ACTUALLY CREATE THE FILE.
+ *
+ * In the format: "name_yyyy-mm-dd__hr-min-sec-ms"
+ * @param name The name of the file
+ * @param date The date to format
+ * @returns The formatted file name
+ */
 export function createMeaningfulFileName(name: string, date: Date): string {
   // Format the date as "yyyy_month_day-hr_minute_ms"
   const year = date.getUTCFullYear();

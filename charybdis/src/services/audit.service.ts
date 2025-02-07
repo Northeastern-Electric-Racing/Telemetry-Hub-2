@@ -2,6 +2,7 @@ import path from "path";
 import { parse } from "csv-parse";
 import fs from "fs";
 import { DOWNLOADS_PATH } from "../storage-paths";
+import { FailedWriteAuditLog } from "../errors/audit.errors";
 
 /**
  *
@@ -9,14 +10,13 @@ import { DOWNLOADS_PATH } from "../storage-paths";
  */
 export async function getMostRecentDownloadFolder(): Promise<string> {
   return new Promise((resolve, reject) => {
-    console.log("Getting most recent download folder...");
+    console.log("Get most recent download folder initiated...");
     const auditLogPath = path.resolve(`${DOWNLOADS_PATH}/audit_log.csv`);
-    console.log(`Reading audit log from: ${auditLogPath}`);
     const auditLogStream = fs.createReadStream(auditLogPath).pipe(parse({}));
 
     let lineCount = 0;
 
-    console.log("Reading audit log...");
+    console.log(`Reading audit log from: ${auditLogPath}`);
     auditLogStream.on("data", (row) => {
       lineCount += 1;
       if (lineCount === 2) {
@@ -27,13 +27,7 @@ export async function getMostRecentDownloadFolder(): Promise<string> {
     });
 
     auditLogStream.on("error", (err) => {
-      reject(err);
-    });
-
-    auditLogStream.on("end", () => {
-      if (lineCount < 2) {
-        reject(new Error("No second row found in audit log."));
-      }
+      reject(new FailedWriteAuditLog(err.message));
     });
   });
 }
