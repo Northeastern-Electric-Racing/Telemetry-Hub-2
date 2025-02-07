@@ -1,4 +1,4 @@
-import { prisma as localPrisma } from "../../../local-prisma/prisma";
+import { prisma as localPrisma } from "../local-prisma/prisma";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { v4 as uuidV4 } from "uuid";
