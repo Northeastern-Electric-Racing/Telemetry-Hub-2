@@ -172,6 +172,8 @@ async function dumpRunsAndDataToCsv(
       };
 
       appendToCsv(runsCsvPath, [csvRunRow]);
+      console.log(`Inserted run ${csvRunRow.runId} to run.csv`);
+      totalRunsFetched += 1;
 
       // DUMP DATA FOR THIS RUN
       try {
@@ -185,9 +187,6 @@ async function dumpRunsAndDataToCsv(
           `run ${localRun.runId} failed with, ${error.message}`
         );
       }
-
-      totalRunsFetched += 1;
-      console.log(`Inserted run ${csvRunRow.runId} to run.csv`);
     }
   }
 

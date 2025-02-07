@@ -4,7 +4,7 @@ import { CloudData, CloudDataType, CloudRun } from "../types/cloud.types";
 import { CsvDataRow, CsvDataTypeRow, CsvRunRow } from "../types/csv.types";
 import { extractRunIds } from "../utils/csv.utils";
 import { csvToCloudData } from "../transformers/csv.transformer";
-import { getMostRecentDownloadFolder } from "./audit.service";
+import { getMostRecentDownloadFolderPath } from "./audit.service";
 import { processCsvInBatches } from "../utils/csv.utils";
 import {
   DataTypeUploadError,
@@ -38,10 +38,11 @@ export async function uploadToCloud() {
 
   try {
     console.info("Opening most recent download folder...");
-    let dumpFolderPath = await getMostRecentDownloadFolder();
+    let dumpFolderPath = await getMostRecentDownloadFolderPath();
 
     console.info("Processing data types...");
     try {
+      console.log("calling processDataType with: ", dumpFolderPath);
       await processDataType(dumpFolderPath);
     } catch (error) {
       throw new DataTypeUploadError(error.message);
@@ -74,12 +75,12 @@ export async function processDataType(
   dumpFolderPath: string,
   batchSize: number = DATATYPE_BATCH_SIZE
 ) {
+  console.log("Processing data types...");
   const dataTypeCsvPath = csvNames.data_type(dumpFolderPath);
-
+  console.log(`Processing data types from: ${dataTypeCsvPath}`);
   await processCsvInBatches<LocalDataType>(
     dataTypeCsvPath,
     async (batch: CsvDataTypeRow[]) => {
-      console.info("Processing data types");
       const cloudDataTypes: CloudDataType[] = batch.map((localDataType) => ({
         name: localDataType.name,
         unit: localDataType.unit,

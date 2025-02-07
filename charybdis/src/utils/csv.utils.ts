@@ -3,6 +3,48 @@ import { AsyncParser, Transform } from "@json2csv/node";
 import { parse } from "csv-parse";
 import { promisify } from "util";
 import { pipeline } from "stream/promises";
+import { CsvRunRow } from "../types/csv.types";
+import path from "path";
+
+export async function processCsvInBatches<T>(
+  csv_path: string,
+  processBatch: (batch: T[]) => Promise<void>,
+  batchSize: number
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const records: any[] = [];
+    const readStream = fs
+      .createReadStream(path.resolve(csv_path))
+      .pipe(parse({ columns: true, skip_empty_lines: true, cast: true }));
+
+    readStream.on("data", (row) => {
+      records.push(row);
+
+      if (records.length >= batchSize) {
+        readStream.pause();
+        processBatch(records.splice(0, batchSize))
+          .then(() => readStream.resume())
+          .catch(reject);
+      }
+    });
+
+    readStream.on("end", async () => {
+      if (records.length > 0) {
+        try {
+          await processBatch(records);
+        } catch (error) {
+          reject(error);
+        }
+      }
+      console.log(`Finished processing ${csv_path}`);
+      resolve();
+    });
+
+    readStream.on("error", (err) => {
+      reject(`Error reading ${csv_path}: ${err.message}`);
+    });
+  });
+}
 
 export async function appendToCsv<T>(
   filePath: string,
@@ -65,4 +107,32 @@ export async function prependToCsv<T>(
   } else {
     await writeStream.write(csv);
   }
+}
+
+/**
+ * Extracts the runids linked to there new uuid's from the run.csv file
+ * @param filePath
+ * @returns
+ */
+export async function extractRunIds(
+  filePath: string
+): Promise<Map<string, number>> {
+  return new Promise((resolve, reject) => {
+    console.info("Extracting runIds from run.csv");
+    const runIdMap = new Map<string, number>();
+    const parser = parse({ columns: true });
+    const fileStream = fs.createReadStream(filePath).pipe(parser);
+
+    fileStream.on("data", (row: CsvRunRow) => {
+      runIdMap.set(row.uuid, parseInt(row.runId, 10));
+    });
+
+    fileStream.on("end", () => {
+      resolve(runIdMap);
+    });
+
+    fileStream.on("error", (error) => {
+      reject(error);
+    });
+  });
 }

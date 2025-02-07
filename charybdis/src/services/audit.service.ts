@@ -8,11 +8,11 @@ import { FailedWriteAuditLog } from "../errors/audit.errors";
  *
  * @returns the path to the folder based on the folder name at the top of the list of the audit_log.csv file.
  */
-export async function getMostRecentDownloadFolder(): Promise<string> {
+export async function getMostRecentDownloadFolderPath(): Promise<string> {
   return new Promise((resolve, reject) => {
     console.log("Get most recent download folder initiated...");
     const auditLogPath = path.resolve(`${DOWNLOADS_PATH}/audit_log.csv`);
-    const auditLogStream = fs.createReadStream(auditLogPath).pipe(parse({}));
+    const auditLogStream = fs.createReadStream(auditLogPath).pipe(parse());
 
     let lineCount = 0;
 
@@ -20,9 +20,9 @@ export async function getMostRecentDownloadFolder(): Promise<string> {
     auditLogStream.on("data", (row) => {
       lineCount += 1;
       if (lineCount === 2) {
-        const folderName = row[1]; // Get the second column of the second row
-        console.log(`Found folder: ${folderName}`);
-        resolve(`${DOWNLOADS_PATH}/${folderName}`);
+        const folderPath = row[1]; // Get the second column of the second row
+        console.log(`Found folder: ${folderPath}`);
+        resolve(folderPath);
       }
     });
 
