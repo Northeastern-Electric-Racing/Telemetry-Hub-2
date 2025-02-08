@@ -1,9 +1,9 @@
 import { prisma as localPrisma } from "../local-prisma/prisma";
-import * as fs from "fs/promises";
+import * as fs from "fs";
 import * as path from "path";
 import { v4 as uuidV4 } from "uuid";
-import { LocalData, LocalDataType, LocalRun } from "../types/local.types";
-import { AuditRow, CsvRunRow } from "../types/csv.types";
+import { LocalRun } from "../types/local.types";
+import { CsvRunRow } from "../types/csv.types";
 import { DOWNLOADS_PATH } from "../storage-paths";
 import {
   CouldNotConnectToLocalDB,
@@ -18,7 +18,6 @@ import {
   createMeaningfulFileName,
 } from "../utils/filesystem.utils";
 import { FailedWriteAuditLog } from "../errors/audit.errors";
-import { CsvError } from "csv-parse";
 
 async function checkDbConnection() {
   try {
@@ -105,6 +104,7 @@ export async function dumpLocalDb(): Promise<void> {
 async function dumpDataTypeToCsv(batchSize: number, csvPath: string) {
   let moreData = true;
   let cursor: { name: string } | undefined;
+  let csvWriteStream = fs.createWriteStream(csvPath, { flags: "a" });
 
   while (moreData) {
     const dataTypes = await localPrisma.data_type.findMany({
@@ -125,7 +125,7 @@ async function dumpDataTypeToCsv(batchSize: number, csvPath: string) {
       cursor = {
         name: dataTypes[dataTypes.length - 1].name,
       };
-      appendToCsv(csvPath, dataTypes);
+      appendToCsv(csvWriteStream, dataTypes);
       console.log(`Fetched ${dataTypes.length} Data Types`);
     }
   }
@@ -141,6 +141,7 @@ async function dumpRunsAndDataToCsv(
   let cursor: { runId: number } | undefined;
   let totalRunsFetched = 0;
   let totalDataFetched = 0;
+  let csvWriteStream = fs.createWriteStream(runsCsvPath, { flags: "a" });
 
   while (moreRuns) {
     // find the first run after the cursor (the next run to proccess)
@@ -171,7 +172,7 @@ async function dumpRunsAndDataToCsv(
         time: localRun.time.toISOString(),
       };
 
-      appendToCsv(runsCsvPath, [csvRunRow]);
+      appendToCsv(csvWriteStream, [csvRunRow]);
       console.log(`Inserted run ${csvRunRow.runId} to run.csv`);
       totalRunsFetched += 1;
 
@@ -202,6 +203,10 @@ async function dumpDataByRun(
   let moreData = true;
   let offset = 0;
   let totalDataFetched = 0;
+  let csvWriteStream = fs.createWriteStream(
+    `${dataFolderPath}/run-${runId}-data.csv`,
+    { flags: "a" }
+  );
 
   console.log(`Fetching data for run ${runId}...`);
   while (moreData) {
@@ -216,7 +221,7 @@ async function dumpDataByRun(
       moreData = false;
     } else {
       offset += dataChunk.length; // move offset by the amount of data we just read
-      appendToCsv(`${dataFolderPath}/run-${runId}-data.csv`, dataChunk);
+      appendToCsv(csvWriteStream, dataChunk);
       totalDataFetched += dataChunk.length;
       console.log(`Inserted ${dataChunk.length} rows to run-${runId}-data.csv`);
     }
@@ -229,17 +234,19 @@ async function dumpDataByRun(
 export async function deleteAllDownloads(): Promise<void> {
   try {
     // Read all entries in the downloads folder
-    const entries = await fs.readdir(DOWNLOADS_PATH, { withFileTypes: true });
+    const entries = await fs.promises.readdir(DOWNLOADS_PATH, {
+      withFileTypes: true,
+    });
 
     // Iterate over each entry and remove it
     for (const entry of entries) {
       const fullPath = path.join(DOWNLOADS_PATH, entry.name);
       if (entry.isDirectory()) {
         // Recursively remove the directory and its contents
-        await fs.rm(fullPath, { recursive: true, force: true });
+        await fs.promises.rm(fullPath, { recursive: true, force: true });
       } else {
         // Remove the file
-        await fs.unlink(fullPath);
+        await fs.promises.unlink(fullPath);
       }
     }
     console.log("All downloads have been deleted.");

@@ -1,8 +1,6 @@
 import * as fs from "fs";
-import { AsyncParser, Transform } from "@json2csv/node";
+import { AsyncParser } from "@json2csv/node";
 import { parse } from "csv-parse";
-import { promisify } from "util";
-import { pipeline } from "stream/promises";
 import { CsvRunRow } from "../types/csv.types";
 import path from "path";
 
@@ -46,13 +44,27 @@ export async function processCsvInBatches<T>(
   });
 }
 
+/**
+ * Appends the given records, in CSV format, to the given write stream.
+ * This is done to allow for writting large amounts of data in batches
+ * to a csv file, using an open write stream, instead of opening a new
+ * write stream for each batch.
+ *
+ * IMPORTANT: WRITE STREAM IS RECOMMENDED TO BE OPENED IN APPEND MODE
+ * to avoid overwriting the file.
+ *
+ * @param csvWriteStream the write stream to append to the records to
+ * @param records the records to append to the write stream
+ *
+ * @returns a promise that resolves when the records have been appended
+ */
 export async function appendToCsv<T>(
-  filePath: string,
+  csvWriteStream: fs.WriteStream,
   records: T[]
 ): Promise<void> {
   let needsHeader = true;
   try {
-    const stats = await fs.promises.stat(filePath);
+    const stats = await fs.promises.stat(csvWriteStream.path);
     // for simplicity, we consider a file with size 0 as empty
     // POSSIBLE IMPROVEMENT: check if the the headers match the given records
     needsHeader = stats.size === 0;
@@ -60,17 +72,15 @@ export async function appendToCsv<T>(
     if (err.code !== "ENOENT") throw err;
   }
 
-  let writeStream = fs.createWriteStream(filePath, { flags: "a" });
-
   const opts = { header: needsHeader };
   const asyncParser = new AsyncParser(opts);
   const csv = await asyncParser.parse(records).promise();
 
   if (!needsHeader && csv.length > 0) {
     // add leading newline if appending to non-empty file
-    await writeStream.write("\n" + csv);
+    csvWriteStream.write("\n" + csv);
   } else {
-    await writeStream.write(csv);
+    csvWriteStream.write(csv);
   }
 }
 

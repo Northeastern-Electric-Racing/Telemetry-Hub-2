@@ -114,28 +114,6 @@ export async function processRuns(
           time: new Date(csvRun.time),
         }));
 
-        if (cloudRuns.length !== 0) {
-          // check if the run we are uploading already exists
-          const existingRuns = await cloudPrisma.run.findFirst({
-            where: {
-              runId: {
-                equals: cloudRuns[0].runId,
-              },
-              time: {
-                equals: cloudRuns[0].time,
-              },
-            },
-          });
-          if (existingRuns) {
-            console.info(
-              `Aborting!!!!!!!! Run with runId: ${cloudRuns[0].runId} and time: ${cloudRuns[0].time} already exists. `
-            );
-            throw new RunsUploadError(
-              "A Run already exists, with same time and runId as cloud db"
-            );
-          }
-        }
-
         console.info(`Inserting run batch of: ${cloudRuns.length}`);
         try {
           await cloudPrisma.run.createMany({
