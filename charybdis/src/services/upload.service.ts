@@ -2,14 +2,13 @@ import { prisma as cloudPrisma } from "../cloud-prisma/prisma";
 import { LocalDataType } from "../types/local.types";
 import { CloudData, CloudDataType, CloudRun } from "../types/cloud.types";
 import { CsvDataRow, CsvDataTypeRow, CsvRunRow } from "../types/csv.types";
-import { extractRunIds } from "../utils/csv.utils";
+import { readCsvFile } from "../utils/csv.utils";
 import { csvToCloudData } from "../transformers/csv.transformer";
 import { getMostRecentDownloadFolderPath } from "./audit.service";
 import { processCsvInBatches } from "../utils/csv.utils";
 import {
   DataTypeUploadError,
   RunsUploadError,
-  DataUploadError,
   CouldNotConnectToCloudDB,
 } from "../errors/upload.errors";
 
@@ -50,16 +49,9 @@ export async function uploadToCloud() {
 
     console.info("Startin Run uploads...");
     try {
-      await processRuns(dumpFolderPath);
+      await processRunsWithData(dumpFolderPath);
     } catch (error) {
       throw new RunsUploadError(error.message);
-    }
-
-    console.info("Starting Data uploads...");
-    try {
-      await processData(dumpFolderPath);
-    } catch (error) {
-      throw new DataUploadError(error.message);
     }
 
     console.log("Inserted all data entries");
@@ -97,73 +89,73 @@ export async function processDataType(
   );
 }
 
-export async function processRuns(
+export async function processRunsWithData(
   dumpFolderPath: string,
   batchSize: number = RUN_BATCH_SIZE
 ) {
   const runsCsvPath = csvNames.run(dumpFolderPath);
-  try {
-    await processCsvInBatches<CsvRunRow>(
-      runsCsvPath,
-      async (batch: CsvRunRow[]) => {
-        const cloudRuns: CloudRun[] = batch.map((csvRun: CsvRunRow) => ({
-          id: csvRun.uuid,
-          runId: Number(csvRun.runId),
-          driverName: csvRun.driverName,
-          notes: csvRun.notes,
-          time: new Date(csvRun.time),
-        }));
+  const runs: CsvRunRow[] = await readCsvFile<CsvRunRow>(runsCsvPath);
+  // console.log("Header found: " + header);
+  // console.log("Content found: " + runs);
 
-        console.info(`Inserting run batch of: ${cloudRuns.length}`);
-        try {
-          await cloudPrisma.run.createMany({
-            data: cloudRuns,
-            skipDuplicates: true,
-          });
-          console.info("Inserted all runs successfully");
-        } catch (error) {
-          console.error("Error inserting runs:", error);
-          process.exit(1);
-        }
-      },
-      batchSize
+  for (const run of runs) {
+    let cloudRun: CloudRun = {
+      id: run.uuid,
+      runId: Number(run.runId),
+      driverName: run.driverName,
+      notes: run.notes,
+      time: new Date(run.time),
+    };
+
+    try {
+      await cloudPrisma.run.create({
+        data: cloudRun,
+      });
+    } catch (error) {
+      throw new RunsUploadError(error.message);
+    }
+
+    let dataForRun = await processCsvDataFile(
+      cloudRun.id,
+      cloudRun.runId,
+      dumpFolderPath
     );
-  } catch (error) {
-    throw new RunsUploadError(error.message);
   }
 }
 
-export async function processData(
+export async function processCsvDataFile(
+  uuid: string,
+  runId: number,
   dumpFolderPath: string,
   batchSize: number = DATA_BATCH_SIZE
-) {
-  const runsCsvPath = csvNames.run(dumpFolderPath);
-  const uuidToRunId = await extractRunIds(runsCsvPath);
-  let insertCount = 0;
+): Promise<number> {
+  let dataForRun = 0;
+  let csvDataPath = csvNames.data(dumpFolderPath, runId);
+  await processCsvInBatches<CsvDataRow>(
+    csvDataPath,
+    async (batch) => {
+      try {
+        const cloudData: CloudData[] = batch.map((localData: CsvDataRow) =>
+          csvToCloudData(localData, uuid)
+        );
 
-  for (const run of uuidToRunId) {
-    let dataCsvPath = csvNames.data(dumpFolderPath, run[1]);
-    await processCsvInBatches<CsvDataRow>(
-      dataCsvPath,
-      async (batch) => {
-        try {
-          const cloudData: CloudData[] = batch.map((localData: CsvDataRow) =>
-            csvToCloudData(localData, run[0])
-          );
+        let numOfData = cloudData.length;
+        await cloudPrisma.data.createMany({
+          data: cloudData,
+          skipDuplicates: true,
+        });
 
-          await cloudPrisma.data.createMany({
-            data: cloudData,
-            skipDuplicates: true,
-          });
-          insertCount += cloudData.length;
-          console.log(`Inserted ${cloudData.length} data entries`);
-        } catch (error) {
-          console.error("Error inserting data:", error);
-          process.exit(1);
-        }
-      },
-      batchSize
-    );
-  }
-  console.log(`Inserted a TOTAL of ${insertCount} DATA entries`);
+        dataForRun += numOfData;
+
+        console.log(`Inserted ${numOfData} data entries`);
+      } catch (error) {
+        console.error("Error inserting data:", error);
+        process.exit(1);
+      }
+    },
+    batchSize
+  );
+
+  console.log(`Total data uploaded for RUN ${runId}: ${dataForRun}`);
+  return dataForRun;
 }

@@ -106,17 +106,24 @@ export async function prependToCsv<T>(
 
   // get the prior contents of the file
   if (!noContent) {
-    const priorFileData = (await fs.readFileSync(filePath, "utf8")).split("\n");
-    const header = priorFileData[0];
-    console.log("Header found: " + header);
-    const content = priorFileData.slice(1).join("\n");
-    console.log("Content found: " + content);
-
+    const { header, rows } = readCsvHeaderAndRow(filePath);
     // write the new records to the file below the header and prior to main contents
-    await writeStream.write(header + "\n" + csv + "\n" + content);
+    writeStream.write(header + "\n" + csv + "\n" + rows.join("\n"));
   } else {
-    await writeStream.write(csv);
+    writeStream.write(csv);
   }
+}
+
+export function readCsvHeaderAndRow(filePath: string): {
+  header: string;
+  rows: string[];
+} {
+  const priorFileData = fs.readFileSync(filePath, "utf8").split("\n");
+  const header = priorFileData[0];
+  console.log("Header found: " + header);
+  const content = priorFileData.slice(1);
+  console.log("Content found: " + content);
+  return { header, rows: content };
 }
 
 /**
@@ -143,6 +150,28 @@ export async function extractRunIds(
 
     fileStream.on("error", (error) => {
       reject(error);
+    });
+  });
+}
+
+export async function readCsvFile<T>(csvPath: string): Promise<T[]> {
+  return new Promise((resolve, reject) => {
+    const records: T[] = [];
+    const readStream = fs
+      .createReadStream(path.resolve(csvPath))
+      .pipe(parse({ columns: true, skip_empty_lines: true, cast: true }));
+
+    readStream.on("data", (row) => {
+      records.push(row);
+    });
+
+    readStream.on("end", () => {
+      console.log(`Finished reading ${csvPath}`);
+      resolve(records);
+    });
+
+    readStream.on("error", (err) => {
+      reject(`Error reading ${csvPath}: ${err.message}`);
     });
   });
 }
