@@ -106,6 +106,7 @@ import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer
 import { AppNavBarComponent } from './app-nav-bar/app-nav-bar.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
+import { SidebarModule } from 'primeng/sidebar';
 
 @NgModule({
   declarations: [
@@ -219,7 +220,8 @@ import { MatDividerModule } from '@angular/material/divider';
     MatInputModule,
     ReactiveFormsModule,
     MatCardModule,
-    MatDividerModule
+    MatDividerModule,
+    SidebarModule
   ],
   providers: [DialogService, MessageService, provideHttpClient(withInterceptorsFromDi())]
 })
