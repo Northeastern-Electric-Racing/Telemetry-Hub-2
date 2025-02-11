@@ -1,0 +1,37 @@
+@if (isMobile) {
+  <p-sidebar [(visible)]="sidebarVisible">
+    <ng-template pTemplate="header">
+      <typography style="width: 100%; text-align: center" variant="large-header" content="Argos" />
+    </ng-template>
+    <ng-template pTemplate="content">
+      @for (navItem of navItems; track navItem) {
+        <sidebar-chip
+          icon="{{ navItem.icon }}"
+          value="{{ navItem.label }}"
+          [active]="selectedRoute === navItem.route"
+          (click)="navigateTo(navItem.route)"
+        >
+        </sidebar-chip>
+      }
+    </ng-template>
+  </p-sidebar>
+} @else {
+  <nav class="navbar">
+    <div class="navbar-nav">
+      @for (navItem of navItems; track navItem) {
+        <sidebar-chip
+          icon="{{ navItem.icon }}"
+          value="{{ navItem.label }}"
+          [active]="selectedRoute === navItem.route"
+          (click)="navigateTo(navItem.route)"
+        >
+        </sidebar-chip>
+      }
+    </div>
+
+    <div style="display: flex; align-items: center">
+      <toast-button [onClick]="this.onStartNewRun" label="Start New Run" />
+      <typography variant="large-header" content="{{ time$ | async | date: 'HH:mm:ss' }}" style="margin-left: 20px" />
+    </div>
+  </nav>
+}

@@ -56,8 +56,6 @@ import SpeedOverTimeDisplayComponent from 'src/components/speed-over-time-displa
 import TorqueDisplayComponent from 'src/components/torque-display/torque-display.component';
 import AccelerationOverTimeDisplayComponent from 'src/components/acceleration-over-time-display/acceleration-over-time-display.component';
 import BrakePressureDisplayComponent from 'src/components/brake-pressure-display/brake-pressure-display.component';
-import { SidebarModule } from 'primeng/sidebar';
-import AppSidebarComponent from './app-sidebar/app-sidebar.component';
 import SidebarChipComponent from 'src/components/sidebar-chip/sidebar-chip.component';
 import SidebarToggleComponent from 'src/components/sidebar-toggle/sidebar-toggle.component';
 import MotorInfoComponent from 'src/components/motor-info/motor-info.component';
@@ -104,6 +102,10 @@ import LatencyDisplayComponent from 'src/components/latency-display/latency-disp
 import { DateLocationComponent } from 'src/pages/landing-page/components/date-location-display/date-location.component';
 import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer-display/viewer-display.component';
 import NodeDisplayComponent from 'src/pages/graph-page/graph-sidebar/node-display/node-display.component';
+import { AppNavBarComponent } from './app-nav-bar/app-nav-bar.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { SidebarModule } from 'primeng/sidebar';
 
 @NgModule({
   declarations: [
@@ -153,7 +155,6 @@ import NodeDisplayComponent from 'src/pages/graph-page/graph-sidebar/node-displa
     BrakePressureDisplayComponent,
     RasberryPiComponent,
     AccelerationGraphsComponent,
-    AppSidebarComponent,
     SidebarChipComponent,
     SidebarToggleComponent,
     MotorInfoComponent,
@@ -193,7 +194,8 @@ import NodeDisplayComponent from 'src/pages/graph-page/graph-sidebar/node-displa
     DateLocationComponent,
     CurrentRunDisplayComponent,
     ViewerDisplayComponent,
-    NodeDisplayComponent
+    NodeDisplayComponent,
+    AppNavBarComponent
   ],
   bootstrap: [AppContextComponent],
   imports: [
@@ -211,11 +213,13 @@ import NodeDisplayComponent from 'src/pages/graph-page/graph-sidebar/node-displa
     BrowserAnimationsModule,
     ButtonModule,
     MatIconModule,
-    SidebarModule,
     MatToolbarModule,
     MatButtonModule,
     MatInputModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatCardModule,
+    MatDividerModule,
+    SidebarModule
   ],
   providers: [DialogService, MessageService, provideHttpClient(withInterceptorsFromDi())]
 })
