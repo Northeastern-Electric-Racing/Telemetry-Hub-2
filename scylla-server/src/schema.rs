@@ -13,7 +13,6 @@ diesel::table! {
     data_type (name) {
         name -> Text,
         unit -> Text,
-        nodeName -> Text,
     }
 }
 

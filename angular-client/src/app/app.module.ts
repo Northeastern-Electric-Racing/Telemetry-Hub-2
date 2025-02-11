@@ -29,7 +29,6 @@ import GraphSidebarMobileComponent from 'src/pages/graph-page/graph-sidebar/grap
 import GraphSidebarDesktopComponent from 'src/pages/graph-page/graph-sidebar/graph-sidebar-desktop/graph-sidebar-desktop.component';
 import MapComponent from 'src/pages/map/map.component';
 import ThermometerComponent from 'src/components/thermometer/thermometer.component';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import HStackComponent from 'src/components/hstack/hstack.component';
 import VStackComponent from 'src/components/vstack/vstack.component';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -70,7 +69,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NodeFilterPipe } from 'src/utils/pipes/node-filter.pipe';
-import { DataTypeFilterPipe } from 'src/utils/pipes/data-type-filter.pipe';
 import { SwitchComponent } from 'src/components/switch/switch.component';
 import { DoubleLineGraphComponent } from 'src/components/double-line-graph/double-line-graph.component';
 import BatteryInfoDesktopComponent from 'src/pages/charging-page/components/battery-info-display/battery-info-desktop/battery-info-desktop.component';
@@ -105,6 +103,7 @@ import { CurrentRunDisplayComponent } from 'src/pages/landing-page/components/cu
 import LatencyDisplayComponent from 'src/components/latency-display/latency-display';
 import { DateLocationComponent } from 'src/pages/landing-page/components/date-location-display/date-location.component';
 import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer-display/viewer-display.component';
+import NodeDisplayComponent from 'src/pages/graph-page/graph-sidebar/node-display/node-display.component';
 
 @NgModule({
   declarations: [
@@ -164,7 +163,6 @@ import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer
     BatteryInfoDesktopComponent,
     BatteryInfoMobileComponent,
     NodeFilterPipe,
-    DataTypeFilterPipe,
     CombinedStatusDisplayComponent,
     StateOfChargeDisplayComponent,
     PackTempComponent,
@@ -194,7 +192,8 @@ import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer
     LatencyDisplayComponent,
     DateLocationComponent,
     CurrentRunDisplayComponent,
-    ViewerDisplayComponent
+    ViewerDisplayComponent,
+    NodeDisplayComponent
   ],
   bootstrap: [AppContextComponent],
   imports: [
@@ -202,7 +201,6 @@ import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer
     AppRoutingModule,
     CarouselModule,
     NgApexchartsModule,
-    FlexLayoutModule,
     NgApexchartsModule,
     ToastModule,
     OrderListModule,
