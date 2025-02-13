@@ -29,7 +29,6 @@ import GraphSidebarMobileComponent from 'src/pages/graph-page/graph-sidebar/grap
 import GraphSidebarDesktopComponent from 'src/pages/graph-page/graph-sidebar/graph-sidebar-desktop/graph-sidebar-desktop.component';
 import MapComponent from 'src/pages/map/map.component';
 import ThermometerComponent from 'src/components/thermometer/thermometer.component';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import HStackComponent from 'src/components/hstack/hstack.component';
 import VStackComponent from 'src/components/vstack/vstack.component';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -57,8 +56,6 @@ import SpeedOverTimeDisplayComponent from 'src/components/speed-over-time-displa
 import TorqueDisplayComponent from 'src/components/torque-display/torque-display.component';
 import AccelerationOverTimeDisplayComponent from 'src/components/acceleration-over-time-display/acceleration-over-time-display.component';
 import BrakePressureDisplayComponent from 'src/components/brake-pressure-display/brake-pressure-display.component';
-import { SidebarModule } from 'primeng/sidebar';
-import AppSidebarComponent from './app-sidebar/app-sidebar.component';
 import SidebarChipComponent from 'src/components/sidebar-chip/sidebar-chip.component';
 import SidebarToggleComponent from 'src/components/sidebar-toggle/sidebar-toggle.component';
 import MotorInfoComponent from 'src/components/motor-info/motor-info.component';
@@ -70,7 +67,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NodeFilterPipe } from 'src/utils/pipes/node-filter.pipe';
-import { DataTypeFilterPipe } from 'src/utils/pipes/data-type-filter.pipe';
 import { SwitchComponent } from 'src/components/switch/switch.component';
 import { DoubleLineGraphComponent } from 'src/components/double-line-graph/double-line-graph.component';
 import BatteryInfoDesktopComponent from 'src/pages/charging-page/components/battery-info-display/battery-info-desktop/battery-info-desktop.component';
@@ -105,6 +101,11 @@ import { CurrentRunDisplayComponent } from 'src/pages/landing-page/components/cu
 import LatencyDisplayComponent from 'src/components/latency-display/latency-display';
 import { DateLocationComponent } from 'src/pages/landing-page/components/date-location-display/date-location.component';
 import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer-display/viewer-display.component';
+import NodeDisplayComponent from 'src/pages/graph-page/graph-sidebar/node-display/node-display.component';
+import { AppNavBarComponent } from './app-nav-bar/app-nav-bar.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { SidebarModule } from 'primeng/sidebar';
 
 @NgModule({
   declarations: [
@@ -154,7 +155,6 @@ import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer
     BrakePressureDisplayComponent,
     RasberryPiComponent,
     AccelerationGraphsComponent,
-    AppSidebarComponent,
     SidebarChipComponent,
     SidebarToggleComponent,
     MotorInfoComponent,
@@ -164,7 +164,6 @@ import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer
     BatteryInfoDesktopComponent,
     BatteryInfoMobileComponent,
     NodeFilterPipe,
-    DataTypeFilterPipe,
     CombinedStatusDisplayComponent,
     StateOfChargeDisplayComponent,
     PackTempComponent,
@@ -194,7 +193,9 @@ import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer
     LatencyDisplayComponent,
     DateLocationComponent,
     CurrentRunDisplayComponent,
-    ViewerDisplayComponent
+    ViewerDisplayComponent,
+    NodeDisplayComponent,
+    AppNavBarComponent
   ],
   bootstrap: [AppContextComponent],
   imports: [
@@ -202,7 +203,6 @@ import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer
     AppRoutingModule,
     CarouselModule,
     NgApexchartsModule,
-    FlexLayoutModule,
     NgApexchartsModule,
     ToastModule,
     OrderListModule,
@@ -213,11 +213,13 @@ import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer
     BrowserAnimationsModule,
     ButtonModule,
     MatIconModule,
-    SidebarModule,
     MatToolbarModule,
     MatButtonModule,
     MatInputModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatCardModule,
+    MatDividerModule,
+    SidebarModule
   ],
   providers: [DialogService, MessageService, provideHttpClient(withInterceptorsFromDi())]
 })
