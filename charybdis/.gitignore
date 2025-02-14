@@ -1,6 +1,7 @@
 node_modules
 # Keep environment variables out of version control
 .env
+.DS_Store
 
-cloud-prisma/cloud-prisma-client/*
-local-prisma/local-prisma-client/*
+src/cloud-prisma/cloud-prisma-client/*
+src/local-prisma/local-prisma-client/*
