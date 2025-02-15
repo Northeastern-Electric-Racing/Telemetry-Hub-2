@@ -105,6 +105,8 @@ import { CurrentRunDisplayComponent } from 'src/pages/landing-page/components/cu
 import LatencyDisplayComponent from 'src/components/latency-display/latency-display';
 import { DateLocationComponent } from 'src/pages/landing-page/components/date-location-display/date-location.component';
 import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer-display/viewer-display.component';
+import { FormTemplateComponent } from 'src/components/form-template/form-template.component';
+import { FormInputGroupComponent } from 'src/components/form-input-group/form-input-group.component';
 
 @NgModule({
   declarations: [
@@ -194,7 +196,9 @@ import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer
     LatencyDisplayComponent,
     DateLocationComponent,
     CurrentRunDisplayComponent,
-    ViewerDisplayComponent
+    ViewerDisplayComponent,
+    FormTemplateComponent,
+    FormInputGroupComponent,
   ],
   bootstrap: [AppContextComponent],
   imports: [
@@ -217,7 +221,7 @@ import { ViewerDisplayComponent } from 'src/pages/landing-page/components/viewer
     MatToolbarModule,
     MatButtonModule,
     MatInputModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   providers: [DialogService, MessageService, provideHttpClient(withInterceptorsFromDi())]
 })
